@@ -6,7 +6,7 @@ window.onload = function () {
     width: 1920,
     height: 1280,
     //backgroundColor: "#000000",
-    scene: [SplashScene, Level01Scene, Level02Scene],
+    scene: [SplashScene.min, Level01Scene.min, Level02Scene.min],
   };
 
   const game = new Phaser.Game(config);
