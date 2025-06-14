@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Black Horse Puzzle</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: #181c24;
+        font-family: 'Segoe UI', 'Arial', sans-serif;
+      }
+      canvas {
+        display: block;
+        margin: auto;
+      }
+     #loginBox {
+  position: absolute;
+  top: 6%;
+  left: 88%;
+  transform: translate(-50%, -50%);
+  background: rgba(30, 34, 44, 0.92);
+  border-radius: 12px;
+  box-shadow: 0 4px 24px #00eaff40;
+  padding: 18px 24px 14px 24px;
+  min-width: 340px;
+  z-index: 1000;
+  display: none;
+  text-align: center;
+  border: 1.5px solid #00eaff;
+  backdrop-filter: blur(6px);
+} 
+.login-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+  
+#loginBox input[type="text"] {
+  width: 200px; /* Lebar input */
+  padding: 8px 10px;
+  border: 1.2px solid #00eaff;
+  border-radius: 7px;
+  font-size: 1em;
+  background: #23283a;
+  color: #fff;
+  outline: none;
+  box-shadow: 0 0 6px #00eaff40 inset;
+  transition: border 0.2s;
+}
+#loginBox input[type="text"]:focus {
+  border: 1.2px solid #fff;
+}
+#loginBox button {
+  background: linear-gradient(90deg, #00eaff 0%, #0078ff 100%);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 8px 22px;
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 0 12px #00eaff60;
+  letter-spacing: 1px;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+  #loginBox #logoutBtn {
+  background: #222;
+  color: #fff;
+  border: 1px solid #00eaff;
+  border-radius: 7px;
+  padding: 8px 14px;
+  font-size: 0.95em;
+  margin-left: 6px;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+#loginBox #logoutBtn:hover {
+  background: #00eaff;
+  color: #181c24;
+}
+#logoutBtn {
+  background: #222;
+  color: #fff;
+  border: 1px solid #00eaff;
+  border-radius: 7px;
+  padding: 7px 16px;
+  font-size: 0.95em;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 0 8px #00eaff60;
+}
+#logoutBtn:hover {
+  background: #00eaff;
+  color: #181c24;
+}
+
+#loginBox button:hover {
+  background: linear-gradient(90deg, #0078ff 0%, #00eaff 100%);
+  box-shadow: 0 0 18px #00eaffcc;
+} 
+    </style>
+  </head>
+  <body>
+    <!-- === Form login === -->
+    <div id="loginBox">
+      <div class="login-row">
+    <input type="text" id="emailInput" placeholder="Email" autocomplete="off" />
+      <button id="loginBtn">Login</button>
+      </div>
+      </div>
+      <button id="logoutBtn" style="display:none; position: absolute; top: 18px; right: 32px; z-index: 1100;">Logout</button>
+      </div>
+    <!-- === End form login === -->
+
+    <!-- Load semua scene dulu -->
+    <script src="./Scenes/SplashScene.js"></script>
+    <script src="./Scenes/Level01Scene.js"></script>
+    <script src="./Scenes/Level02Scene.js"></script>
+
+    <!-- Baru load main.js -->
+    <script src="./main.js"></script>
+    <script>
+      // Agar mouse wheel di atas canvas tetap scroll halaman, walau canvas diganti/direfresh Phaser
+      function addScrollToCanvas() {
+        const canvas = document.querySelector('canvas');
+        if (canvas && !canvas._scrollListenerAdded) {
+          canvas.addEventListener('wheel', function(e) {
+            window.scrollBy(0, e.deltaY);
+          });
+          canvas._scrollListenerAdded = true;
+        }
+      }
+      
+      //window.addEventListener('load', addScrollToCanvas);
+    window.addEventListener('DOMContentLoaded', function() {
+  let playerEmail = localStorage.getItem("playerEmail");
+  if (playerEmail) {
+      document.getElementById("loginBox").style.display = "none";
+      document.getElementById("logoutBtn").style.display = "inline-block";
+  } else {
+      document.getElementById("emailInput").style.display = "inline-block";
+      document.getElementById("loginBtn").style.display = "inline-block";
+      document.getElementById("logoutBtn").style.display = "none";
+      document.getElementById("loginBox").style.display = "block";
+  }
+
+  document.getElementById("loginBtn").onclick = function() {
+    const inputEmail = document.getElementById('emailInput').value.trim();
+    if (inputEmail) {
+      localStorage.setItem("playerEmail", inputEmail);
+      document.getElementById("loginBox").style.display = "none";
+      document.getElementById("logoutBtn").style.display = "inline-block";
+      if (window.Phaser && window.game && window.game.scene) {
+        window.game.scene.scenes.forEach(scene => scene.scene.restart());
+      }
+    } else {
+      alert("Input Email!");
+    }
+  };
+
+  document.getElementById("logoutBtn").onclick = function() {
+    localStorage.removeItem("playerEmail");
+    document.getElementById("emailInput").value = "";
+    document.getElementById("loginBox").style.display = "block";
+    document.getElementById("emailInput").style.display = "inline-block";
+    document.getElementById("loginBtn").style.display = "inline-block";
+    document.getElementById("logoutBtn").style.display = "none";
+    if (window.Phaser && window.game && window.game.scene) {
+      window.game.scene.scenes.forEach(scene => scene.scene.restart());
+    }
+  };
+});
+</script> 
+     
+  </body>
+</html>
+
+
+
+
+
+
