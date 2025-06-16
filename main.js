@@ -1,7 +1,4 @@
 // main.js (Non-module version with CDN)
-import SplashScene from './Scenes/SplashScene.js';
-import Level01Scene from './Scenes/Level01Scene.js';
-import Level02Scene from './Scenes/Level02Scene.js';
 
 window.onload = function () {
   const config = {
