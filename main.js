@@ -7,8 +7,8 @@ window.onload = function () {
     scale: {
       mode: Phaser.Scale.FIT, // 🌟 agar responsive
       autoCenter: Phaser.Scale.CENTER_BOTH, // 🌟 agar muncul di tengah
-    width: 1280,
-    height: 720,
+    width: 1536,
+    height:1024,
     },
     pixelArt: true, // 🌟 agar grafik tetap tajam saat diskalakan
     scene: [SplashScene, Level01Scene, Level02Scene],
