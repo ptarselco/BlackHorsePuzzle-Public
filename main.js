@@ -3,18 +3,27 @@
 window.onload = function () {
   const config = {
     type: Phaser.AUTO,
+     width: 1920,
+     height: 1280,
      backgroundColor: "#181c24", // 🌟 warna latar belakang kebiruan
+     parent: 'game-container', // opsional
     scale: {
       mode: Phaser.Scale.FIT, // 🌟 agar responsive
       autoCenter: Phaser.Scale.CENTER_BOTH, // 🌟 agar muncul di tengah
-    width: 1536,
-    height:1024,
+    width: 1920,
+    height:1280,
     },
+
     pixelArt: true, // 🌟 agar grafik tetap tajam saat diskalakan
     scene: [SplashScene, Level01Scene, Level02Scene],
-  };
-
-  const game = new Phaser.Game(config);
+    physics: {
+    default: 'arcade',
+    arcade: {
+      debug: false
+   }
+  }
+};
+const game = new Phaser.Game(config);
 };
 
 
