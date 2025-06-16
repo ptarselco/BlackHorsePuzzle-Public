@@ -3,9 +3,14 @@
 window.onload = function () {
   const config = {
     type: Phaser.AUTO,
-    width: 1920,
-    height: 1280,
-    //backgroundColor: "#000000",
+     backgroundColor: "#181c24", // 🌟 warna latar belakang kebiruan
+    scale: {
+      mode: Phaser.Scale.FIT, // 🌟 agar responsive
+      autoCenter: Phaser.Scale.CENTER_BOTH, // 🌟 agar muncul di tengah
+    width: 1280,
+    height: 720,
+    },
+    pixelArt: true, // 🌟 agar grafik tetap tajam saat diskalakan
     scene: [SplashScene, Level01Scene, Level02Scene],
   };
 
