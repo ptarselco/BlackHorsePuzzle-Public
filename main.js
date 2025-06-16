@@ -3,16 +3,17 @@
 window.onload = function () {
   const config = {
     type: Phaser.AUTO,
-     //width: 1920,
-     //height: 1280,
+     width: 1920,
+     height: 1280,
      backgroundColor: "#181c24", // 🌟 warna latar belakang kebiruan
      parent: 'game-container', // opsional
-     width: 1920,
-     height:1280,
+    
     
      scale: {
       mode: Phaser.Scale.FIT, // 🌟 agar responsive
       autoCenter: Phaser.Scale.CENTER_BOTH, // 🌟 agar muncul di tengah
+      width: 1920,
+      height:1280,
     },
 
     pixelArt: true, // 🌟 agar grafik tetap tajam saat diskalakan
