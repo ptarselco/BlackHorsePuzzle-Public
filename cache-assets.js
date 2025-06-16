@@ -1,19 +1,3 @@
-self.CoreAssets = [
-  'index.html',
-  'main.js',
-  'Scenes/SplashScene.js',
-  'Scenes/Level01Scene.js',
-  'Scenes/Level02Scene.js',
-  'favicon-32x32.png',
-  'favicon-16x16.png',
-  'android-chrome-192x192.png',
-  'android-chrome-512x512.png',
-  'apple-touch-icon.png',
-  'favicon.ico',
-  'site.webmanifest' 
- ];
-
-
 self.SplashAssets = [
   "Puzzle-Assets/Splash/Anggrek.png",
   "Puzzle-Assets/Splash/BlackHorseRun.png",
@@ -63,6 +47,4 @@ self.Level01Assets = [
 self.Level02Assets = [
   "Puzzle-Assets/Level02/Bord Game Puzzle Level-02.png"
 ];
-
-self.assetPaths = [...self.CoreAssets,...self.SplashAssets, ...self.Level01Assets, ...self.Level02Assets];
-
+self.assetPaths = [...self.SplashAssets, ...self.Level01Assets, ...self.Level02Assets];
