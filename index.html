@@ -35,8 +35,7 @@
         font-family: 'Segoe UI', 'Arial', sans-serif;
         overflow: auto;  /* ⬅️ penting untuk scroll/geser */
         height: 100%;
-        touch-action: manipulation; /* ⬅️ agar gesture bisa dipakai */
-        -webkit-overflow-scrolling: touch; /* ⬅️ untuk iOS agar smooth */
+       
       }
      canvas {
         display: block;
@@ -50,37 +49,7 @@
 
   
 
-    /* Loading Screen */
-    #loader {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      background: #181c24;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      font-size: 1.2em;
-      color: #00eaff;
-      font-family: 'Segoe UI', sans-serif;
-    }
-
-    .loader-spinner {
-      border: 4px solid #00eaff40;
-      border-top: 4px solid #00eaff;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin-top: 20px;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
+  
 
      #loginBox {
   position: absolute;
