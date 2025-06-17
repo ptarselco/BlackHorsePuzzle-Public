@@ -2,8 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, user-scalable=yes">
     <title>Black Horse Puzzle</title>
+    <!-- Mobile Viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes">
+    <!-- Icons -->
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
     <link rel="icon" type="image/png" sizes="192x192" href="android-chrome-192x192.png">
@@ -11,7 +13,9 @@
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
     <link rel="manifest" href="site.webmanifest">
     <link rel="shortcut icon" href="favicon.ico">
+     <!-- Phaser -->
     <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
+    <!-- Service Worker -->
     <script>
     if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -21,23 +25,67 @@
       });
     }
    </script>
-  
+
+    <!-- STYLE -->
     <style>
      html,body {
         margin: 0;
         padding: 0;
         background: #181c24;
         font-family: 'Segoe UI', 'Arial', sans-serif;
-        overflow: auto;
+        overflow: auto;  /* ⬅️ penting untuk scroll/geser */
         height: 100%;
+        touch-action: manipulation; /* ⬅️ agar gesture bisa dipakai */
+        -webkit-overflow-scrolling: touch; /* ⬅️ untuk iOS agar smooth */
       }
-      canvas {
+      canvas { /* gaya css untuk canvas Phaser */
         display: block;
-         max-width: 100vw;
-         max-height: 100vh;
+        width: auto !important;
+        height: auto !important;
+        max-width: none !important;
+        max-height: none !important;
         margin: 0 auto;
+        touch-action: auto;
+        transform-origin: top left;
       }
-    
+     
+       #game-container {
+      overflow: auto;
+      touch-action: pinch-zoom;
+    }
+
+    /* Loading Screen */
+    #loader {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: #181c24;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      font-size: 1.2em;
+      color: #00eaff;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .loader-spinner {
+      border: 4px solid #00eaff40;
+      border-top: 4px solid #00eaff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin-top: 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+
      #loginBox {
   position: absolute;
   top: 6%;
@@ -126,6 +174,11 @@
 } 
     </style>
   </head>
+ 
+ <body>
+  <!-- Game Container -->
+  <div id="game-container"></div> 
+
   <body>
     <!-- === Form login === -->
     <div id="loginBox">
@@ -137,13 +190,32 @@
       <button id="logoutBtn" style="display:none; position: absolute; top: 18px; right: 32px; z-index: 1100;">Logout</button>
       </div>
     <!-- === End form login === -->
+   
+    <!-- 🐎 Loading Screen -->
+<div id="loader" style="
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: #181c24;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  font-family: 'Segoe UI', sans-serif;
+  color: #00eaff;
+  font-size: 1.3em;
+">
+  <div class="loader-text">🐎 Please wait... Preparing the wild horse.</div>
+</div>
+  
 
     <!-- Load semua scene dulu -->
     <script src="./Scenes/SplashScene.js"></script>
     <script src="./Scenes/Level01Scene.js"></script>
     <script src="./Scenes/Level02Scene.js"></script>
 
-    <!-- Baru load main.js -->
+    <!-- Game(Baru load main.js) -->
     <script src="./main.js"></script>
     <script>
       // Agar mouse wheel di atas canvas tetap scroll halaman, walau canvas diganti/direfresh Phaser
@@ -156,8 +228,8 @@
           canvas._scrollListenerAdded = true;
         }
       }
-      
-      //window.addEventListener('load', addScrollToCanvas);
+
+ 
     window.addEventListener('DOMContentLoaded', function() {
   let playerEmail = localStorage.getItem("playerEmail");
   if (playerEmail) {
@@ -195,6 +267,8 @@
       window.game.scene.scenes.forEach(scene => scene.scene.restart());
     }
   };
+  // ⬅️ PANGGIL DI SINI
+    addScrollToCanvas();
 });
 </script> 
      
