@@ -25,18 +25,32 @@
       });
     }
    </script>
+   
 
     <!-- STYLE -->
     <style>
+      .hide-on-loading {
+       display: none!important;
+  }
      html,body {
+  
         margin: 0;
         padding: 0;
         background: #181c24;
         font-family: 'Segoe UI', 'Arial', sans-serif;
         overflow: auto;  /* ⬅️ penting untuk scroll/geser */
-        height: 100%;
-       
-      }
+        height: 100%; 
+        }
+
+       .help-image {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 16px auto;
+        border-radius: 8px;
+        box-shadow: 0 2px 16px #0002;
+      } 
+    
      canvas {
         display: block;
          max-width: 100vw;
@@ -141,6 +155,37 @@
  <body>
   <!-- Game Container -->
   <div id="game-container"></div> 
+
+   <!-- 🐎 Loading Screen -->
+<div id="loader" style="
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: #181c24;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  font-family: 'Segoe UI', sans-serif;
+  color: #00eaff;
+  font-size: 1.3em;
+">
+  <div class="loader-text" style="line-height:1.6;">
+    <img src="Black Horse-Please Wait.png" alt="Black Horse" style="height: 120px; vertical-align: middle; margin-right: 8px;">
+    Please wait... Preparing the GAME PUZZLE FUTURISTIC.<br>
+     <span style="font-size:0.95em; color:#fff; margin-top:8px; display:block;">
+    For best experience on mobile, use the <b>Google</b> browser or "Add to Home Screen" for fullscreen.
+  </span>
+  </div>
+
+  <!-- Help Images -->
+  <a href="help-en.png" target="_blank">
+    <img src="help-en.png" alt="Help English" class="help-image hide-on-loading">
+  </a>
+  <a href="help-id.png" target="_blank">
+    <img src="help-id.png" alt="Help Indonesia" class="help-image hide-on-loading">
+  </a>
 
   <body>
     <!-- === Form login === -->
