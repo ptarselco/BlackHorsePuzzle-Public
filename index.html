@@ -30,7 +30,7 @@
     <!-- STYLE -->
     <style>
       .hide-on-loading {
-       display: none!important;
+      display: none!important; 
   }
      html,body {
   
@@ -39,7 +39,6 @@
         background: #181c24;
         font-family: 'Segoe UI', 'Arial', sans-serif;
         overflow: auto;  /* ⬅️ penting untuk scroll/geser */
-        height: 100%; 
         }
 
        .help-image {
@@ -49,6 +48,8 @@
         margin: 16px auto;
         border-radius: 8px;
         box-shadow: 0 2px 16px #0002;
+        position: relative;
+        z-index: 9999;
       } 
     
      canvas {
@@ -61,9 +62,11 @@
         -webkit-user-drag: none;
       }
 
+     
   
 
      #loginBox {
+  z-index: 12000;      
   position: absolute;
   top: 6%;
   left: 88%;
@@ -73,7 +76,6 @@
   box-shadow: 0 4px 24px #00eaff40;
   padding: 18px 24px 14px 24px;
   min-width: 340px;
-  z-index: 1000;
   display: none;
   text-align: center;
   border: 1.5px solid #00eaff;
@@ -130,9 +132,8 @@
   color: #181c24;
 }
 #logoutBtn {
-  background: #222;
-  color: #fff;
-  border: 1px solid #00eaff;
+  z-index: 12000;
+  position: absolute;
   border-radius: 7px;
   padding: 7px 16px;
   font-size: 0.95em;
@@ -173,21 +174,21 @@
 ">
   <div class="loader-text" style="line-height:1.6;">
     <img src="Black Horse-Please Wait.png" alt="Black Horse" style="height: 120px; vertical-align: middle; margin-right: 8px;">
-    Please wait... Preparing the GAME PUZZLE FUTURISTIC.<br>
+    Please wait... Preparing the BLACK HORSE GAME PUZZLE FUTURISTIC.<br>
      <span style="font-size:0.95em; color:#fff; margin-top:8px; display:block;">
     For best experience on mobile, use the <b>Google</b> browser or "Add to Home Screen" for fullscreen.
   </span>
   </div>
 
-  <!-- Help Images -->
+  <!-- Help Images (tampilkan setelah loading, bisa di-hide saat login) -->
   <a href="help-en.png" target="_blank">
     <img src="help-en.png" alt="Help English" class="help-image hide-on-loading">
   </a>
   <a href="help-id.png" target="_blank">
     <img src="help-id.png" alt="Help Indonesia" class="help-image hide-on-loading">
   </a>
-
-  <body>
+</div>
+  
     <!-- === Form login === -->
     <div id="loginBox">
       <div class="login-row">
@@ -196,10 +197,9 @@
       </div>
       </div>
       <button id="logoutBtn" style="display:none; position: absolute; top: 18px; right: 32px; z-index: 1100;">Logout</button>
-      </div>
+      
     <!-- === End form login === -->
    
-      // hapus loading screen please wait
   
 
     <!-- Load semua scene dulu -->
