@@ -2,10 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Black Horse Puzzle</title>
-    <!-- Mobile Viewport -->
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes">
-    <!-- Icons -->
+    <title>Black Horse Puzzle</title>
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
     <link rel="icon" type="image/png" sizes="192x192" href="android-chrome-192x192.png">
@@ -13,9 +11,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
     <link rel="manifest" href="site.webmanifest">
     <link rel="shortcut icon" href="favicon.ico">
-     <!-- Phaser -->
     <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
-    <!-- Service Worker -->
     <script>
     if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -25,48 +21,24 @@
       });
     }
    </script>
-   
-
-    <!-- STYLE -->
-    <style>
-      .hide-on-loading {
-      display: none!important; 
-  }
-     html,body {
   
+    <style>
+     html,body {
         margin: 0;
         padding: 0;
         background: #181c24;
         font-family: 'Segoe UI', 'Arial', sans-serif;
-        overflow: auto;  /* ⬅️ penting untuk scroll/geser */
-        }
-
-       .help-image {
-        max-width: 100%;
-        height: auto;
-        display: block;
-        margin: 16px auto;
-        border-radius: 8px;
-        box-shadow: 0 2px 16px #0002;
-        position: relative;
-        z-index: 9999;
-      } 
-    
-     canvas {
+        overflow: auto;
+        height: 100%;
+      }
+      canvas {
         display: block;
          max-width: 100vw;
          max-height: 100vh;
-         margin: 0 auto;
-        touch-action: pan-x pan-y;
-        user-select: none;
-        -webkit-user-drag: none;
+        margin: 0 auto;
       }
-
-     
-  
-
+    
      #loginBox {
-  z-index: 12000;      
   position: absolute;
   top: 6%;
   left: 88%;
@@ -76,6 +48,7 @@
   box-shadow: 0 4px 24px #00eaff40;
   padding: 18px 24px 14px 24px;
   min-width: 340px;
+  z-index: 1000;
   display: none;
   text-align: center;
   border: 1.5px solid #00eaff;
@@ -132,8 +105,9 @@
   color: #181c24;
 }
 #logoutBtn {
-  z-index: 12000;
-  position: absolute;
+  background: #222;
+  color: #fff;
+  border: 1px solid #00eaff;
   border-radius: 7px;
   padding: 7px 16px;
   font-size: 0.95em;
@@ -152,10 +126,10 @@
 } 
     </style>
   </head>
- 
- <body>
-  <!-- Game Container -->
-  <div id="game-container"></div> 
+
+  <body>
+    <!-- Game Container -->
+  <div id="game-container"></div>
 
    <!-- 🐎 Loading Screen -->
 <div id="loader" style="
@@ -172,23 +146,14 @@
   color: #00eaff;
   font-size: 1.3em;
 ">
-  <div class="loader-text" style="line-height:1.6;">
+  <div class="loader-text" >
     <img src="Black Horse-Please Wait.png" alt="Black Horse" style="height: 120px; vertical-align: middle; margin-right: 8px;">
     Please wait... Preparing the BLACK HORSE GAME PUZZLE FUTURISTIC.<br>
      <span style="font-size:0.95em; color:#fff; margin-top:8px; display:block;">
-    For best experience on mobile, use the <b>Google</b> browser or "Add to Home Screen" for fullscreen.
+    Best on desktop or laptop for full experience. On Mobile, use the <b>Google</b> browser or "Add to Home Screen" for fullscreen<br>
   </span>
   </div>
-
-  <!-- Help Images (tampilkan setelah loading, bisa di-hide saat login) -->
-  <a href="help-en.png" target="_blank">
-    <img src="help-en.png" alt="Help English" class="help-image hide-on-loading">
-  </a>
-  <a href="help-id.png" target="_blank">
-    <img src="help-id.png" alt="Help Indonesia" class="help-image hide-on-loading">
-  </a>
-</div>
-  
+  </div>
     <!-- === Form login === -->
     <div id="loginBox">
       <div class="login-row">
@@ -197,17 +162,16 @@
       </div>
       </div>
       <button id="logoutBtn" style="display:none; position: absolute; top: 18px; right: 32px; z-index: 1100;">Logout</button>
-      
+      </div>
+
     <!-- === End form login === -->
-   
-  
 
     <!-- Load semua scene dulu -->
     <script src="./Scenes/SplashScene.js"></script>
     <script src="./Scenes/Level01Scene.js"></script>
     <script src="./Scenes/Level02Scene.js"></script>
 
-    <!-- Game(Baru load main.js) -->
+    <!-- Baru load main.js -->
     <script src="./main.js"></script>
     <script>
       // Agar mouse wheel di atas canvas tetap scroll halaman, walau canvas diganti/direfresh Phaser
@@ -220,8 +184,8 @@
           canvas._scrollListenerAdded = true;
         }
       }
-
- 
+      
+      //window.addEventListener('load', addScrollToCanvas);
     window.addEventListener('DOMContentLoaded', function() {
   let playerEmail = localStorage.getItem("playerEmail");
   if (playerEmail) {
@@ -241,8 +205,9 @@
       document.getElementById("loginBox").style.display = "none";
       document.getElementById("logoutBtn").style.display = "inline-block";
       if (window.Phaser && window.game && window.game.scene) {
-        window.game.scene.scenes.forEach(scene => scene.scene.restart());
-      }
+      //  window.game.scene.scenes.forEach(scene => scene.scene.restart());
+      window.game.scene.start('Level01Scene'); // <-- Ganti dengan nama scene Level01 Anda
+    }
     } else {
       alert("Input Email!");
     }
@@ -256,11 +221,10 @@
     document.getElementById("loginBtn").style.display = "inline-block";
     document.getElementById("logoutBtn").style.display = "none";
     if (window.Phaser && window.game && window.game.scene) {
-      window.game.scene.scenes.forEach(scene => scene.scene.restart());
+     // window.game.scene.scenes.forEach(scene => scene.scene.restart());
+     window.game.scene.start('SplashScene'); // <-- arahkan ke SplashScene setelah logout
     }
   };
-  // ⬅️ PANGGIL DI SINI
-    addScrollToCanvas();
 });
 </script> 
      
