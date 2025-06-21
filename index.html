@@ -136,7 +136,7 @@
   position: fixed;
   top: 0; left: 0;
   width: 100vw; height: 100vh;
-  background: #181c24;
+  background: #034054;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -144,17 +144,20 @@
   z-index: 9999;
   font-family: 'Segoe UI', sans-serif;
   color: #00eaff;
-  font-size: 1.3em;
+  font-size: 1.2em;
 ">
-  <div class="loader-text" >
-    <img src="Black Horse-Please Wait.png" alt="Black Horse" style="height: 120px; vertical-align: middle; margin-right: 8px;">
+  
+ <div class="loader-text" >
+    <img src="Black Horse-Please Wait.png" alt="Black Horse" style="height: 400px; vertical-align: middle; margin-right: 8px;">
     Please wait... Preparing the BLACK HORSE GAME PUZZLE FUTURISTIC.<br>
-     <span style="font-size:0.95em; color:#fff; margin-top:8px; display:block;">
+     <span style="font-size:1.2em; color:#fff; margin-top:8px; display:block;">
     Best on desktop or laptop for full experience. On Mobile, use the <b>Google</b> browser or "Add to Home Screen" for fullscreen<br>
   </span>
   </div>
   </div>
-    <!-- === Form login === -->
+ 
+  
+  <!-- === Form login === -->
     <div id="loginBox">
       <div class="login-row">
     <input type="text" id="emailInput" placeholder="Email" autocomplete="off" />
@@ -173,7 +176,8 @@
 
     <!-- Baru load main.js -->
     <script src="./main.js"></script>
-    <script>
+   
+   <script>
       // Agar mouse wheel di atas canvas tetap scroll halaman, walau canvas diganti/direfresh Phaser
       function addScrollToCanvas() {
         const canvas = document.querySelector('canvas');
@@ -184,9 +188,9 @@
           canvas._scrollListenerAdded = true;
         }
       }
-      
-      //window.addEventListener('load', addScrollToCanvas);
-    window.addEventListener('DOMContentLoaded', function() {
+  
+  //window.addEventListener('load', addScrollToCanvas);    
+  window.addEventListener('DOMContentLoaded', function() {
   let playerEmail = localStorage.getItem("playerEmail");
   if (playerEmail) {
       document.getElementById("loginBox").style.display = "none";
@@ -200,16 +204,43 @@
 
   document.getElementById("loginBtn").onclick = function() {
     const inputEmail = document.getElementById('emailInput').value.trim();
-    if (inputEmail) {
-      localStorage.setItem("playerEmail", inputEmail);
+   
+   // Check if input is empty 
+    if (!inputEmail) {
+    alert("Please enter your email address!");
+    return;
+  }
+
+    /* Simple email format validation */ 
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailPattern.test(inputEmail)) {
+    alert("Please enter a valid email address!");
+    return;
+  }
+      // ✅ Simpan email ke localStorage (sudah ada sebelumnya)
+     localStorage.setItem("playerEmail", inputEmail);
+      // Ambil score sesuai email, jika belum ada set ke 0
+     let userScore = parseInt(localStorage.getItem(`score_${inputEmail}`) || 0);
+
+     // Kirim score ke scene Phaser (misal Level01Scene)
+  if (window.Phaser && window.game && window.game.scene) {
+    const level01 = window.game.scene.getScene('Level01Scene');
+    if (level01 && typeof level01.score !== 'undefined') {
+      level01.score = userScore;
+      if (level01.scoreText) {
+        level01.scoreText.setText('Score: ' + userScore);
+      }
+    }
+  }
+  
+      // ✅ Lanjut tampilkan UI dan masuk scene (sudah ada sebelumnya)
       document.getElementById("loginBox").style.display = "none";
       document.getElementById("logoutBtn").style.display = "inline-block";
-      if (window.Phaser && window.game && window.game.scene) {
+
+     
       //  window.game.scene.scenes.forEach(scene => scene.scene.restart());
-      window.game.scene.start('Level01Scene'); // <-- Ganti dengan nama scene Level01 Anda
-    }
-    } else {
-      alert("Input Email!");
+     if (window.Phaser && window.game && window.game.scene) {
+     window.game.scene.start('Level01Scene'); // <-- Ganti dengan nama scene Level01 Anda, pakai splashscene aja 
     }
   };
 
@@ -220,15 +251,30 @@
     document.getElementById("emailInput").style.display = "inline-block";
     document.getElementById("loginBtn").style.display = "inline-block";
     document.getElementById("logoutBtn").style.display = "none";
+
+    // Reset skor di game (jika ada variabel global score)
+    if (window.score !== undefined) window.score = 0;
+    window.playerScore = 0; // Atau set ke variabel score di scene
+
     if (window.Phaser && window.game && window.game.scene) {
-     // window.game.scene.scenes.forEach(scene => scene.scene.restart());
-     window.game.scene.start('SplashScene'); // <-- arahkan ke SplashScene setelah logout
+    window.game.scene.scenes.forEach(scene => scene.scene.restart());
+    const level01 = window.game.scene.getScene('Level01Scene');
+    if (level01 && level01.playBtn) {
+     level01.playBtn.disableInteractive();
+      level01.playBtn.setAlpha(0.5);
     }
+    
+    // window.game.scene.scenes.forEach(scene => scene.scene.restart());
+      setTimeout(() => {
+     window.game.scene.start('SplashScene'); // <-- arahkan ke SplashScene setelah logout
+      }, 1500);
+    }
+  
   };
-});
+
+});   
 </script> 
-     
-  </body>
+</body>
 </html>
 
 

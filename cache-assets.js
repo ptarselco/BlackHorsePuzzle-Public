@@ -1,6 +1,7 @@
 self.SplashAssets = [
   "Puzzle-Assets/Splash/Anggrek.png",
   "Puzzle-Assets/Splash/BlackHorseRun.png",
+  "Puzzle-Assets/Splash/BlackHorseRun.psd",
   "Puzzle-Assets/Splash/BrownHorseRun01.png",
   "Puzzle-Assets/Splash/BrownHorseRun02.png",
   "Puzzle-Assets/Splash/BrownHorseRun03.png",
@@ -19,20 +20,13 @@ self.SplashAssets = [
   "Puzzle-Assets/Splash/WATER.png"
 ];
 self.Level01Assets = [
-  "Puzzle-Assets/Level01/Black Horse Run on Grid1.png",
-  "Puzzle-Assets/Level01/Black Horse Run on Grid2-1-1.png",
-  "Puzzle-Assets/Level01/Black Horse Run on Grid2-1.png",
-  "Puzzle-Assets/Level01/Black Horse Run on Grid2-2-1.png",
-  "Puzzle-Assets/Level01/Black Horse Run on Grid2-2.png",
-  "Puzzle-Assets/Level01/Black Horse Run on Grid2-3 -1.png",
-  "Puzzle-Assets/Level01/Black Horse Run on Grid2-3.png",
-  "Puzzle-Assets/Level01/Black Horse Run on Grid2.png",
-  "Puzzle-Assets/Level01/Black Horse Run on Grid3.png",
   "Puzzle-Assets/Level01/Board Game Puzzle Level-01.png",
   "Puzzle-Assets/Level01/Display Black Horse 20 Puzzle.png",
   "Puzzle-Assets/Level01/GM. Cowboy-brown-hat-win.png",
-  "Puzzle-Assets/Level01/Lv.01 Help - English.png",
-  "Puzzle-Assets/Level01/Lv.01 Help - Indonesia.png",
+  "Puzzle-Assets/Level01/Lv.01 Help - English (Page1).png",
+  "Puzzle-Assets/Level01/Lv.01 Help - English (Page2).png",
+  "Puzzle-Assets/Level01/Lv.01 Help - Indonesia (Page1).png",
+  "Puzzle-Assets/Level01/Lv.01 Help - Indonesia (Page2).png",
   "Puzzle-Assets/Level01/Lv.01 Hex-01.png",
   "Puzzle-Assets/Level01/Lv.01 Hex-02.png",
   "Puzzle-Assets/Level01/Lv.01 Hex-03.png",
