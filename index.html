@@ -244,7 +244,7 @@
       //  window.game.scene.scenes.forEach(scene => scene.scene.restart());
      if (window.Phaser && window.game && window.game.scene) {
      window.game.scene.start('Level01Scene'); // <--  scene Level01 jadi klik 2x, pakai splashscene aja 
-    };
+    }
   };
 
   document.getElementById("logoutBtn").onclick = function() {
@@ -266,15 +266,13 @@
      level01.playBtn.disableInteractive();
       level01.playBtn.setAlpha(0.5);
     }
-    
+  
     // window.game.scene.scenes.forEach(scene => scene.scene.restart());
       setTimeout(() => {
      window.game.scene.start('SplashScene'); // <-- arahkan ke SplashScene setelah logout
       }, 1500);
     }
-  
   };
-
 });   
 </script> 
 </body>
