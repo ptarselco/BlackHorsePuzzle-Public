@@ -27,6 +27,8 @@ self.Level01Assets = [
   "Puzzle-Assets/Level01/Lv.01 Help - English (Page2).png",
   "Puzzle-Assets/Level01/Lv.01 Help - Indonesia (Page1).png",
   "Puzzle-Assets/Level01/Lv.01 Help - Indonesia (Page2).png",
+  "Puzzle-Assets/Level01/Lv.01 Help - Other (Page1).png",
+  "Puzzle-Assets/Level01/Lv.01 Help - Other (Page2).png",
   "Puzzle-Assets/Level01/Lv.01 Hex-01.png",
   "Puzzle-Assets/Level01/Lv.01 Hex-02.png",
   "Puzzle-Assets/Level01/Lv.01 Hex-03.png",
