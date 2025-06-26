@@ -1,0 +1,4 @@
+this.load.audio('musicfav01', `./Puzzle-Assets/Sfx/music favorites/music-favorite-beautiful-sunset.mp3`);
+this.load.audio('musicfav02', './Puzzle-Assets/Sfx/music favorites/music-favorite-drippy-cowboy-country-rnbsuno.mp3');
+//  this.load.audio('musicfav08', './Puzzle-Assets/Sfx/music favorites/music-favorite-Relaxing_Green_Nature.mp3');
+    //  this.load.audio('musicfav09', './Puzzle-Assets/Sfx/music favorites/music-favorite-starlit-serenade.mp3');
