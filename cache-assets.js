@@ -18,7 +18,6 @@ self.SplashAssets = [
 ];
 self.Level01Assets = [
   "Puzzle-Assets/Level01/Board Game Puzzle Level-01.png",
-  "Puzzle-Assets/Level01/Display Black Horse 20 Puzzle.png",
   "Puzzle-Assets/Level01/Lv.01 Help - English (Page1).png",
   "Puzzle-Assets/Level01/Lv.01 Help - English (Page2).png",
   "Puzzle-Assets/Level01/Lv.01 Help - Indonesia (Page1).png",
