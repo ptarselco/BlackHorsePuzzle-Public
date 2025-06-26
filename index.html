@@ -148,10 +148,19 @@
 ">
   
  <div class="loader-text" >
-    <img src="Black Horse-Please Wait.png" alt="Black Horse" style="height: 300px; vertical-align: middle; margin-right: 8px;">
+    <img src="Black Horse-Please Wait.png" alt="Black Horse" style="height: 300px; margin: 0 auto 16px auto; display: block;">
+    <div class="loader-wait"></div>
     Please wait... Preparing the BLACK HORSE GAME PUZZLE FUTURISTIC.<br>
-     <span style="font-size:1.2em; color:#fff; margin-top:8px; display:block;">
-    Best on desktop or laptop for full experience. On Mobile, use the <b>Google</b> browser or "Add to Home Screen" for fullscreen<br>
+    Silahkan tunggu...mempersiapkan Puzzle Game Black Horse Futuristik.<br><br>
+   </div>
+    <div class="loader-gap"></div>
+    <div class="loader-message">
+    <span style="color:#fff;">
+    Best on desktop or laptop for full experience.<br>
+    On Mobile, use the <b>Google</b> browser or "Add to Home Screen" for fullscreen.<br>
+    <br>
+    Pengalaman terbaik memainkan Game ini di desktop atau laptop.<br> 
+    Di ponsel, gunakan browser <b>Google</b> atau "Tambahkan ke Layar Utama" untuk layar penuh.</b>
   </span>
   </div>
   </div>
@@ -276,7 +285,35 @@
      document.getElementById("loginBtn").disabled = false; //atasi klik 2x login setelah logout
     }, 1500);
     }
-  };
+
+    // Tambahkan kode cek parameter URL dari Xsolla
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('paid') === '1') {
+    // Aktifkan tombol Play, atau langsung masuk Level01Scene
+    // window.game.scene.start('Level01Scene');
+  }
+
+  // Tambahkan kode cek status pembayaran ke backend Render
+  const email = localStorage.getItem('playerEmail');
+  if (email) {
+    fetch(`https://namaproject.onrender.com/api/check-payment?userId=${email}`) // diganti sesuai endpoint backend Anda dari Render
+      .then(res => res.json())
+      .then(data => {
+        if (window.Phaser && window.game && window.game.scene) {
+          const level01 = window.game.scene.getScene('Level01Scene');
+          if (level01 && level01.playBtn) {
+            if (data.paid) {
+              level01.playBtn.setInteractive();
+              level01.playBtn.setAlpha(1);
+            } else {
+              level01.playBtn.disableInteractive();
+              level01.playBtn.setAlpha(0.5);
+            }
+          }
+       }
+      }); 
+  }
+}
 });   
 </script> 
 </body>
