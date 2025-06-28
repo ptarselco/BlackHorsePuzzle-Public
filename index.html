@@ -12,6 +12,10 @@
     <link rel="manifest" href="site.webmanifest">
     <link rel="shortcut icon" href="favicon.ico">
     <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
+    
+    <!-- 🚀 Black Horse Puzzle - Smart Loading System -->
+    <script src="puzzle-loader.js"></script>
+    
     <script>
     if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -31,11 +35,28 @@
         overflow: auto;
         height: 100%;
       }
+      
+      /* 🚀 Loading Optimization Styles */
+      .webp-support img {
+        /* Browser supports WebP - optimized loading */
+        image-rendering: -webkit-optimize-contrast;
+      }
+      
+      .webp-fallback img {
+        /* Browser doesn't support WebP - fallback optimization */
+        image-rendering: optimizeQuality;
+      }
+      
+      /* Optimize canvas for better performance */
       canvas {
         display: block;
-         max-width: 100vw;
-         max-height: 100vh;
+        max-width: 100vw;
+        max-height: 100vh;
         margin: 0 auto;
+        /* Hardware acceleration for smoother gameplay */
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
+        will-change: transform;
       }
     
      #loginBox {
@@ -180,6 +201,96 @@
 
      <!-- Load main.js -->
     <script src="./main.js"></script>
+    
+    <!-- 🧩 Puzzle Loading Optimization -->
+    <script>
+      // Initialize Smart Loading when DOM is ready
+      document.addEventListener('DOMContentLoaded', function() {
+        // Preload critical assets untuk mempercepat startup
+        if (typeof PuzzleLoadManager !== 'undefined') {
+          console.log('🚀 Black Horse Puzzle - Smart Loading initialized!');
+          
+          // Setup preload untuk assets essential
+          window.puzzleOptimization = {
+            preloadComplete: false,
+            
+            // Function untuk preload assets kritis
+            preloadCriticalAssets: function() {
+              console.log('⚡ Preloading critical assets...');
+              
+              // Preload images yang paling sering digunakan
+              const criticalAssets = [
+                'assets/ui/grid-left.webp',
+                'assets/ui/grid-right.webp', 
+                'assets/animations/shake.webp',
+                'Black Horse-Please Wait.png'
+              ];
+              
+              let loadedCount = 0;
+              const totalAssets = criticalAssets.length;
+              
+              criticalAssets.forEach(assetPath => {
+                const img = new Image();
+                img.onload = () => {
+                  loadedCount++;
+                  const progress = Math.round((loadedCount / totalAssets) * 100);
+                  console.log(`📈 Preload progress: ${progress}%`);
+                  
+                  if (loadedCount === totalAssets) {
+                    this.preloadComplete = true;
+                    console.log('✅ Critical assets preloaded!');
+                    this.optimizeLoading();
+                  }
+                };
+                img.onerror = () => {
+                  console.warn(`⚠️ Failed to preload: ${assetPath}`);
+                  loadedCount++;
+                };
+                img.src = assetPath;
+              });
+            },
+            
+            // Function untuk optimize loading experience
+            optimizeLoading: function() {
+              // Hide loader lebih cepat jika assets sudah ready
+              const loader = document.getElementById('loader');
+              if (loader && this.preloadComplete) {
+                setTimeout(() => {
+                  loader.style.transition = 'opacity 0.5s ease-out';
+                  loader.style.opacity = '0';
+                  setTimeout(() => {
+                    loader.style.display = 'none';
+                  }, 500);
+                }, 800); // Reduced from longer wait
+              }
+              
+              // Setup WebP detection
+              this.setupWebPDetection();
+            },
+            
+            // Setup WebP detection untuk browser compatibility
+            setupWebPDetection: function() {
+              const canvas = document.createElement('canvas');
+              canvas.width = 1;
+              canvas.height = 1;
+              const supportsWebP = canvas.toDataURL('image/webp').indexOf('webp') > -1;
+              
+              if (supportsWebP) {
+                console.log('✅ WebP supported - Using optimized assets');
+                document.body.classList.add('webp-support');
+              } else {
+                console.log('⚠️ WebP not supported - Using fallback assets');
+                document.body.classList.add('webp-fallback');
+              }
+            }
+          };
+          
+          // Start preloading
+          window.puzzleOptimization.preloadCriticalAssets();
+        }
+      });
+    </script>
+    
     <script src="./Scenes/SplashScene.js"></script>
     <script src="./Scenes/Level01Scene.js"></script>
     <script src="./Scenes/Level02Scene.js"></script>
