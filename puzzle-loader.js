@@ -117,7 +117,7 @@ class PuzzleLoadManager {
         if (this.supportsWebP()) {
             return `${basePath}.webp`;
         }
-        return `${basePath}.png`;
+        return `${basePath}.webp`;
     }
 
     /**

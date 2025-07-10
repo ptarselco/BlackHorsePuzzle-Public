@@ -123,7 +123,7 @@ window.helpText2 = Object.assign(window.helpText2 || {}, {
 
 
 window.onload = function () {
-  const config = {
+ const config = {
     type: Phaser.AUTO,
      width: 1920,
      height: 1280,
@@ -139,7 +139,11 @@ window.onload = function () {
     },
 
     pixelArt: true, // 🌟 agar grafik tetap tajam saat diskalakan
+
+    // ✅ TAMBAH LoginScene DAN PaymentScene DI SINI:
+    //scene: [SplashScene, LoginScene, PaymentScene, Level01Scene, Level02Scene],
     scene: [SplashScene, Level01Scene, Level02Scene],
+
     physics: {
     default: 'arcade',
     arcade: {

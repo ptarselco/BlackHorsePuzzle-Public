@@ -5,6 +5,7 @@ self.SplashAssets = [
   "Puzzle-Assets/Splash/BrownHorseRun02.webp",
   "Puzzle-Assets/Splash/BrownHorseRun03.webp",
   "Puzzle-Assets/Splash/Cover Black Horse and His Herd R300.webp",
+  "Puzzle-Assets/Splash/Cover Blank.webp",
   "Puzzle-Assets/Splash/Cover Level 01 BH.webp",
   "Puzzle-Assets/Splash/Cutting Grass.webp",
   "Puzzle-Assets/Splash/Flower orange red.webp",
