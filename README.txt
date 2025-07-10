@@ -11,7 +11,7 @@ This game is designed to train **concentration**, **memory**, and **balance of h
 - No installation required.
 - Recommended screen resolution: **1920 × 1280 pixels** (Desktop/Laptop).
 - Works best on desktop or laptop devices with a mouse/touchpad.
-- Mobile version is not optimized yet.
+- Mobile version use Google browsers or Add to Home Screen for fullscreen. 
 
 ---
 
