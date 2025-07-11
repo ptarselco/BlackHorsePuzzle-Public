@@ -182,6 +182,18 @@ if ('serviceWorker' in navigator) {
 } else {
   console.log('⚠️ Service Worker not supported in this browser');
 }
+
+window.checkPaymentStatusFromBackend = async function(email) {
+  try {
+    const res = await fetch(`https://backend-blackhorsepuzzle.onrender.com/api/payment-status/${email}`);
+    const data = await res.json();
+    return data && data.paid === true;
+  } catch (err) {
+    console.error('Failed to check payment status:', err);
+    return false;
+  }
+};
+
 </script>
 
 
@@ -240,7 +252,6 @@ if ('serviceWorker' in navigator) {
     <!-- === End form login === -->
 
      <!-- Load main.js -->
-
     <script src="./main.js"></script>
     <script src="./Scenes/SplashScene.js"></script>
     <script src="./Scenes/Level01Scene.js"></script>
@@ -808,7 +819,7 @@ console.log('📊 Score updated:', email, newScore);
 <!-- FIND function checkPaymentStatus around line 350 dan REPLACE dengan: -->
 window.checkPaymentStatus = async function(email) {
   let result = { paid: false, method: null };
-  
+
   try {
     console.log('💳 Checking payment status for:', email);
     
@@ -816,7 +827,7 @@ window.checkPaymentStatus = async function(email) {
 
     //const paymentResult = await checkPaymentStatus(email); // (inputEmail) ganti ke Email
       //  startPaymentMonitoring(email); // (inputEmail) ganti ke Email
-
+      
     // Check Xsolla payment
     if (urlParams.get('paid') === '1') {
       console.log('✅ Payment detected from Xsolla URL parameter');
@@ -1251,8 +1262,21 @@ function updateGamePaymentStatus(isPaid, method = null) {
           
           if (isPaid) {
             level01.playBtn.setInteractive();
-            level01.playBtn.setAlpha(0.5);
+            level01.playBtn.setAlpha(1); //ganti sebelumnya 0.5
             console.log(`✅ Game unlocked in Level01Scene - Payment method: ${method}`);
+
+             // ✅ UNLOCK FAVORITE MENU BUTTONS
+          if (level01.airBtn) level01.airBtn.setInteractive();
+          // Menggunakan grassImg:
+          if (level01.grassContainer && level01.grassContainer.list[0]) {
+              level01.grassContainer.list[0].setInteractive({ useHandCursor: true });
+              level01.grassContainer.list[0].setAlpha(1);
+          }
+          if (level01.carrotBtn) level01.carrotBtn.setInteractive();
+          if (level01.appleBtn) level01.appleBtn.setInteractive();
+          if (level01.musicNotes && Array.isArray(level01.musicNotes)) {
+             level01.musicNotes.forEach(note => note.setInteractive({ useHandCursor: true }));
+       }
 
             // ✅ SHOW SUCCESS NOTIFICATION WITH PAYMENT METHOD:
             if (window.showSuccessNotification) {
@@ -1267,6 +1291,18 @@ function updateGamePaymentStatus(isPaid, method = null) {
             level01.playBtn.setAlpha(0.5);
             console.log('🔒 Game locked in Level01Scene - No payment detected');
 
+            // ✅ LOCK FAVORITE MENU BUTTONS
+          if (level01.airBtn) level01.airBtn.disableInteractive();
+          // Menggunakan grassImg:
+          if (level01.grassContainer && level01.grassContainer.list[0]) {
+              level01.grassContainer.list[0].disableInteractive();
+              level01.grassContainer.list[0].setAlpha(0.5);
+          }
+          if (level01.carrotBtn) level01.carrotBtn.disableInteractive();
+          if (level01.appleBtn) level01.appleBtn.disableInteractive();
+          if (level01.musicNotes && Array.isArray(level01.musicNotes)) {
+             level01.musicNotes.forEach(note => note.disableInteractive());
+          }
             // ✅ SHOW LOCK NOTIFICATION:
             if (window.showErrorNotification) {
              // showErrorNotification('🔒 Game Locked - Payment Required');
