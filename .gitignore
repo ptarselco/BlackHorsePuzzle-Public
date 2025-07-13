@@ -7,6 +7,9 @@ node_modules/
 # Generated files
 generateCacheAssets.js
 
+# server files
+server.js
+
 # Logs
 logs
 *.log
