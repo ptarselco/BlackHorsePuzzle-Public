@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Payment Verification</title>
+  <style>
+    body {
+      background-color: #1b1b1b;
+      color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+    }
+
+    .loader {
+      border: 8px solid #333;
+      border-top: 8px solid #00cc99;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    h2 {
+      font-weight: normal;
+      max-width: 400px;
+    }
+  </style>
+</head>
+<body>
+  <div class="loader"></div>
+  <h2>Verifying your payment...<br>Please wait a moment</h2>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const txnId = params.get('txnId');
+    const email = params.get('email');
+
+    if (!txnId || !email) {
+      alert("❌ Missing payment information.");
+      window.location.href = "/index.html";
+    }
+
+    fetch(`/api/verify-payment?txnId=${txnId}&email=${encodeURIComponent(email)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.paid) {
+          // ✅ Mark user as verified and unlock access
+          localStorage.setItem(`paymentVerified_${email}`, 'true');
+          localStorage.removeItem(`gameOver_${email}`);
+          localStorage.setItem(`score_${email}`, "0"); // or adjust to actual reward
+          
+          // ✅ Panggil unlock langsung jika scene aktif
+          if (window.Level01Scene && typeof window.Level01Scene.prototype.unlockGameAfterPurchase === 'function') {
+          // Coba panggil unlock jika scene sudah aktif
+          const scene = window.game && window.game.scene && window.game.scene.getScene('Level01Scene');
+          if (scene && typeof scene.unlockGameAfterPurchase === 'function') {
+          scene.unlockGameAfterPurchase();
+          }
+        }
+          
+          // Redirect back to game
+          window.location.href = "/index.html";
+        } else {
+          alert("❌ Payment not verified yet.");
+          window.location.href = "/payment-error.html";
+        }
+      })
+      .catch(err => {
+        console.error("Verification error:", err);
+        alert("❌ Failed to verify payment.");
+        window.location.href = "/payment-error.html";
+      });
+  </script>
+</body>
+</html>

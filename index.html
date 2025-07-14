@@ -193,6 +193,30 @@ window.checkPaymentStatusFromBackend = async function(email) {
     return false;
   }
 };
+const params = new URLSearchParams(window.location.search);
+const payment = params.get("payment");
+const txnId = params.get("txnId");
+const email = params.get("email");
+
+if (payment === "success" && txnId && email) {
+  fetch(`/api/verify-payment?txnId=${txnId}&email=${encodeURIComponent(email)}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.paid) {
+        localStorage.setItem(`paymentVerified_${email}`, "true");
+        localStorage.removeItem(`gameOver_${email}`);
+        localStorage.setItem(`score_${email}`, "0");
+        console.log("✅ Payment verified.");
+      }
+    });
+}
+ // Client-side handling of payment status
+if (payment === "cancelled") {
+  console.warn("❌ Payment cancelled by user.");
+  // (optional) localStorage.setItem('paymentCancelled', 'true');
+}
+
+
 
 </script>
 
