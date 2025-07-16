@@ -44,30 +44,7 @@ class SplashScene extends Phaser.Scene {
     let playerScore = 0;
     localStorage.setItem("gameOverLock", "true");
 
-    if (email) {
-   setTimeout(() => {
-  // Cek status gameOver dari backend di tambahakan 16/07/25
-  fetch(`https://backend-paypalblackhorsepuzzle.onrender.com/api/users/status?email=${email}`)
-    .then(res => res.json())
-    .then(data => {
-      if (data.gameOver) {
-      // Tampilkan lock overlay
-          const lockOverlay = document.getElementById("lockOverlay");
-          if (lockOverlay) {
-            lockOverlay.style.display = "block";
-            lockOverlay.innerText = "Game Over! Please make a payment to unlock and continue playing.";
-          }  
-      } else {
-       // Sembunyikan lock overlay
-          const lockOverlay = document.getElementById("lockOverlay");
-          if (lockOverlay) lockOverlay.style.display = "none"; 
-      }
-    })
-    .catch(err => {
-      console.error("Gagal cek status gameOver:", err);
-    });
-  }, 500);
-}
+    
     // Essential splash display
    // this.add.image(960, 640, "coverBlank").setDepth(0);
    // ✅ REPLACE with:
