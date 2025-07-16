@@ -150,41 +150,51 @@ class Level01Scene extends Phaser.Scene {
     gameOverState === 'true'
   );
 
-  if (email) {
-    fetch(`https://backend-paypalblackhorsepuzzle.onrender.com/api/payment-status/${email}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.paid) {
-          localStorage.setItem(`gameOver_${email}`, 'false');
+  // Setelah ambil email, score, dll...
+if (email) {
+  fetch(`https://backend-paypalblackhorsepuzzle.onrender.com/api/payment-status/${email}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.paid) {
+        localStorage.setItem(`gameOver_${email}`, 'false');
+        this.unlockGameAfterPurchase();
+      } else {
+        // Lanjut cek gameOver lokal
+        if (isUserBaru || masihGratis) {
+          this.isGameOver = false;
+          localStorage.removeItem(`gameOver_${email}`);
+          this.unlockGameAfterPurchase(); // Aktifkan game
+        } else if (score > 0) {
+          this.isGameOver = false;
+          localStorage.removeItem(`gameOver_${email}`);
           this.unlockGameAfterPurchase();
-        } else {
+          this.showScoreBasedContinueMessage();
+        } else if (score === 0 && sudahMain3x) {
+          this.isGameOver = true;
           localStorage.setItem(`gameOver_${email}`, 'true');
           this.showGameOverReturnMessage();
+        } else {
+          console.warn("📌 Kondisi tidak dikenali, default: lock");
+          this.showGameOverReturnMessage();
         }
-      })
-      .catch(err => {
-        console.error("❌ Gagal verifikasi status pembayaran:", err);
+      }
+    })
+    .catch(err => {
+      console.error("❌ Gagal cek status bayar:", err);
+      // Jika server down atau fetch error → pakai logika lokal
+      if (isUserBaru || masihGratis) {
+        this.unlockGameAfterPurchase();
+      } else if (score > 0) {
+        this.unlockGameAfterPurchase();
+        this.showScoreBasedContinueMessage();
+      } else {
         this.showGameOverReturnMessage();
-      });
-  } else {
-    console.warn("⚠️ Tidak ditemukan playerEmail");
-    this.showGameOverReturnMessage();
-  }
-
-  if (isUserBaru || masihGratis) {
-    this.isGameOver = false;
-    if (email) localStorage.removeItem(`gameOver_${email}`);
-    this.time.delayedCall(100, () => this.unlockGameAfterPurchase());
-  } else if (isGameOverUnpaid) {
-    this.isGameOver = true;
-    this.showGameOverReturnMessage();
-  } else if (score > 0) {
-    this.isGameOver = false;
-    localStorage.removeItem(`gameOver_${email}`);
-    this.time.delayedCall(500, () => {
-      this.showScoreBasedContinueMessage();
+      }
     });
-  }
+} else {
+  console.warn("⚠️ Tidak ditemukan email login!");
+  this.showGameOverReturnMessage();
+}
 
 
 
