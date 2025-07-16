@@ -136,16 +136,26 @@ class Level01Scene extends Phaser.Scene {
   
   // filepath: c:\Users\HP\Desktop\PhaserGamePublic-Developer\Scenes\Level01Scene.js
 
- // FINAL FIX: Cek status pembayaran dari backend
+  // ✅ PENGECEKAN STATUS PEMBAYARAN: dari Neo  16/07/25
   if (email) {
     fetch(`https://backend-paypalblackhorsepuzzle.onrender.com/api/payment-status/${email}`)
       .then(res => res.json())
       .then(data => {
         if (data.paid) {
           this.unlockGameAfterPurchase();
+        } else {
+          this.showLockOverlay();
         }
+      })
+      .catch(err => {
+        console.error("❌ Gagal verifikasi status pembayaran:", err);
+        this.showLockOverlay();
       });
-    }
+  } else {
+    console.warn("⚠️ Tidak ditemukan playerEmail");
+    this.showLockOverlay();
+  }
+ 
 
 // ✅ DETEKSI GAME OVER STATE:
   //  history &&
