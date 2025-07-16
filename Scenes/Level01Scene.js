@@ -134,6 +134,8 @@ class Level01Scene extends Phaser.Scene {
   //const isGameOverUnpaid = sudahMain3x && score === 0 && gameOverState === 'true';
   const isGameOverUnpaid = sudahMain3x && score === 0 && localStorage.getItem(`gameOver_${email}`) === 'true';
   
+  if (email) { 
+  }  
   this.score = score;
   this.registry.set('score', this.score);
 
@@ -150,38 +152,49 @@ class Level01Scene extends Phaser.Scene {
     gameOverState === 'true'
   );
 
- 
-this.createUI(); 
-
- if (email) {
-    fetch(`https://backend-paypalblackhorsepuzzle.onrender.com/api/payment-status/${email}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.paid) {
-          localStorage.setItem(`gameOver_${email}`, 'false');
-          this.unlockGameAfterPurchase();
-        } else {
-          if (isUserBaru || masihGratis) {
-            this.isGameOver = false;
-            this.unlockGameAfterPurchase();
-          } else if (score > 0) {
-            this.isGameOver = false;
-            this.unlockGameAfterPurchase();
-            this.showScoreBasedContinueMessage();
-          } else {
-            this.isGameOver = true;
-            this.showGameOverReturnMessage();
-          }
-        }
-      })
-      .catch(err => {
-        console.error("❌ Fetch gagal:", err);
-        this.showGameOverReturnMessage(); // fallback lock
-      });
-  } else {
+ // 1. USER BARU/MASIH GRATIS
+  //if (isUserBaru || (history && (history.totalGamesPlayed || 0) < 3)) {
+  if (isUserBaru || masihGratis) {
+  this.isGameOver = false;
+   // RESET gameOverState jika ada!
+  if (email) localStorage.removeItem(`gameOver_${email}`);
+  // Aktifkan tombol Play & Puzzle
+  this.time.delayedCall(100, () => {
+    
+    if (this.lv01Puzzle10Btn) {
+      this.lv01Puzzle10Btn.setInteractive({ useHandCursor: true });
+      this.lv01Puzzle10Btn.setAlpha(1);
+      this.lv01Puzzle10Btn.setVisible(true);
+    }
+    if (this.lv01Puzzle20Btn) {
+      this.lv01Puzzle20Btn.setInteractive({ useHandCursor: true });
+      this.lv01Puzzle20Btn.setAlpha(1);
+      this.lv01Puzzle20Btn.setVisible(true);
+    }
+   if (this.playBtn) {
+      this.playBtn.disableInteractive({ useHandCursor: true });
+      this.playBtn.setAlpha(0.5);
+      this.playBtn.setVisible(true);
+    }
+  });
+  // 2. UserGameOver 3 Ronde
+  if (isGameOverUnpaid) {
+    this.isGameOver = true;
     this.showGameOverReturnMessage();
+    return; 
   }
+}   
 
+//if (email && gameOverState === 'true' && !this.hasShownWelcomeBack) {
+// 3. USER LAMA, SCORE > 0 user menang terus
+else if (score > 0) {
+  this.isGameOver = false;
+  localStorage.removeItem(`gameOver_${email}`);
+  this.time.delayedCall(500, () => {
+    this.showScoreBasedContinueMessage();
+  });
+}
+ 
 
 
   // ✅ ADD CONSOLE LOG HERE (after all Game Over logic):
