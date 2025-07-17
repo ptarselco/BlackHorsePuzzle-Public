@@ -134,25 +134,73 @@ class Level01Scene extends Phaser.Scene {
   //const isGameOverUnpaid = sudahMain3x && score === 0 && gameOverState === 'true';
   const isGameOverUnpaid = sudahMain3x && score === 0 && localStorage.getItem(`gameOver_${email}`) === 'true';
   
+  // filepath: c:\Users\HP\Desktop\PhaserGamePublic-Developer\Scenes\Level01Scene.js
+
+  // ✅ PENGECEKAN STATUS PEMBAYARAN: dari Neo  16/07/25
+  if (email) {
+    fetch(`https://backend-paypalblackhorsepuzzle.onrender.com/api/payment-status/${email}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.paid) {
+          this.unlockGameAfterPurchase();
+        } else {
+          this.showLockOverlay();
+        }
+      })
+      .catch(err => {
+        console.error("❌ Gagal verifikasi status pembayaran:", err);
+        this.showLockOverlay();
+      });
+  } else {
+    console.warn("⚠️ Tidak ditemukan playerEmail");
+    this.showLockOverlay();
+  }
+ 
+
+// ✅ DETEKSI GAME OVER STATE:
+  //  history &&
+  //  history.hasPlayedBefore && 
+  //  score === 0 //&& 
+
+  // ini harus ada jika tidak hilang tombol2 tidak tampil termasuk menu favorit
   if (email) { 
   }  
-  this.score = score;
-  this.registry.set('score', this.score);
+  this.score = score; 
+  this.registry.set('score', this.score); 
 
-  if (!this.registry.get('welcomeBackShown')) {
-    this.hasShownWelcomeBack = false;
-  } else {
-    this.hasShownWelcomeBack = true;
-  }
+  // ✅ SESSION-BASED WELCOME BACK FLAG:
+  // Only check once per browser session, not per scene load
+  if (!this.registry.get('welcomeBackShown')) { 
+    this.hasShownWelcomeBack = false; 
+  } else { 
+    this.hasShownWelcomeBack = true; 
+ } 
 
-  const GOUser = (
-    history?.hasPlayedBefore &&
-    score === 0 &&
-    !masihGratis &&
-    gameOverState === 'true'
-  );
+  // ✅ GAME OVER STATE DETECTION:
+// Flag khusus user lama unpaid yang sudah game over
+const GOUser = (
+  history &&
+  history.hasPlayedBefore &&
+  !masihGratis && // sudah main >= 3x
+  score === 0 &&
+  gameOverState === 'true' &&
+  localStorage.getItem(`gameOver_${email}`) === 'true'
+);
+//if (gameOverState === 'true' && !this.hasShownWelcomeBack) {
+  // ✅ LOGIKA GAME OVER:
+     console.log(`🔍 Game Over state detected. Current score: ${this.score}`);
+     console.log({
+     email,
+     score,
+     gameOverState,
+     isUserBaru,
+     masihGratis,
+     hasPlayedBefore: history?.hasPlayedBefore,
+     });
 
- // 1. USER BARU/MASIH GRATIS
+
+
+  // 1. USER BARU/MASIH GRATIS
   //if (isUserBaru || (history && (history.totalGamesPlayed || 0) < 3)) {
   if (isUserBaru || masihGratis) {
   this.isGameOver = false;
@@ -194,7 +242,61 @@ else if (score > 0) {
     this.showScoreBasedContinueMessage();
   });
 }
+//}
+//} else {
+// 3. USER LAMA UNPAID, SCORE = 0, SUDAH MAIN 3x, GAME OVER STATE
+ //if (!isUserBaru && !masihGratis && sudahMain3x && score === 0 && gameOverState === 'true') {
+ // if (sudahMain3x && score === 0 && gameOverState === 'true') {
  
+ //this.isGameOver = true;
+ //this.showGameOverReturnMessage();
+  // Kunci tombol Play & Puzzle
+ // this.time.delayedCall(100, () => {
+  //  if (this.playBtn) {
+  //    this.playBtn.disableInteractive({ useHandCursor: true });
+  //    this.playBtn.setAlpha(0.5);
+  //    this.playBtn.setVisible(true);
+  //  }
+  //  if (this.lv01Puzzle10Btn) {
+  //   this.lv01Puzzle10Btn.disableInteractive({ useHandCursor: true });
+  //    this.lv01Puzzle10Btn.setAlpha(0.5);
+  //    this.lv01Puzzle10Btn.setVisible(true);
+  //  }
+  //  if (this.lv01Puzzle20Btn) {
+  //    this.lv01Puzzle20Btn.disableInteractive({ useHandCursor: true });
+  //    this.lv01Puzzle20Btn.setAlpha(0.5);
+  //    this.lv01Puzzle20Btn.setVisible(true);
+  //  }
+//});
+  // Penting: return agar unpaid tidak bisa main
+  //return;
+//}
+  
+//} else { // score === 0 kena Game Over, jika tanpa } else { (score === 0) tidak kena game over
+// 3. USER LAMA UNPAID, SCORE = 0, SUDAH MAIN 3x
+//else if (sudahMain3x && score === 0 && gameOverState === 'true') {
+  //this.isGameOver = true;
+  //this.showGameOverReturnMessage();
+ // }
+//}
+
+//} else if  (!(isUserBaru || masihGratis)) {
+    // ini deteksi user baru berhasil tapi tidak User lama, score 0, tampilkan popup game over
+    //console.log('🔒 Score is 0 - Full Game Over protection active');
+    //this.isGameOver = true;
+    //this.showGameOverReturnMessage();
+    //this.registry.set('welcomeBackShown', true);
+    //this.hasShownWelcomeBack = true;
+    //console.log('✅ No Game Over state - Normal gameplay');
+    
+    // ✅ SCORE IS 0 - SHOW FULL GAME OVER PROTECTION
+    //  console.log('🔒 Score is 0 - Full Game Over protection active');
+     // this.isGameOver = true; 
+      // Show persistent Game Over message immediately
+     // this.showGameOverReturnMessage();
+    // User baru/masih gratis: tidak tampilkan popup game over
+   //}
+  //}
 
 
   // ✅ ADD CONSOLE LOG HERE (after all Game Over logic):
