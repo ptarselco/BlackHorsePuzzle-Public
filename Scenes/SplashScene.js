@@ -153,14 +153,14 @@ class SplashScene extends Phaser.Scene {
   lazyLoadBackgroundAssets() {
     // Load decorative assets di background
     this.load.image("cover", "./Puzzle-Assets/Splash/Cover Black Horse and His Herd R300.webp");
-    this.load.image("text2", "./Puzzle-Assets/UI/Text Level 02.webp");
+    //this.load.image("text2", "./Puzzle-Assets/UI/Text Level 02.webp");
     this.load.audio("music", "./Puzzle-Assets/Sfx/scenes/splash02_music_cowboy_western_background.mp3");
     this.load.audio("herdGallop", "./Puzzle-Assets/Sfx/sound/herd_gallop.mp3");
     this.load.image("flower", "./Puzzle-Assets/Splash/Flower orange red.webp");
     this.load.image("flowerR", "./Puzzle-Assets/Splash/Red Cactus Flower.webp");
     this.load.image("grass", "./Puzzle-Assets/Splash/Cutting Grass.webp");
     this.load.image("grass02", "./Puzzle-Assets/Splash/Grass02.webp");
-    this.load.image("text2glow", "./Puzzle-Assets/UI/Sp. Text Level 02 Glow.webp");
+    //this.load.image("text2glow", "./Puzzle-Assets/UI/Sp. Text Level 02 Glow.webp");
     this.load.image("btnRed", "./Puzzle-Assets/UI/Sp. Button Red Level 02.webp");
     
     // Load additional horses
