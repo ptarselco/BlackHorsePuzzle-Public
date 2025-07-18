@@ -122,52 +122,98 @@ class Level01Scene extends Phaser.Scene {
     return;
   }
 
+  
+
   // ⬇️ Tambahkan pengecekan ini setelah login check
   const email = localStorage.getItem("playerEmail");
-  const score = parseInt(localStorage.getItem(`score_${email}`) || 0);
+  //const score = parseInt(localStorage.getItem(`score_${email}`) || 0);
   const gameOverState = localStorage.getItem(`gameOver_${email}`); 
   const history = window.getPlayerGameHistory ? window.getPlayerGameHistory(email) : null;
   
   const isUserBaru = !history || !history.hasPlayedBefore;
   const masihGratis = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) < 3;
   const sudahMain3x = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) >= 3;
-  //const isGameOverUnpaid = sudahMain3x && score === 0 && gameOverState === 'true';
-  const isGameOverUnpaid = sudahMain3x && score === 0 && localStorage.getItem(`gameOver_${email}`) === 'true';
   
-  // filepath: c:\Users\HP\Desktop\PhaserGamePublic-Developer\Scenes\Level01Scene.js
-
-  // ✅ PENGECEKAN STATUS PEMBAYARAN: dari Neo  16/07/25
-  if (email) {
-    fetch(`https://backend-paypalblackhorsepuzzle.onrender.com/api/payment-status/${email}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.paid) {
-          this.unlockGameAfterPurchase();
-        } else {
-          this.showLockOverlay();
-        }
-      })
-      .catch(err => {
-        console.error("❌ Gagal verifikasi status pembayaran:", err);
-        this.showLockOverlay();
-      });
-  } else {
-    console.warn("⚠️ Tidak ditemukan playerEmail");
-    this.showLockOverlay();
-  }
  
 
-// ✅ DETEKSI GAME OVER STATE:
-  //  history &&
-  //  history.hasPlayedBefore && 
-  //  score === 0 //&& 
+  // ✅ GAME OVER STATE DETECTION: Versi Rapi (Hybrid: MongoDB untuk GameOver, LocalStorage untuk Score) v.neo
+  const user = localStorage.getItem('loggedInUser');
+let userData = JSON.parse(localStorage.getItem(`gameData-${user}`)) || {
+  playCount: 0,
+  isGameOver: false,
+  score: 0
+};
 
-  // ini harus ada jika tidak hilang tombol2 tidak tampil termasuk menu favorit
-  if (email) { 
-  }  
-  this.score = score; 
-  this.registry.set('score', this.score); 
+//let userData = null; // v.co 4.1
+//if (window.getUserDataFromMongo) {
+  //userData = await window.getUserDataFromMongo(email); // atau dari fetch API
+//}
 
+ if (userData.isGameOver) {
+  this.showGameOverReturnMessage();
+  return;
+}
+
+
+// Fungsi untuk cek ke MongoDB apakah sudah Game Over
+async function checkGameOverStatusFromServer() {
+  try {
+    const res = await fetch('https://arselco.onrender.com/check-gameover', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user })
+    });
+
+    const result = await res.json();
+
+    if (result.isGameOver) {
+      userData.isGameOver = true;
+      localStorage.setItem(`gameData-${user}`, JSON.stringify(userData));
+      showGameOverReturnMessage(); // blokir akses di level01
+    } else {
+      // Masih bisa bermain, jalankan permainan
+      userData.playCount += 1;
+      localStorage.setItem(`gameData-${user}`, JSON.stringify(userData));
+
+      // Jika sudah 3x, tandai game over di server
+      if (userData.playCount >= 3) {
+        await fetch('https://arselco.onrender.com/set-gameover', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user })
+        });
+        userData.isGameOver = true;
+        localStorage.setItem(`gameData-${user}`, JSON.stringify(userData));
+      }
+
+      // Lanjutkan ke gameplay Level01Scene
+      startGameplay(); // atau initGameScene()
+    }
+
+  } catch (error) {
+    console.error('Gagal cek status GameOver:', error);
+  }
+}
+  // Panggil fungsi untuk cek status Game Over dari server
+     checkGameOverStatusFromServer();  
+
+  // === AUTO UNLOCK JIKA SUDAH BAYAR ===
+  if (window.hasUserPaidFavorite && window.hasUserPaidFavorite(email)) {
+    console.log("✅ Detected payment – unlocking game!");
+    localStorage.removeItem(`gameOver_${email}`);
+    this.isGameOver = false;
+  }
+
+ // ✅ SCORE CALCULATION FIRST (BEFORE Game Over check):
+  let score = 0;
+  if (email) {
+    score = parseInt(localStorage.getItem(`score_${email}`)) || 0;
+  } else {
+    score = this.registry.get('score') || 0;
+  }
+  this.score = score;
+  this.registry.set('score', this.score);
+ 
   // ✅ SESSION-BASED WELCOME BACK FLAG:
   // Only check once per browser session, not per scene load
   if (!this.registry.get('welcomeBackShown')) { 
@@ -176,136 +222,17 @@ class Level01Scene extends Phaser.Scene {
     this.hasShownWelcomeBack = true; 
  } 
 
-  // ✅ GAME OVER STATE DETECTION:
-// Flag khusus user lama unpaid yang sudah game over
-const GOUser = (
-  history &&
-  history.hasPlayedBefore &&
-  !masihGratis && // sudah main >= 3x
-  score === 0 &&
-  gameOverState === 'true' &&
-  localStorage.getItem(`gameOver_${email}`) === 'true'
-);
-//if (gameOverState === 'true' && !this.hasShownWelcomeBack) {
-  // ✅ LOGIKA GAME OVER:
-     console.log(`🔍 Game Over state detected. Current score: ${this.score}`);
-     console.log({
-     email,
-     score,
-     gameOverState,
-     isUserBaru,
-     masihGratis,
-     hasPlayedBefore: history?.hasPlayedBefore,
-     });
-
-
-
-  // 1. USER BARU/MASIH GRATIS
-  //if (isUserBaru || (history && (history.totalGamesPlayed || 0) < 3)) {
-  if (isUserBaru || masihGratis) {
-  this.isGameOver = false;
-   // RESET gameOverState jika ada!
-  if (email) localStorage.removeItem(`gameOver_${email}`);
-  // Aktifkan tombol Play & Puzzle
-  this.time.delayedCall(100, () => {
-    
-    if (this.lv01Puzzle10Btn) {
-      this.lv01Puzzle10Btn.setInteractive({ useHandCursor: true });
-      this.lv01Puzzle10Btn.setAlpha(1);
-      this.lv01Puzzle10Btn.setVisible(true);
-    }
-    if (this.lv01Puzzle20Btn) {
-      this.lv01Puzzle20Btn.setInteractive({ useHandCursor: true });
-      this.lv01Puzzle20Btn.setAlpha(1);
-      this.lv01Puzzle20Btn.setVisible(true);
-    }
-   if (this.playBtn) {
-      this.playBtn.disableInteractive({ useHandCursor: true });
-      this.playBtn.setAlpha(0.5);
-      this.playBtn.setVisible(true);
-    }
-  });
-  // 2. UserGameOver 3 Ronde
-  if (isGameOverUnpaid) {
-    this.isGameOver = true;
-    this.showGameOverReturnMessage();
-    return; 
-  }
-}   
-
-//if (email && gameOverState === 'true' && !this.hasShownWelcomeBack) {
-// 3. USER LAMA, SCORE > 0 user menang terus
-else if (score > 0) {
-  this.isGameOver = false;
-  localStorage.removeItem(`gameOver_${email}`);
-  this.time.delayedCall(500, () => {
-    this.showScoreBasedContinueMessage();
-  });
-}
-//}
-//} else {
-// 3. USER LAMA UNPAID, SCORE = 0, SUDAH MAIN 3x, GAME OVER STATE
- //if (!isUserBaru && !masihGratis && sudahMain3x && score === 0 && gameOverState === 'true') {
- // if (sudahMain3x && score === 0 && gameOverState === 'true') {
- 
- //this.isGameOver = true;
- //this.showGameOverReturnMessage();
-  // Kunci tombol Play & Puzzle
- // this.time.delayedCall(100, () => {
-  //  if (this.playBtn) {
-  //    this.playBtn.disableInteractive({ useHandCursor: true });
-  //    this.playBtn.setAlpha(0.5);
-  //    this.playBtn.setVisible(true);
-  //  }
-  //  if (this.lv01Puzzle10Btn) {
-  //   this.lv01Puzzle10Btn.disableInteractive({ useHandCursor: true });
-  //    this.lv01Puzzle10Btn.setAlpha(0.5);
-  //    this.lv01Puzzle10Btn.setVisible(true);
-  //  }
-  //  if (this.lv01Puzzle20Btn) {
-  //    this.lv01Puzzle20Btn.disableInteractive({ useHandCursor: true });
-  //    this.lv01Puzzle20Btn.setAlpha(0.5);
-  //    this.lv01Puzzle20Btn.setVisible(true);
-  //  }
-//});
-  // Penting: return agar unpaid tidak bisa main
-  //return;
-//}
-  
-//} else { // score === 0 kena Game Over, jika tanpa } else { (score === 0) tidak kena game over
-// 3. USER LAMA UNPAID, SCORE = 0, SUDAH MAIN 3x
-//else if (sudahMain3x && score === 0 && gameOverState === 'true') {
-  //this.isGameOver = true;
-  //this.showGameOverReturnMessage();
- // }
-//}
-
-//} else if  (!(isUserBaru || masihGratis)) {
-    // ini deteksi user baru berhasil tapi tidak User lama, score 0, tampilkan popup game over
-    //console.log('🔒 Score is 0 - Full Game Over protection active');
-    //this.isGameOver = true;
-    //this.showGameOverReturnMessage();
-    //this.registry.set('welcomeBackShown', true);
-    //this.hasShownWelcomeBack = true;
-    //console.log('✅ No Game Over state - Normal gameplay');
-    
-    // ✅ SCORE IS 0 - SHOW FULL GAME OVER PROTECTION
-    //  console.log('🔒 Score is 0 - Full Game Over protection active');
-     // this.isGameOver = true; 
-      // Show persistent Game Over message immediately
-     // this.showGameOverReturnMessage();
-    // User baru/masih gratis: tidak tampilkan popup game over
-   //}
-  //}
-
 
   // ✅ ADD CONSOLE LOG HERE (after all Game Over logic):
   console.log(`🔍 Game state check:
 - Email: ${email}
 - Score: ${this.score}  
 - Game Over State: ${gameOverState}
+- isUserBaru: ${isUserBaru}
+- Total Games Played: ${history?.totalGamesPlayed}
 - Final isGameOver: ${this.isGameOver}`);
-
+   
+  
  //-------------------------------------------------------------
     // Background & board
     // Background load musik favorit setelah 3 detik
@@ -527,7 +454,7 @@ else if (score > 0) {
     this.comingSoonRect = null;
   });
 });
-  
+
  // Di dalam create()
 //--------------------------------------------------------------------------------------
     // Deklarasi Title dan Menu Text--> Mulai Help
@@ -1562,6 +1489,29 @@ showGameOverReturnMessage() {
      // .setScale(0.6);
   //}
 }
+
+async checkGameOverStatusFromServer() {
+  const user = localStorage.getItem('loggedInUser');
+  if (!user) return;
+
+  try {
+    const response = await fetch('https://arselco.com/set-gameover', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username: user }),
+    });
+
+    const data = await response.json();
+    if (data.gameOver) {
+      showGameOverReturnMessage(); // tampilkan pesan game over
+    }
+  } catch (error) {
+    console.error('❌ Gagal memeriksa status Game Over:', error);
+  }
+}
+
 
 // Around line 1350, ADD this new function:
 
