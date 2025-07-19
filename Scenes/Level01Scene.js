@@ -135,27 +135,22 @@ class Level01Scene extends Phaser.Scene {
   const sudahMain3x = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) >= 3;
   
  
-
-  // ✅ GAME OVER STATE DETECTION: Versi Rapi (Hybrid: MongoDB untuk GameOver, LocalStorage untuk Score) v.neo
-  const user = localStorage.getItem('loggedInUser');
+//-------------------------------------------------------
+  
+const user = localStorage.getItem('playerEmail');
 let userData = JSON.parse(localStorage.getItem(`gameData-${user}`)) || {
   playCount: 0,
   isGameOver: false,
   score: 0
 };
 
-//let userData = null; // v.co 4.1
-//if (window.getUserDataFromMongo) {
-  //userData = await window.getUserDataFromMongo(email); // atau dari fetch API
-//}
-
- if (userData.isGameOver) {
+// Check jika isGameOver aktif → hanya jika score = 0
+if (userData.isGameOver && userData.score === 0) {
   this.showGameOverReturnMessage();
   return;
 }
 
-
-// Fungsi untuk cek ke MongoDB apakah sudah Game Over
+// Cek ke MongoDB: status game over server-side
 async function checkGameOverStatusFromServer() {
   try {
     const res = await fetch('https://arselco.onrender.com/check-gameover', {
@@ -164,45 +159,97 @@ async function checkGameOverStatusFromServer() {
       body: JSON.stringify({ user })
     });
 
-    const result = await res.json();
+    // User lama Score > 0 → tidak terkunci
+    fetch(`/get-user?email=${this.playerEmail}`)
+    .then(res => res.json())
+    .then(userData => {
+    if (userData) {
+      // Di sinilah kamu taruh pengecekan LOCK
+      if (userData.isGameOver) {
+        if (userData.score > 0) {
+          // Sudah bayar / menang → jangan lock
+          userData.isGameOver = false;
+        } else {
+          this.showGameOverReturnMessage();
+          return;
+        }
+      }
 
-    if (result.isGameOver) {
+      // Lanjutkan kalau tidak terkunci
+      this.setupBoard(userData); // contoh fungsi lanjut
+    }
+    });
+
+
+    const result = await res.json();
+    if (result.isGameOver && userData.score === 0) {
+      // ⛔ LOCK: hanya jika score masih nol
       userData.isGameOver = true;
       localStorage.setItem(`gameData-${user}`, JSON.stringify(userData));
-      showGameOverReturnMessage(); // blokir akses di level01
+      showGameOverReturnMessage(); // Blokir
     } else {
-      // Masih bisa bermain, jalankan permainan
+      // ✅ Masih bisa main
       userData.playCount += 1;
-      localStorage.setItem(`gameData-${user}`, JSON.stringify(userData));
 
-      // Jika sudah 3x, tandai game over di server
-      if (userData.playCount >= 3) {
+      // Jika playCount >= 3 dan score masih 0, set game over
+      if (userData.playCount >= 3 && userData.score === 0) {
         await fetch('https://arselco.onrender.com/set-gameover', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ user })
         });
         userData.isGameOver = true;
-        localStorage.setItem(`gameData-${user}`, JSON.stringify(userData));
       }
 
-      // Lanjutkan ke gameplay Level01Scene
-      startGameplay(); // atau initGameScene()
-    }
+      // Simpan status lokal
+      localStorage.setItem(`gameData-${user}`, JSON.stringify(userData));
 
+      // ✅ Mulai Game
+        this.unblur10PuzzleButton();
+        this.unlockGameAfterPurchase();
+        window.unlockPlayAndHideGameOver(); 
+    }
   } catch (error) {
-    console.error('Gagal cek status GameOver:', error);
+    console.error('❌ Gagal cek status GameOver:', error);
+    // Tetap izinkan main jika server gagal, fallback
+    this.unblur10PuzzleButton();
   }
 }
-  // Panggil fungsi untuk cek status Game Over dari server
-     checkGameOverStatusFromServer();  
 
-  // === AUTO UNLOCK JIKA SUDAH BAYAR ===
-  if (window.hasUserPaidFavorite && window.hasUserPaidFavorite(email)) {
-    console.log("✅ Detected payment – unlocking game!");
-    localStorage.removeItem(`gameOver_${email}`);
-    this.isGameOver = false;
+// Panggil deteksi game over
+checkGameOverStatusFromServer();
+
+// Unlock game over setelah pembayaran
+async function unlockGameOver(email) {
+  const res = await fetch('https://arselco.onrender.com/unlock-level', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, level: 'Level01' })
+  });
+   
+  const result = await res.json();
+
+  if (result.success) {
+    // Reset localStorage gameData user
+    const resetData = {
+      playCount: 0,
+      isGameOver: false,
+      score: 0
+    };
+    
+    localStorage.setItem(`gameData-${email}`, JSON.stringify(resetData));
+    alert('Level berhasil di-unlock. Selamat bermain kembali!');
+    this.unblur10PuzzleButton();
+    this.unlockGameAfterPurchase();
+    window.unlockPlayAndHideGameOver();
+    location.reload(); // reload Level01
+  } else {
+    alert('Gagal membuka level. Silakan hubungi admin.');
   }
+}
+
+//-----------------------------------------------------   
+
 
  // ✅ SCORE CALCULATION FIRST (BEFORE Game Over check):
   let score = 0;
@@ -1489,28 +1536,52 @@ showGameOverReturnMessage() {
      // .setScale(0.6);
   //}
 }
+// Versi Neo 
+//async checkGameOverStatusFromServer() {
+  //const user = localStorage.getItem('loggedInUser');
+  //if (!user) return;
 
+  //try {
+    //const response = await fetch('https://arselco.com/set-gameover', {
+      //method: 'POST',
+      //headers: {
+        //'Content-Type': 'application/json',
+      //},
+      //body: JSON.stringify({ username: user }),
+    //});
+
+    //const data = await response.json();
+    //if (data.gameOver) {
+      //showGameOverReturnMessage(); // tampilkan pesan game over
+    //}
+  //} catch (error) {
+    //console.error('❌ Gagal memeriksa status Game Over:', error);
+  //}
+//}
+
+//Versi Co 4.1
 async checkGameOverStatusFromServer() {
-  const user = localStorage.getItem('loggedInUser');
-  if (!user) return;
+  const email = localStorage.getItem('playerEmail');
+  if (!email) return;
 
   try {
-    const response = await fetch('https://arselco.com/set-gameover', {
+    // Ganti endpoint ke endpoint cek status, bukan set
+    const response = await fetch('https://arselco.onrender.com/check-gameover', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ username: user }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
     });
 
     const data = await response.json();
-    if (data.gameOver) {
-      showGameOverReturnMessage(); // tampilkan pesan game over
+    // Cek field yang benar dari backend (misal: isGameOver)
+    if (data.isGameOver) {
+      this.showGameOverReturnMessage(); // pakai this.
     }
   } catch (error) {
     console.error('❌ Gagal memeriksa status Game Over:', error);
   }
 }
+
 
 
 // Around line 1350, ADD this new function:
@@ -2417,6 +2488,23 @@ async updateTaxInBackground(musicTitle, x, y) {
       this.onTimeUp();
     }
   }
+// ========== UNBLUR 10 PUZZLE BUTTON ==========
+   unblur10PuzzleButton() {
+  // Aktifkan tombol 10 Puzzle
+  if (this.lv01Puzzle10Btn) {
+    this.lv01Puzzle10Btn.setAlpha(1);
+    this.lv01Puzzle10Btn.setInteractive({ useHandCursor: true });
+  }
+
+  // Aktifkan tombol Play
+  if (this.playBtn) {
+    this.playBtn.setAlpha(1);
+    this.playBtn.setInteractive({ useHandCursor: true });
+  }
+
+  console.log('✅ 10 Puzzle and Play buttons restored');
+}
+//================================================
 
   // filepath: [Level01Scene.js](http://_vscodecontentref_/2)
   showClaimHat(callback) {
@@ -2566,10 +2654,7 @@ async updateTaxInBackground(musicTitle, x, y) {
       this.lv01Puzzle10Btn.disableInteractive();
       this.lv01Puzzle10Btn.setAlpha(0.5);
     }
-    if (this.lv01Puzzle20Btn) {
-      this.lv01Puzzle20Btn.disableInteractive();
-      this.lv01Puzzle20Btn.setAlpha(0.5);
-    }
+    
     console.log('🔒 Play & Puzzle buttons locked - Game Over triggered');
   
    
@@ -3603,6 +3688,30 @@ showHoldMessageAboveNotes() {
   }
 }
 //-----------------------------------------------------------------
+async checkUnlockStatus(email) {
+  try {
+    const res = await fetch("https://arselco.com/api/set-gameover", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, isGameOver: false })  // minta unlock
+    });
+
+    const data = await res.json();
+    if (data.unlocked) {
+      this.unlockGameAfterPurchase();  // ✅ gunakan fungsi kamu
+    } else {
+      this.showGameOverReturnMessage();  // ✅ tetap pakai fungsi kamu
+    }
+  } catch (err) {
+    console.error("Error unlock:", err);
+    this.showGameOverReturnMessage();
+  }
+}
+
+
+//----------------------------------------------------------------------
+
+
   showFavoritMenuBar() {
     // Hapus menu lama jika ada
     if (this.favoritMenuGroup) this.favoritMenuGroup.clear(true, true);
