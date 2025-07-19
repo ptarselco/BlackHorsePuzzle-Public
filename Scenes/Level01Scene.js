@@ -122,21 +122,22 @@ class Level01Scene extends Phaser.Scene {
     return;
   }
 
-  
+// ⬇️ PEMANGGIL CEK STATUS LEVEL YANG TERHUBUNG DENGAN BACKEND (SERVER) MENGARAH KE MONGODB
+const email = localStorage.getItem("playerEmail");
+   checkLevelStatus(email, 'Level01Scene').then(unlocked => {
+    if (unlocked) {
+      this.unblur10PuzzleButton();
+    } else {
+      this.blur10PuzzleButton();
+    }
+});
 
-  // ⬇️ Tambahkan pengecekan ini setelah login check
-  const email = localStorage.getItem("playerEmail");
-  //const score = parseInt(localStorage.getItem(`score_${email}`) || 0);
-  const gameOverState = localStorage.getItem(`gameOver_${email}`); 
-  const history = window.getPlayerGameHistory ? window.getPlayerGameHistory(email) : null;
-  
-  const isUserBaru = !history || !history.hasPlayedBefore;
-  const masihGratis = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) < 3;
-  const sudahMain3x = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) >= 3;
-  
- 
-//-------------------------------------------------------
-  
+const gameOverState = localStorage.getItem(`gameOver_${email}`); 
+const history = window.getPlayerGameHistory ? window.getPlayerGameHistory(email) : null;
+const isUserBaru = !history || !history.hasPlayedBefore;
+const masihGratis = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) < 3;
+const sudahMain3x = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) >= 3;
+    
 const user = localStorage.getItem('playerEmail');
 let userData = JSON.parse(localStorage.getItem(`gameData-${user}`)) || {
   playCount: 0,
@@ -150,15 +151,26 @@ if (userData.isGameOver && userData.score === 0) {
   return;
 }
 
-// Cek ke MongoDB: status game over server-side
+// CEK STATUS LEVEL (apakah sudah unlock)
+async function checkLevelStatus(email, level) {
+  const res = await fetch('https://arselco.onrender.com/api/users/status', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, level })
+  });
+  const data = await res.json();
+  return data.unlocked; // true/false
+}
+
+// CEK KE MONGODB : STATUS GAME OVER SERVER-SIDE
 async function checkGameOverStatusFromServer() {
   try {
-    const res = await fetch('https://arselco.onrender.com/check-gameover', {
-      method: 'POST',
+    //const res = await fetch('https://arselco.onrender.com/check-gameover', {
+     await fetch('https://arselco.onrender.com/api/users/status', { 
+     method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user })
+      body: JSON.stringify({ email, level: 'Level01' })
     });
-
     // User lama Score > 0 → tidak terkunci
     fetch(`/get-user?email=${this.playerEmail}`)
     .then(res => res.json())
@@ -174,13 +186,10 @@ async function checkGameOverStatusFromServer() {
           return;
         }
       }
-
-      // Lanjutkan kalau tidak terkunci
+     // Lanjutkan kalau tidak terkunci
       this.setupBoard(userData); // contoh fungsi lanjut
     }
     });
-
-
     const result = await res.json();
     if (result.isGameOver && userData.score === 0) {
       // ⛔ LOCK: hanya jika score masih nol
@@ -216,18 +225,19 @@ async function checkGameOverStatusFromServer() {
   }
 }
 
-// Panggil deteksi game over
+// PANGGIL DETEKSI GAME OVER
 checkGameOverStatusFromServer();
 
-// Unlock game over setelah pembayaran
-async function unlockGameOver(email) {
-  const res = await fetch('https://arselco.onrender.com/unlock-level', {
+// UNLOCK LEVEL SETELAH PEMBAYARAN
+async function unlockLevel(email, level) {
+  const res = await fetch('https://arselco.onrender.com/api/users/unlock', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, level: 'Level01' })
+    body: JSON.stringify({ email, level })
   });
-   
   const result = await res.json();
+  return result.success;
+}
 
   if (result.success) {
     // Reset localStorage gameData user
@@ -236,7 +246,6 @@ async function unlockGameOver(email) {
       isGameOver: false,
       score: 0
     };
-    
     localStorage.setItem(`gameData-${email}`, JSON.stringify(resetData));
     alert('Level berhasil di-unlock. Selamat bermain kembali!');
     this.unblur10PuzzleButton();
@@ -246,8 +255,43 @@ async function unlockGameOver(email) {
   } else {
     alert('Gagal membuka level. Silakan hubungi admin.');
   }
+
+// SIMPAN SCORE (FRONTEND) KE LOCALSTORAGE JIKA FETCH GAGAL
+async function saveScore(score, email) {
+  try {
+    await saveScoreToMongo(score, email);
+    localStorage.removeItem(`tempScore_${email}`);
+  } catch (e) {
+    console.warn("MongoDB unreachable. Saving score locally.");
+    localStorage.setItem(`tempScore_${email}`, JSON.stringify({ score, email }));
+  }
 }
 
+// Fungsi untuk kirim score ke backend/mongo
+async function saveScoreToMongo(score, email) {
+  const res = await fetch('https://arselco.onrender.com/api/users/score', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ score, email })
+  });
+  if (!res.ok) throw new Error("Failed to save score to MongoDB");
+}
+
+// Saat game load ulang, coba sync score yang tertunda
+window.addEventListener('load', async () => {
+  const email = localStorage.getItem('playerEmail');
+  const temp = localStorage.getItem(`tempScore_${email}`);
+  if (temp) {
+    const { score } = JSON.parse(temp);
+    try {
+      await saveScoreToMongo(score, email);
+      console.log("⏫ Synced tempScore to MongoDB");
+      localStorage.removeItem(`tempScore_${email}`);
+    } catch (e) {
+      console.warn("Still offline. Retry again later.");
+    }
+  }
+});
 //-----------------------------------------------------   
 
 
@@ -2448,11 +2492,10 @@ async updateTaxInBackground(musicTitle, x, y) {
       this.scoreText.setText(this.score.toString().padStart(5, '0')); // Tambahkan baris ini
       this.registry.set('score', this.score);
       const email = localStorage.getItem('playerEmail');
-      //if (email) {
-      //localStorage.setItem(`score_${email}`, this.score);
-      if (email && typeof safeUpdateGameScore === 'function') {
-      safeUpdateGameScore(email, this.score);
-      }
+      if (email) saveScore(this.score, email);
+      //if (email && typeof safeUpdateGameScore === 'function') { ////hendle score saat menang diganti dgn saveScore
+      //safeUpdateGameScore(email, this.score);
+      //}
       //localStorage.setItem('playerEmail', this.score); // awalnya playerScore<-- Tambahkan ini 14/06/25
       this.sound.play('horseNeigh');
       // Tampilkan black horse utuh hanya jika score >= 1000 --> tidak tampil dulu di score 1000
@@ -2460,7 +2503,6 @@ async updateTaxInBackground(musicTitle, x, y) {
       //this.transformPuzzleToHorse();
       //}
       this.showClaimHat(() => {
-        // ...existing code...
       });
 
       this.showClaimHat(() => {
@@ -2575,12 +2617,12 @@ async updateTaxInBackground(musicTitle, x, y) {
     this.score = Math.max(0, (this.score || 0) - 100);
     this.scoreText.setText(this.score.toString().padStart(5, '0'));
     this.registry.set('score', this.score);
+    // Simpan score ke localStorage saat mongodb offline
     const email = localStorage.getItem('playerEmail');
-    //if (email) {
-    //localStorage.setItem(`score_${email}`, this.score);
-    if (email && typeof safeUpdateGameScore === 'function') {
-    safeUpdateGameScore(email, this.score);
-    }
+    if (email) saveScore(this.score, email);
+    //if (email && typeof safeUpdateGameScore === 'function') { //hendle score saat kalah diganti dgn saveScore
+    //safeUpdateGameScore(email, this.score);
+    //}
      // ⬇️ Tambahkan pengecekan ini setelah safeUpdateGameScore tambah 08/07/25
     // Cek apakah sudah 3x main extra setelah beli menu favorit dan score sudah 0
     const history = window.getPlayerGameHistory ? window.getPlayerGameHistory(email) : null;
@@ -3400,7 +3442,11 @@ showHoldMessageAboveNotes() {
               clearInterval(this.paymentCheckInterval);
               // ✅ UNLOCK GAME AFTER PURCHASE:
               this.unlockGameAfterPurchase();
-              // Tutup pesan "Waiting..."
+              // PANGGIL UNLOCK LEVEL DI SINI
+              const email = localStorage.getItem('playerEmail');
+              await unlockLevel(email, 'Level01Scene');
+              this.unblur10PuzzleButton(); 
+              if (window.unlockPlayAndHideGameOver) window.unlockPlayAndHideGameOver(); 
               }
               }, 3000);
              
@@ -3593,9 +3639,13 @@ showHoldMessageAboveNotes() {
               clearInterval(this.paymentCheckInterval);
               // ✅ UNLOCK GAME AFTER PURCHASE:
               this.unlockGameAfterPurchase();
-              // Tutup pesan "Waiting..." ada diatas setelah Pay handler
+              // PANGGIL UNLOCK LEVEL DI SINI
+              const email = localStorage.getItem('playerEmail');
+              await unlockLevel(email, 'Level01Scene');
+              this.unblur10PuzzleButton(); 
+              if (window.unlockPlayAndHideGameOver) window.unlockPlayAndHideGameOver(); 
               }
-              }, 3000);
+              }, 3000);     
    
       // Setelah pembayaran sukses:
       if (this.payPanel) this.payPanel.destroy();
