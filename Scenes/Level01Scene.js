@@ -190,6 +190,11 @@ async function checkGameOverStatusFromServer() {
       this.setupBoard(userData); // contoh fungsi lanjut
     }
     });
+    const res = await fetch('https://arselco.onrender.com/api/users/gameover', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, level: 'Level01' })
+    });
     const result = await res.json();
     if (result.isGameOver && userData.score === 0) {
       // ⛔ LOCK: hanya jika score masih nol
