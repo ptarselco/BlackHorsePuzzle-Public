@@ -162,74 +162,72 @@ async function checkLevelStatus(email, level) {
   return data.unlocked; // true/false
 }
 
+
 // CEK KE MONGODB : STATUS GAME OVER SERVER-SIDE
 async function checkGameOverStatusFromServer() {
-  try {
-    //const res = await fetch('https://arselco.onrender.com/check-gameover', {
-     await fetch('https://arselco.onrender.com/api/users/status', { 
-     method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, level: 'Level01' })
-    });
-    // User lama Score > 0 → tidak terkunci
-    fetch(`/get-user?email=${this.playerEmail}`)
-    .then(res => res.json())
-    .then(userData => {
-    if (userData) {
-      // Di sinilah kamu taruh pengecekan LOCK
-      if (userData.isGameOver) {
-        if (userData.score > 0) {
-          // Sudah bayar / menang → jangan lock
-          userData.isGameOver = false;
-        } else {
-          this.showGameOverReturnMessage();
-          return;
-        }
-      }
-     // Lanjutkan kalau tidak terkunci
-      this.setupBoard(userData); // contoh fungsi lanjut
-    }
-    });
-    const res = await fetch('https://arselco.onrender.com/api/users/gameover', {
+  const email = localStorage.getItem('playerEmail');
+  if (!email) return;
+
+ try {
+    // Ambil status user dari backend
+    const res = await fetch('https://arselco.onrender.com/api/users/status', { 
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, level: 'Level01' })
     });
-    const result = await res.json();
-    if (result.isGameOver && userData.score === 0) {
-      // ⛔ LOCK: hanya jika score masih nol
-      userData.isGameOver = true;
-      localStorage.setItem(`gameData-${user}`, JSON.stringify(userData));
-      showGameOverReturnMessage(); // Blokir
-    } else {
-      // ✅ Masih bisa main
-      userData.playCount += 1;
+    const userData = await res.json();
 
+    // Cek status game over
+    if (userData.isGameOver) {
+      if (userData.score > 0) {
+        userData.isGameOver = false;
+      } else {
+        this.showGameOverReturnMessage();
+        return;
+      }
+    }
+
+    // Lanjutkan jika tidak terkunci
+    this.setupBoard(userData);
+
+    // Cek status gameover dari backend
+    const res2 = await fetch('https://arselco.onrender.com/api/users/gameover', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, level: 'Level01' })
+    });
+    const result = await res2.json();
+
+    if (result.isGameOver && userData.score === 0) {
+      userData.isGameOver = true;
+      localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+      this.showGameOverReturnMessage();
+    } else {
+      userData.playCount += 1;
       // Jika playCount >= 3 dan score masih 0, set game over
       if (userData.playCount >= 3 && userData.score === 0) {
         await fetch('https://arselco.onrender.com/set-gameover', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user })
+          body: JSON.stringify({ email })
         });
         userData.isGameOver = true;
       }
 
       // Simpan status lokal
-      localStorage.setItem(`gameData-${user}`, JSON.stringify(userData));
+      localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
 
       // ✅ Mulai Game
-        this.unblur10PuzzleButton();
-        this.unlockGameAfterPurchase();
-        window.unlockPlayAndHideGameOver(); 
+      this.unblur10PuzzleButton();
+      this.unlockGameAfterPurchase();
+      window.unlockPlayAndHideGameOver && window.unlockPlayAndHideGameOver();
     }
   } catch (error) {
     console.error('❌ Gagal cek status GameOver:', error);
-    // Tetap izinkan main jika server gagal, fallback
     this.unblur10PuzzleButton();
   }
 }
-
+          
 // PANGGIL DETEKSI GAME OVER
 checkGameOverStatusFromServer();
 
