@@ -244,23 +244,6 @@ async function unlockLevel(email, level) {
   return result.success;
 }
 
-  if (result.success) {
-    // Reset localStorage gameData user
-    const resetData = {
-      playCount: 0,
-      isGameOver: false,
-      score: 0
-    };
-    localStorage.setItem(`gameData-${email}`, JSON.stringify(resetData));
-    alert('Level berhasil di-unlock. Selamat bermain kembali!');
-    this.unblur10PuzzleButton();
-    this.unlockGameAfterPurchase();
-    window.unlockPlayAndHideGameOver();
-    location.reload(); // reload Level01
-  } else {
-    alert('Gagal membuka level. Silakan hubungi admin.');
-  }
-
 // SIMPAN SCORE (FRONTEND) KE LOCALSTORAGE JIKA FETCH GAGAL
 async function saveScore(score, email) {
   try {
@@ -3449,12 +3432,27 @@ showHoldMessageAboveNotes() {
               this.unlockGameAfterPurchase();
               // PANGGIL UNLOCK LEVEL DI SINI
               const email = localStorage.getItem('playerEmail');
-              await unlockLevel(email, 'Level01Scene');
-              this.unblur10PuzzleButton(); 
-              if (window.unlockPlayAndHideGameOver) window.unlockPlayAndHideGameOver(); 
+              const unlocked = await unlockLevel(email, 'Level01Scene');
+              if (unlocked) {
+              // Reset localStorage gameData user
+              const resetData = {
+              playCount: 0,
+              isGameOver: false,
+              score: 0
+              };
+              localStorage.setItem(`gameData-${email}`, JSON.stringify(resetData));
+              alert('Level successfully unlocked. Enjoy playing again!');
+              this.unblur10PuzzleButton();
+              this.unlockGameAfterPurchase();
+              window.unlockPlayAndHideGameOver && window.unlockPlayAndHideGameOver();
+              location.reload();
+              //} else {
+              //alert('Gagal membuka level. Silakan hubungi admin.');           
               }
-              }, 3000);
-             
+            }
+           }, 3000);
+            
+       
   
               // Setelah pembayaran sukses:
               // ✅ Rest of payment handling code continues...
@@ -3646,12 +3644,26 @@ showHoldMessageAboveNotes() {
               this.unlockGameAfterPurchase();
               // PANGGIL UNLOCK LEVEL DI SINI
               const email = localStorage.getItem('playerEmail');
-              await unlockLevel(email, 'Level01Scene');
-              this.unblur10PuzzleButton(); 
-              if (window.unlockPlayAndHideGameOver) window.unlockPlayAndHideGameOver(); 
+              const unlocked = await unlockLevel(email, 'Level01Scene');
+              if (unlocked) {
+              // Reset localStorage gameData user
+              const resetData = {
+              playCount: 0,
+              isGameOver: false,
+              score: 0
+              };
+              localStorage.setItem(`gameData-${email}`, JSON.stringify(resetData));
+              alert('Level successfully unlocked. Enjoy playing again!');
+              this.unblur10PuzzleButton();
+              this.unlockGameAfterPurchase();
+              window.unlockPlayAndHideGameOver && window.unlockPlayAndHideGameOver();
+              location.reload();
+              //} else {
+              //alert('Gagal membuka level. Silakan hubungi admin.');           
               }
-              }, 3000);     
-   
+            }
+           }, 3000);
+            
       // Setelah pembayaran sukses:
       if (this.payPanel) this.payPanel.destroy();
       if (this.payText) this.payText.destroy();
