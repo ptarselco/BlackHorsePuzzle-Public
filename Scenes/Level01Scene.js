@@ -171,6 +171,10 @@ const checkGameOverStatusFromServer= async () => {
     const res = await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/status', { email, level: 'Level01' });
     const userData = res.data;
 
+  // Cek status game over HANYA untuk user lama
+    const history = window.getPlayerGameHistory ? window.getPlayerGameHistory(email) : null;
+    const isUserBaru = !history || !history.hasPlayedBefore;
+
     // Cek status game over
     if (userData.isGameOver) {
       if (userData.score > 0) {
@@ -181,8 +185,6 @@ const checkGameOverStatusFromServer= async () => {
       }
     }
 
-    // Lanjutkan jika tidak terkunci
-    this.setupBoard(userData);
 
     // Cek status gameover dari backend
     const res2 = await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/gameover', { email, level: 'Level01' });
@@ -193,7 +195,7 @@ const checkGameOverStatusFromServer= async () => {
       localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
       this.showGameOverReturnMessage();
     } else {
-      userData.playCount += 1; // ini mungkin penyebab setelah 1 ronde tidak bisa di klik lagi
+      userData.playCount += 1; 
       // Jika playCount >= 3 dan score masih 0, set game over
       if (userData.playCount >= 3 && userData.score === 0) {
         await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/set-gameover', { email });
@@ -202,6 +204,10 @@ const checkGameOverStatusFromServer= async () => {
 
       // Simpan status lokal
       localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+
+      
+     // Lanjutkan jika tidak terkunci
+     this.setupBoard(userData);
 
       // ✅ Mulai Game
       this.unblur10PuzzleButton();
