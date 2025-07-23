@@ -220,7 +220,7 @@ async function unlockLevel(email, level) {
   return res.data.success;
 }
 
-// SIMPAN SCORE (FRONTEND) KE LOCALSTORAGE JIKA FETCH GAGAL
+// SIMPAN SCORE (FRONTEND) KE LOCALSTORAGE JIKA AXIOS GAGAL
 async function saveScore(score, email) {
   try {
     await saveScoreToMongo(score, email);
@@ -1531,37 +1531,8 @@ showGameOverReturnMessage() {
 
   // Lock all gameplay buttons immediately
   this.lockAllGameplayButtons();
-  
-  // Show Game Over image
-  //if (!this.gameOverImg) {
-   // this.gameOverImg = this.add.image(960, 200, 'gameOver')
-     // .setOrigin(0.5)
-     // .setDepth(10001)
-     // .setScale(0.6);
-  //}
 }
-// Versi Neo 
-//async checkGameOverStatusFromServer() {
-  //const user = localStorage.getItem('loggedInUser');
-  //if (!user) return;
 
-  //try {
-    //const response = await fetch('https://arselco.com/set-gameover', {
-      //method: 'POST',
-      //headers: {
-        //'Content-Type': 'application/json',
-      //},
-      //body: JSON.stringify({ username: user }),
-    //});
-
-    //const data = await response.json();
-    //if (data.gameOver) {
-      //showGameOverReturnMessage(); // tampilkan pesan game over
-    //}
-  //} catch (error) {
-    //console.error('❌ Gagal memeriksa status Game Over:', error);
-  //}
-//}
 
 //Versi Co 4.1
 async checkGameOverStatusFromServer() {
@@ -1570,13 +1541,8 @@ async checkGameOverStatusFromServer() {
 
   try {
     // Ganti endpoint ke endpoint cek status, bukan set
-    const response = await fetch('https://arselco.onrender.com/check-gameover', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email })
-    });
-
-    const data = await response.json();
+    const response = await axios.post('https://arselco.onrender.com/check-gameover', { email });
+    const data = response.data;
     // Cek field yang benar dari backend (misal: isGameOver)
     if (data.isGameOver) {
       this.showGameOverReturnMessage(); // pakai this.
@@ -1952,8 +1918,7 @@ backgroundLoadFavoriteMusic() {
 // ========== OPTIMASI DETEKSI NEGARA DAN PREVIEW PAJAK ==========
    async detectUserCountry() {
   try {
-    const response = await fetch('https://ipapi.co/json/');
-    const data = await response.json();
+    const response = await axios.get('https://ipapi.co/json/');
     this.userCountry = data.country_code || 'US';
     console.log(`🌍 User country detected: ${this.userCountry}`);
     return this.userCountry;
@@ -1965,13 +1930,8 @@ backgroundLoadFavoriteMusic() {
 
 async getTaxPreview(amount, country) {
   try {
-    const response = await fetch(`${this.backendUrl}/api/calculate-tax`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount, country })
-    });
-    const data = await response.json();
-    return data;
+   const response = await axios.post(`${this.backendUrl}/api/calculate-tax`, { amount, country });
+   return response.data; 
   } catch (error) {
     console.error('Tax preview failed:', error);
     return { 
@@ -3729,13 +3689,8 @@ showHoldMessageAboveNotes() {
 //-----------------------------------------------------------------
 async checkUnlockStatus(email) {
   try {
-    const res = await fetch("https://arselco.com/api/set-gameover", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, isGameOver: false })  // minta unlock
-    });
-
-    const data = await res.json();
+    const res = await axios.post("https://arselco.com/api/set-gameover", { email, isGameOver: false }); // minta unlock
+    const data = res.data;
     if (data.unlocked) {
       this.unlockGameAfterPurchase();  // ✅ gunakan fungsi kamu
     } else {
@@ -3746,11 +3701,7 @@ async checkUnlockStatus(email) {
     this.showGameOverReturnMessage();
   }
 }
-
-
 //----------------------------------------------------------------------
-
-
   showFavoritMenuBar() {
     // Hapus menu lama jika ada
     if (this.favoritMenuGroup) this.favoritMenuGroup.clear(true, true);

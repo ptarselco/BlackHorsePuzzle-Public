@@ -36,6 +36,7 @@
       max-width: 400px;
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
   <div class="loader"></div>
@@ -51,10 +52,13 @@
       window.location.href = "/index.html";
     }
 
-    fetch(`/api/verify-payment?txnId=${txnId}&email=${encodeURIComponent(email)}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.paid) {
+    // Gunakan axios
+    axios.get('/api/verify-payment', {
+      params: { txnId, email }
+    })
+      .then(res => {
+        const data = res.data;
+       if (data.paid) {
           // ✅ Mark user as verified and unlock access
           localStorage.setItem(`paymentVerified_${email}`, 'true');
           localStorage.removeItem(`gameOver_${email}`);
