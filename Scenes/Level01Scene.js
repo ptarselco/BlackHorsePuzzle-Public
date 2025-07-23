@@ -153,7 +153,7 @@ if (userData.isGameOver && userData.score === 0) {
 
 // CEK STATUS LEVEL (apakah sudah unlock)
 async function checkLevelStatus(email, level) {
-  const res = await axios.post('https://arselco.onrender.com/api/users/status', { email, level });
+  const res = await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/status', { email, level });
   return res.data.unlocked; // true/false
 }
 
@@ -165,7 +165,7 @@ async function checkGameOverStatusFromServer() {
 
  try {
     // Ambil status user dari backend
-    const res = await axios.post('https://arselco.onrender.com/api/users/status', { email, level: 'Level01' });
+    const res = await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/status', { email, level: 'Level01' });
     const userData = res.data;
 
     // Cek status game over
@@ -182,7 +182,7 @@ async function checkGameOverStatusFromServer() {
     this.setupBoard(userData);
 
     // Cek status gameover dari backend
-    const res2 = await axios.post('https://arselco.onrender.com/api/users/gameover', { email, level: 'Level01' });
+    const res2 = await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/gameover', { email, level: 'Level01' });
     const result = res2.data;
 
     if (result.isGameOver && userData.score === 0) {
@@ -193,7 +193,7 @@ async function checkGameOverStatusFromServer() {
       userData.playCount += 1; // ini mungkin penyebab setelah 1 ronde tidak bisa di klik lagi
       // Jika playCount >= 3 dan score masih 0, set game over
       if (userData.playCount >= 3 && userData.score === 0) {
-        await axios.post('https://arselco.onrender.com/set-gameover', { email });
+        await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/set-gameover', { email });
         userData.isGameOver = true;
       }
 
@@ -216,7 +216,7 @@ checkGameOverStatusFromServer();
 
 // UNLOCK LEVEL SETELAH PEMBAYARAN
 async function unlockLevel(email, level) {
-  const res = await axios.post('https://arselco.onrender.com/api/users/unlock', { email, level });
+  const res = await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/unlock', { email, level });
   return res.data.success;
 }
 
@@ -233,7 +233,7 @@ async function saveScore(score, email) {
 
 // Fungsi untuk kirim score ke backend/mongo
 async function saveScoreToMongo(score, email) {
-  const res = await axios.post('https://arselco.onrender.com/api/users/score', { score, email });
+  const res = await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/score', { score, email });
   if (res.status !== 200) throw new Error("Failed to save score to MongoDB");
 }
 
@@ -1541,7 +1541,7 @@ async checkGameOverStatusFromServer() {
 
   try {
     // Ganti endpoint ke endpoint cek status, bukan set
-    const response = await axios.post('https://arselco.onrender.com/check-gameover', { email });
+    const response = await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/check-gameover', { email });
     const data = response.data;
     // Cek field yang benar dari backend (misal: isGameOver)
     if (data.isGameOver) {
