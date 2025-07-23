@@ -159,7 +159,7 @@ async function checkLevelStatus(email, level) {
 
 
 // CEK KE MONGODB : STATUS GAME OVER SERVER-SIDE
-async function checkGameOverStatusFromServer() {
+const checkGameOverStatusFromServer= async () => {
   const email = localStorage.getItem('playerEmail');
   if (!email) return;
 
