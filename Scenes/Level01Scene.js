@@ -200,10 +200,11 @@ const checkGameOverStatusFromServer= async () => {
       if (userData.playCount >= 3 && userData.score === 0) {
         await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/set-gameover', { email });
         userData.isGameOver = true;
+        // Simpan status lokal
+        localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+        this.showGameOverReturnMessage();
+        lockAllGameplayButtons();
       }
-
-      // Simpan status lokal
-      localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
 
       
      // Lanjutkan jika tidak terkunci
@@ -1752,6 +1753,12 @@ unblur10PuzzleButton() {
 
 // ========== GAME OVER PROTECTION FUNCTIONS ==========
 lockAllGameplayButtons() {
+  // Disable (blur) the play button
+  if (this.playBtn) {
+    this.playBtn.setAlpha(0.3);
+    this.playBtn.disableInteractive();
+  }
+  
   // Disable 10 puzzle button permanently until favorite menu purchase
   if (this.lv01Puzzle10Btn) {
     this.lv01Puzzle10Btn.disableInteractive();
