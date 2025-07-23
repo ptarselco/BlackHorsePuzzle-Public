@@ -115,39 +115,19 @@ class Level01Scene extends Phaser.Scene {
 });  
   }
 
-  async create() {
-    const email = localStorage.getItem("playerEmail");
+  create() {
     console.log("Level01 create, login:", localStorage.getItem("playerEmail"));
-    //if (!localStorage.getItem("playerEmail")) {
-    if (!email) {
+    if (!localStorage.getItem("playerEmail")) {
     console.log("Belum login, kembali ke SplashScene"); 
     this.scene.start('SplashScene');
     return;
   }
 
-// CEK STATUS GAME OVER DARI BACKEND
-  try {
-    const res = await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/status', { email, level: 'Level01' });
-    if (res.data.isGameOver && res.data.score === 0) {
-      // LOCK tombol play & 10 puzzle
-      if (this.lv01Puzzle10Btn) {
-        this.lv01Puzzle10Btn.disableInteractive();
-        this.lv01Puzzle10Btn.setAlpha(0.5);
-      }
-      if (this.playBtn) {
-        this.playBtn.disableInteractive();
-        this.playBtn.setAlpha(0.5);
-      }
-      // Tampilkan pesan game over
-      this.showGameOverReturnMessage();
-      return; // Stop create() supaya user tidak bisa main
-    }
-  } catch (err) {
-    console.error('❌ Gagal cek status GameOver dari backend:', err);
-  }
+
   
 // ⬇️ PEMANGGIL CEK STATUS LEVEL YANG TERHUBUNG DENGAN BACKEND (SERVER) MENGARAH KE MONGODB
-checkLevelStatus(email, 'Level01Scene').then(unlocked => {
+const email = localStorage.getItem("playerEmail");
+   checkLevelStatus(email, 'Level01Scene').then(unlocked => {
     if (unlocked) {
       this.unblur10PuzzleButton();
     } else {
