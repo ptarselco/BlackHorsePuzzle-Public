@@ -210,15 +210,7 @@ const checkGameOverStatusFromServer= async () => {
      // Lanjutkan jika tidak terkunci
      this.setupBoard(userData);
 
-      // ✅ Mulai Game
-  //    if (this.playBtn) {
-  //    this.playBtn.disableInteractive();
-  //    this.playBtn.setAlpha(0.5);
-  //    this.playBtn.setVisible(true);
-  //    }
-  //    this.unblur10PuzzleButton();
-  //    this.unlockGameAfterPurchase();
-  //    window.unlockPlayAndHideGameOver && window.unlockPlayAndHideGameOver();
+      
     }
   } catch (error) {
     console.error('❌ Gagal cek status GameOver:', error);
@@ -2483,12 +2475,12 @@ async updateTaxInBackground(musicTitle, x, y) {
     }
   }
 // ========== UNBLUR 10 PUZZLE BUTTON ==========
-   unblur10PuzzleButton() {
+ //  unblur10PuzzleButton() {
   // Aktifkan tombol 10 Puzzle
-  if (this.lv01Puzzle10Btn) {
-    this.lv01Puzzle10Btn.setAlpha(1);
-    this.lv01Puzzle10Btn.setInteractive({ useHandCursor: true });
-  }
+ // if (this.lv01Puzzle10Btn) {
+ // this.lv01Puzzle10Btn.setAlpha(1);
+ //   this.lv01Puzzle10Btn.setInteractive({ useHandCursor: true });
+ // }
 
   // Aktifkan tombol Play
   //if (this.playBtn) {
@@ -2496,8 +2488,8 @@ async updateTaxInBackground(musicTitle, x, y) {
     //this.playBtn.setInteractive({ useHandCursor: true });
   //}
 
-  console.log('✅ 10 Puzzle and Play buttons restored');
-}
+ // console.log('✅ 10 Puzzle and Play buttons restored');
+//}
 //================================================
 
   // filepath: [Level01Scene.js](http://_vscodecontentref_/2)
