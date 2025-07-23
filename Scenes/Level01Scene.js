@@ -228,14 +228,18 @@ window.addEventListener('load', async () => {
   const temp = localStorage.getItem(`tempScore_${email}`);
   if (temp) {
     const { score } = JSON.parse(temp);
+    // Akses instance Level01Scene dari Phaser
+    const level01 = window.game.scene.getScene('Level01Scene');
+    if (level01 && typeof level01.saveScoreToMongo === 'function') {
     try {
-      await saveScoreToMongo(score, email);
+      await level01.saveScoreToMongo(score, email);
       console.log("⏫ Synced tempScore to MongoDB");
       localStorage.removeItem(`tempScore_${email}`);
     } catch (e) {
       console.warn("Still offline. Retry again later.");
     }
   }
+}
 });
 //-----------------------------------------------------   
 
