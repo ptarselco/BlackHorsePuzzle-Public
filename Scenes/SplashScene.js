@@ -145,18 +145,18 @@ class SplashScene extends Phaser.Scene {
     this.load.image("btnRed", "./Puzzle-Assets/UI/Sp. Button Red Level 02.webp");
     
     // Load additional horses
-    this.load.spritesheet("brownHorse01", "./Puzzle-Assets/Splash/BrownHorseRun01.webp", {
-      frameWidth: 750, frameHeight: 750
-    });
-    this.load.spritesheet("brownHorse02", "./Puzzle-Assets/Splash/BrownHorseRun02.webp", {
-      frameWidth: 750, frameHeight: 750
-    });
-    this.load.spritesheet("brownHorse03", "./Puzzle-Assets/Splash/BrownHorseRun03.webp", {
-      frameWidth: 750, frameHeight: 750
-    });
-    this.load.spritesheet("ladyhorse", "./Puzzle-Assets/Splash/LadyHorseRun.webp", {
-      frameWidth: 750, frameHeight: 750
-    });
+//    this.load.spritesheet("brownHorse01", "./Puzzle-Assets/Splash/BrownHorseRun01.webp", {
+//      frameWidth: 750, frameHeight: 750
+//    });
+//    this.load.spritesheet("brownHorse02", "./Puzzle-Assets/Splash/BrownHorseRun02.webp", {
+//      frameWidth: 750, frameHeight: 750
+//    });
+//    this.load.spritesheet("brownHorse03", "./Puzzle-Assets/Splash/BrownHorseRun03.webp", {
+//      frameWidth: 750, frameHeight: 750
+//    });
+//    this.load.spritesheet("ladyhorse", "./Puzzle-Assets/Splash/LadyHorseRun.webp", {
+//      frameWidth: 750, frameHeight: 750
+//    });
 
     this.load.once('complete', () => {
       console.log('✅ Background assets loaded!');
