@@ -220,22 +220,7 @@ async function unlockLevel(email, level) {
   return res.data.success;
 }
 
-// SIMPAN SCORE (FRONTEND) KE LOCALSTORAGE JIKA AXIOS GAGAL
-async function saveScore(score, email) {
-  try {
-    await saveScoreToMongo(score, email);
-    localStorage.removeItem(`tempScore_${email}`);
-  } catch (e) {
-    console.warn("MongoDB unreachable. Saving score locally.");
-    localStorage.setItem(`tempScore_${email}`, JSON.stringify({ score, email }));
-  }
-}
 
-// Fungsi untuk kirim score ke backend/mongo
-async function saveScoreToMongo(score, email) {
-  const res = await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/score', { score, email });
-  if (res.status !== 200) throw new Error("Failed to save score to MongoDB");
-}
 
 // Saat game load ulang, coba sync score yang tertunda
 window.addEventListener('load', async () => {
@@ -1551,6 +1536,22 @@ async checkGameOverStatusFromServer() {
     console.error('❌ Gagal memeriksa status Game Over:', error);
   }
 }
+
+// SIMPAN SCORE KE MONGODB 
+async saveScore(score, email) {
+    try {
+      await this.saveScoreToMongo(score, email);
+      localStorage.removeItem(`tempScore_${email}`);
+    } catch (e) {
+      console.warn("MongoDB unreachable. Saving score locally.");
+      localStorage.setItem(`tempScore_${email}`, JSON.stringify({ score, email }));
+    }
+  }
+
+  async saveScoreToMongo(score, email) {
+    const res = await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/score', { score, email });
+    if (res.status !== 200) throw new Error("Failed to save score to MongoDB");
+  }
 
 //Fungsi di kosongkan dulu dengan TODO ini
 setupBoard(userData) {
