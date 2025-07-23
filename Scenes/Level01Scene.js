@@ -2419,7 +2419,7 @@ async updateTaxInBackground(musicTitle, x, y) {
       this.scoreText.setText(this.score.toString().padStart(5, '0')); // Tambahkan baris ini
       this.registry.set('score', this.score);
       const email = localStorage.getItem('playerEmail');
-      if (email) saveScore(this.score, email);
+      if (email) this.saveScore(this.score, email);
       //if (email && typeof safeUpdateGameScore === 'function') { ////hendle score saat menang diganti dgn saveScore
       //safeUpdateGameScore(email, this.score);
       //}
@@ -2546,7 +2546,7 @@ async updateTaxInBackground(musicTitle, x, y) {
     this.registry.set('score', this.score);
     // Simpan score ke localStorage saat mongodb offline
     const email = localStorage.getItem('playerEmail');
-    if (email) saveScore(this.score, email);
+    if (email) this.saveScore(this.score, email);
     //if (email && typeof safeUpdateGameScore === 'function') { //hendle score saat kalah diganti dgn saveScore
     //safeUpdateGameScore(email, this.score);
     //}

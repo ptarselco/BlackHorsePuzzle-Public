@@ -145,9 +145,9 @@ class SplashScene extends Phaser.Scene {
     this.load.image("btnRed", "./Puzzle-Assets/UI/Sp. Button Red Level 02.webp");
     
     // Load additional horses
-    this.load.spritesheet("brownHorse01", "./Puzzle-Assets/Splash/BrownHorseRun01.webp", {
-      frameWidth: 750, frameHeight: 750
-    });
+   // this.load.spritesheet("brownHorse01", "./Puzzle-Assets/Splash/BrownHorseRun01.webp", {
+   //   frameWidth: 750, frameHeight: 750
+   // });
     this.load.spritesheet("brownHorse02", "./Puzzle-Assets/Splash/BrownHorseRun02.webp", {
       frameWidth: 750, frameHeight: 750
     });
@@ -391,8 +391,8 @@ class SplashScene extends Phaser.Scene {
     });
   }
     
- //   const brownHorse1 = this.add.sprite(980, 890, "brownHorse01").setScale(0.8);
- //   brownHorse1.play("runBrown01");
+    const brownHorse1 = this.add.sprite(980, 890, "brownHorse01").setScale(0.8);
+    brownHorse1.play("runBrown01");
 
     if (!this.anims.exists("runBrown02")) {
     this.anims.create({
@@ -402,8 +402,8 @@ class SplashScene extends Phaser.Scene {
       repeat: -1
     });
   }
-//    const brownHorse2 = this.add.sprite(1230, 840, "brownHorse02").setScale(0.75);
-//    brownHorse2.play("runBrown02");
+    const brownHorse2 = this.add.sprite(1230, 840, "brownHorse02").setScale(0.75);
+    brownHorse2.play("runBrown02");
 
     if (!this.anims.exists("runBrown03")) {
     this.anims.create({
@@ -413,8 +413,8 @@ class SplashScene extends Phaser.Scene {
       repeat: -1
     });
   }
-//    const brownHorse3 = this.add.sprite(1450, 830, "brownHorse03").setScale(0.7);
-//    brownHorse3.play("runBrown03");
+    const brownHorse3 = this.add.sprite(1450, 830, "brownHorse03").setScale(0.7);
+    brownHorse3.play("runBrown03");
 
     if (!this.anims.exists("runLady")) {
     this.anims.create({
@@ -424,8 +424,8 @@ class SplashScene extends Phaser.Scene {
       repeat: -1
     });
   }
-//    const ladyHorse = this.add.sprite(1750, 830, "ladyhorse").setScale(0.7);
-//    ladyHorse.play("runLady");
+    const ladyHorse = this.add.sprite(1750, 830, "ladyhorse").setScale(0.7);
+    ladyHorse.play("runLady");
 
      // ✅ NOW REPLACE BACKGROUND WITH HERD COVER:
     console.log('🖼️ Switching from solo to herd cover...');
