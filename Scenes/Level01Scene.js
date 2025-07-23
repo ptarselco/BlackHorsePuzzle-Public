@@ -216,9 +216,9 @@ const checkGameOverStatusFromServer= async () => {
       this.playBtn.setAlpha(0.5);
       this.playBtn.setVisible(true);
       }
-      this.unblur10PuzzleButton();
-      this.unlockGameAfterPurchase();
-      window.unlockPlayAndHideGameOver && window.unlockPlayAndHideGameOver();
+  //    this.unblur10PuzzleButton();
+  //    this.unlockGameAfterPurchase();
+  //    window.unlockPlayAndHideGameOver && window.unlockPlayAndHideGameOver();
     }
   } catch (error) {
     console.error('❌ Gagal cek status GameOver:', error);
