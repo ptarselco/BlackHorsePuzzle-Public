@@ -1552,7 +1552,13 @@ async checkGameOverStatusFromServer() {
   }
 }
 
-
+//Fungsi di kosongkan dulu dengan TODO ini
+setupBoard(userData) {
+  // TODO: Isi logika setup board sesuai kebutuhan
+  // Contoh minimal:
+  console.log('setupBoard dipanggil dengan:', userData);
+  // Atau, panggil logika reset/init board yang sudah ada
+}
 
 // Around line 1350, ADD this new function:
 
