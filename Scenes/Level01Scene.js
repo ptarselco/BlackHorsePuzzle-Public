@@ -1,6 +1,7 @@
 class Level01Scene extends Phaser.Scene {
   constructor() {
     super('Level01Scene');
+    this.isPaid = false; // Default, belum bayar
     this.currentFavMusic = null;
     this.favMusicTimeLeft = 0; // total detik favorit aktif
     this.favMusicTimer = null;
@@ -3583,7 +3584,9 @@ showHoldMessageAboveNotes() {
               const paid = await checkPaymentStatusFromBackend(email);
               if (paid) {
               clearInterval(this.paymentCheckInterval);
+              this.handlePaymentSuccess(); 
               // ✅ UNLOCK GAME AFTER PURCHASE:
+              if (this.isPaid) {
               this.unlockGameAfterPurchase();
               // PANGGIL UNLOCK LEVEL DI SINI
               const email = localStorage.getItem('playerEmail');
@@ -3605,7 +3608,9 @@ showHoldMessageAboveNotes() {
               //alert('Gagal membuka level. Silakan hubungi admin.');           
               }
             }
-           }, 3000);
+          }
+        }, 3000);
+      
             
       // Setelah pembayaran sukses:
       if (this.payPanel) this.payPanel.destroy();
