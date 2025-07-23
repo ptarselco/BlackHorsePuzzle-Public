@@ -2066,6 +2066,12 @@ async updateTaxInBackground(musicTitle, x, y) {
       playBtn.setTexture('playSheriffL');
       playBtn.setScale(0.4);
 
+       // >>> Tambahkan ini di bawah pembuatan playBtn <<<
+      playBtn.disableInteractive();
+      playBtn.setAlpha(0.5);
+      playBtn.setVisible(true);
+
+
       if (this.claimHatBtn) {
         this.claimHatBtn.destroy();
         this.claimHatBtn = null;
