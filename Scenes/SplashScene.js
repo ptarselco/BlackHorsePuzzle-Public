@@ -392,7 +392,7 @@ class SplashScene extends Phaser.Scene {
   }
     
  //   const brownHorse1 = this.add.sprite(980, 890, "brownHorse01").setScale(0.8);
-    brownHorse1.play("runBrown01");
+ //   brownHorse1.play("runBrown01");
 
     if (!this.anims.exists("runBrown02")) {
     this.anims.create({
@@ -403,7 +403,7 @@ class SplashScene extends Phaser.Scene {
     });
   }
 //    const brownHorse2 = this.add.sprite(1230, 840, "brownHorse02").setScale(0.75);
-    brownHorse2.play("runBrown02");
+//    brownHorse2.play("runBrown02");
 
     if (!this.anims.exists("runBrown03")) {
     this.anims.create({
@@ -414,7 +414,7 @@ class SplashScene extends Phaser.Scene {
     });
   }
 //    const brownHorse3 = this.add.sprite(1450, 830, "brownHorse03").setScale(0.7);
-    brownHorse3.play("runBrown03");
+//    brownHorse3.play("runBrown03");
 
     if (!this.anims.exists("runLady")) {
     this.anims.create({
@@ -425,7 +425,7 @@ class SplashScene extends Phaser.Scene {
     });
   }
 //    const ladyHorse = this.add.sprite(1750, 830, "ladyhorse").setScale(0.7);
-    ladyHorse.play("runLady");
+//    ladyHorse.play("runLady");
 
      // ✅ NOW REPLACE BACKGROUND WITH HERD COVER:
     console.log('🖼️ Switching from solo to herd cover...');
