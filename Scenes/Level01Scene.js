@@ -211,6 +211,11 @@ const checkGameOverStatusFromServer= async () => {
      this.setupBoard(userData);
 
       // ✅ Mulai Game
+      if (this.playBtn) {
+      this.playBtn.disableInteractive();
+      this.playBtn.setAlpha(0.5);
+      this.playBtn.setVisible(true);
+      }
       this.unblur10PuzzleButton();
       this.unlockGameAfterPurchase();
       window.unlockPlayAndHideGameOver && window.unlockPlayAndHideGameOver();
@@ -2066,12 +2071,6 @@ async updateTaxInBackground(musicTitle, x, y) {
       playBtn.setTexture('playSheriffL');
       playBtn.setScale(0.4);
 
-       // >>> Tambahkan ini di bawah pembuatan playBtn <<<
-      playBtn.disableInteractive();
-      playBtn.setAlpha(0.5);
-      playBtn.setVisible(true);
-
-
       if (this.claimHatBtn) {
         this.claimHatBtn.destroy();
         this.claimHatBtn = null;
@@ -2492,10 +2491,10 @@ async updateTaxInBackground(musicTitle, x, y) {
   }
 
   // Aktifkan tombol Play
-  if (this.playBtn) {
-    this.playBtn.setAlpha(1);
-    this.playBtn.setInteractive({ useHandCursor: true });
-  }
+  //if (this.playBtn) {
+    //this.playBtn.setAlpha(1);
+    //this.playBtn.setInteractive({ useHandCursor: true });
+  //}
 
   console.log('✅ 10 Puzzle and Play buttons restored');
 }
