@@ -3673,7 +3673,7 @@ showHoldMessageAboveNotes() {
  // showWaitingForPaymentMessage untuk menampilkan pesan "Please wait confirmation your payment..." jika pembayaran sedang diproses
   showWaitingForPaymentMessage() {
    if (
-  !isPaid &&
+  !this.isPaid &&
   history.hasPlayedBefore &&
   (history.totalGamesPlayed || 0) >= 3 &&
   score === 0
