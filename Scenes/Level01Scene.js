@@ -211,11 +211,11 @@ const checkGameOverStatusFromServer= async () => {
      this.setupBoard(userData);
 
       // ✅ Mulai Game
-      if (this.playBtn) {
-      this.playBtn.disableInteractive();
-      this.playBtn.setAlpha(0.5);
-      this.playBtn.setVisible(true);
-      }
+  //    if (this.playBtn) {
+  //    this.playBtn.disableInteractive();
+  //    this.playBtn.setAlpha(0.5);
+  //    this.playBtn.setVisible(true);
+  //    }
   //    this.unblur10PuzzleButton();
   //    this.unlockGameAfterPurchase();
   //    window.unlockPlayAndHideGameOver && window.unlockPlayAndHideGameOver();
