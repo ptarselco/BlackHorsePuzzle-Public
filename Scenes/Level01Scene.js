@@ -208,7 +208,7 @@ const checkGameOverStatusFromServer= async () => {
 
       
      // Lanjutkan jika tidak terkunci
-     this.setupBoard(userData);
+     //this.setupBoard(userData);
 
       
     }
@@ -3377,7 +3377,6 @@ showHoldMessageAboveNotes() {
              // PAY handler with dynamic PayPal amount
              window.open('https://www.paypal.com/ncp/payment/ZVFL3ND789CVE');
              //window.open('https://your-xsolla-link', '_blank');  // belum selesai paystationnya
-             this.blur10PuzzleButton();
              this.showWaitingForPaymentMessage();
              
               // Polling ke backend setiap beberapa detik
