@@ -141,12 +141,7 @@ const isUserBaru = !history || !history.hasPlayedBefore;
 const masihGratis = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) < 3;
 const sudahMain3x = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) >= 3;
 
-if (sudahMain3x && userData.score === 0) {
-  this.isGameOver = true;
-  this.showGameOverReturnMessage();
-  this.lockAllGameplayButtons();
-  return;
-}
+
 
 const user = localStorage.getItem('playerEmail');
 let userData = JSON.parse(localStorage.getItem(`gameData-${user}`)) || {
@@ -192,12 +187,7 @@ const checkGameOverStatusFromServer= async () => {
       }
     }
   
-    if (data.isGameOver && data.score === 0) {
-    this.isGameOver = true;
-    this.showGameOverReturnMessage();
-    this.lockAllGameplayButtons();
-    return;
-    }
+   
 
     // Cek status gameover dari backend
     const res2 = await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/gameover', { email, level: 'Level01' });
