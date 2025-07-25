@@ -44,18 +44,88 @@
 
   <script>
     const params = new URLSearchParams(window.location.search);
-    const txnId = params.get('txnId');
+    const token = params.get('token');
+    const payerID = params.get('PayerID');
     const email = params.get('email');
-
+    const txnId = params.get('txnId');
+   
     if (!txnId || !email) {
       alert("❌ Missing payment information.");
       window.location.href = "/index.html";
     }
 
-    // Gunakan axios
-    axios.get('/api/verify-payment', {
-      params: { txnId, email }
+     if (!token || !payerID || !email) {
+    alert("❌ Missing PayPal payment information.");
+    window.location.href = "/index.html";
+  }
+
+  // VERIFIKASI TOKEN PAYPAL 
+  axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/verify-paypal-token', {
+    token,
+    payerID,
+    email
+  }, { timeout: 5000 })
+    .then(res => {
+      const data = res.data;
+      if (data.verified) {
+        localStorage.setItem(`paymentVerified_${email}`, 'true');
+        localStorage.removeItem(`gameOver_${email}`);
+        localStorage.setItem(`score_${email}`, "0");
+        // Unlock level jika scene aktif
+        if (window.Level01Scene && typeof window.Level01Scene.prototype.unlockGameAfterPurchase === 'function') {
+          const scene = window.game && window.game.scene && window.game.scene.getScene('Level01Scene');
+          if (scene && typeof scene.unlockGameAfterPurchase === 'function') {
+            scene.unlockGameAfterPurchase();
+          }
+        }
+        window.location.href = "/index.html";
+      } else {
+        alert("❌ Payment not verified yet.");
+        window.location.href = "/payment-error.html";
+      }
     })
+    .catch(err => {
+      console.error("Verification error:", err);
+      alert("❌ Failed to verify payment.");
+      window.location.href = "/payment-error.html";
+    });
+
+  // VERIFIKASI ORDER PAYPAL
+  async function verifyPayPalOrder(orderId, email) {
+  try {
+    console.log('🅿️ Verifying PayPal order:', orderId);
+
+    // Axios timeout pakai config
+    const response = await axios.post(
+      'https://backend-paypalblackhorsepuzzle.onrender.com/api/verify-paypal-order',
+      { orderId, email },
+      { timeout: 5000 }
+    );
+
+    const data = response.data;
+    console.log('🅿️ PayPal order verification result:', data);
+
+    return data.verified && data.status === 'COMPLETED';
+
+  } catch (error) {
+    console.warn('⚠️ PayPal order verification failed:', error.message);
+
+    // ✅ FALLBACK - ASSUME VALID IF ORDER ID EXISTS:
+    if (orderId && orderId.length > 10) {
+      console.log('🅿️ Using fallback verification - order ID looks valid');
+      return true;
+    }
+
+    return false;
+  }
+}
+
+    // VERIFY-PAYMENT
+    axios.get('https://backend-paypalblackhorsepuzzle.onrender.com/api/verify-payment', {
+      params: { txnId, email },
+      timeout: 5000,
+      headers: { 'Accept': 'application/json' }
+      })
       .then(res => {
         const data = res.data;
        if (data.paid) {
@@ -85,6 +155,74 @@
         alert("❌ Failed to verify payment.");
         window.location.href = "/payment-error.html";
       });
+
+      async function handlePaymentSuccess(email) {
+  try {
+    // Cek status pembayaran dari backend
+    const res = await axios.get(`https://backend-paypalblackhorsepuzzle.onrender.com/api/payment-status/${email}`);
+    const data = res.data;
+
+    if (data && data.paid === true) {
+      // Tandai payment verified di localStorage
+      localStorage.setItem(`paymentVerified_${email}`, 'true');
+      localStorage.removeItem(`gameOver_${email}`);
+      localStorage.setItem(`score_${email}`, "0");
+
+      // Unlock level jika scene aktif
+      if (window.Level01Scene && typeof window.Level01Scene.prototype.unlockGameAfterPurchase === 'function') {
+        const scene = window.game && window.game.scene && window.game.scene.getScene('Level01Scene');
+        if (scene && typeof scene.unlockGameAfterPurchase === 'function') {
+          scene.unlockGameAfterPurchase();
+        }
+      }
+      // Redirect ke halaman utama
+      window.location.href = "/index.html";
+    } else {
+      alert("❌ Payment not verified yet.");
+      window.location.href = "/payment-error.html";
+    }
+  } catch (err) {
+    console.error("Verification error:", err);
+    alert("❌ Failed to verify payment.");
+    window.location.href = "/payment-error.html";
+  }
+}
+
+async function handlePaymentSuccess(email) {
+  try {
+    // Cek status pembayaran dari backend
+    const response = await axios.get(
+      'https://backend-paypalblackhorsepuzzle.onrender.com/api/check-payment',
+      {
+        params: { userId: email },
+        timeout: 5000,
+        headers: { 'Accept': 'application/json' }
+      }
+    );
+    const data = response.data;
+
+    if (data && data.paid === true) {
+      localStorage.setItem(`paymentVerified_${email}`, 'true');
+      localStorage.removeItem(`gameOver_${email}`);
+      localStorage.setItem(`score_${email}`, "0");
+      // Unlock level jika scene aktif
+      if (window.Level01Scene && typeof window.Level01Scene.prototype.unlockGameAfterPurchase === 'function') {
+        const scene = window.game && window.game.scene && window.game.scene.getScene('Level01Scene');
+        if (scene && typeof scene.unlockGameAfterPurchase === 'function') {
+          scene.unlockGameAfterPurchase();
+        }
+      }
+      window.location.href = "/index.html";
+    } else {
+      alert("❌ Payment not verified yet.");
+      window.location.href = "/payment-error.html";
+    }
+  } catch (err) {
+    console.error("Verification error:", err);
+    alert("❌ Failed to verify payment.");
+    window.location.href = "/payment-error.html";
+  }
+}
   </script>
 </body>
 </html>

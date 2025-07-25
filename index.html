@@ -200,7 +200,7 @@ const txnId = params.get("txnId");
 const email = params.get("email");
 
 if (payment === "success" && txnId && email) {
-     axios.get('/api/verify-payment', {
+     axios.get("https://backend-paypalblackhorsepuzzle.onrender.com/api/verify-payment", {
     params: { txnId, email }
   })
     .then(res => {
@@ -218,8 +218,6 @@ if (payment === "cancelled") {
   console.warn("❌ Payment cancelled by user.");
   // (optional) localStorage.setItem('paymentCancelled', 'true');
 }
-
-
 
 </script>
 
@@ -269,7 +267,10 @@ if (payment === "cancelled") {
     <input type="text" id="emailInput" placeholder="Email" autocomplete="off" />
       <button id="loginBtn">Login</button>
       </div>
-      </div>
+      <div class="login-row">
+       <input type="text" id="verificationCodeInput" placeholder="Kode Verifikasi" autocomplete="off" />
+       <button id="verifyBtn">Verify</button> 
+       <button id="resendVerificationBtn" style="margin-left:10px;">Kirim Ulang Kode</button>
       <!-- ✅ SINGLE LOGOUT BUTTON - PROPER PLACEMENT -->
       <button id="logoutBtn" style="display:none; position: fixed; top: 18px; right: 32px; z-index: 99999;background: #222; color: #fff; border: 1px solid #00eaff; border-radius: 7px; padding: 7px 16px; font-size: 0.95em; cursor: pointer; box-shadow: 0 0 8px #00eaff60; pointer-events: auto;">
       Logout
@@ -308,7 +309,72 @@ let paymentCheckInterval = null;
 // Add scroll functionality to canvas
   window.addScrollToCanvas();
 
-  
+ window.verifyEmailWithCode = async function(email, code) {
+  try {
+    const response = await axios.post(
+      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/verify-email',
+      { email, code },
+      { timeout: 8000 }
+    );
+    const data = response.data;
+    if (data.verified) {
+      console.log('✅ Email verified successfully:', email);
+      return true;
+    } else {
+      console.warn('❌ Email verification failed:', data.message || 'Unknown error');
+      return false;
+    }
+  } catch (error) {
+    console.error('❌ Error verifying email:', error.message);
+    return false;
+  }
+}; 
+
+window.resendVerificationEmail = async function(email) {
+  try {
+    const response = await axios.post(
+      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/resend-verification',
+      { email },
+      { timeout: 8000 }
+    );
+    const data = response.data;
+    if (data.success) {
+      alert('Kode verifikasi telah dikirim ulang ke email Anda.');
+      console.log('✅ Resend verification success:', email);
+      return true;
+    } else {
+      alert('Gagal mengirim ulang kode verifikasi. Coba lagi nanti.');
+      console.warn('❌ Resend verification failed:', data.message || 'Unknown error');
+      return false;
+    }
+  } catch (error) {
+    console.error('❌ Error resend verification:', error.message);
+    alert('Terjadi kesalahan saat mengirim ulang kode.');
+    return false;
+  }
+};
+
+document.getElementById("resendVerificationBtn").onclick = async function() {
+  const email = document.getElementById('emailInput').value.trim();
+  if (!email) {
+    alert('Masukkan email terlebih dahulu!');
+    return;
+  }
+  await window.resendVerificationEmail(email);
+};
+
+// Tambahkan event handler di bawah deklarasi fungsi verifyEmailWithCode
+document.getElementById("verifyBtn").onclick = async function() {
+  const email = document.getElementById('emailInput').value.trim();
+  const code = document.getElementById('verificationCodeInput').value.trim();
+  const verified = await window.verifyEmailWithCode(email, code);
+  if (verified) {
+    alert('Email verified! Silakan lanjut login.');
+    // Lanjutkan proses login atau unlock fitur di sini
+  } else {
+    alert('Kode verifikasi salah atau email belum terdaftar.');
+  }
+};
 
 // ✅ ENHANCED LOGIN HANDLER: ------ Mulai login handler ------------------- 
   document.getElementById("loginBtn").onclick = async function(event) {
@@ -906,7 +972,67 @@ window.checkPaymentStatus = async function(email) {
 //};
 
 //-------------------------------------------------------------------------------------------------------------------
-    // ✅ TRY BACKEND - WITH BETTER ERROR HANDLING:
+ async function verifyPayPalToken(token, payerID, email) {
+  try {
+    console.log('🅿️ Verifying PayPal token:', token);
+
+    // Axios tidak mendukung AbortController langsung, jadi timeout pakai config
+    const response = await axios.post(
+      'https://backend-paypalblackhorsepuzzle.onrender.com/api/verify-paypal-token',
+      { token, payerID, email },
+      { timeout: 5000 } // timeout dalam ms
+    );
+
+    const data = response.data;
+    console.log('🅿️ PayPal token verification result:', data);
+
+    return data.verified && data.status === 'APPROVED';
+
+  } catch (error) {
+    console.warn('⚠️ PayPal token verification failed:', error.message);
+    
+    // ✅ FALLBACK - ASSUME VALID IF TOKEN AND PAYER ID EXIST:
+    if (token && payerID && token.length > 10 && payerID.length > 10) {
+      console.log('🅿️ Using fallback verification - token and PayerID look valid');
+      return true;
+    }
+    
+    return false;
+  }
+}
+
+// ✅ PAYPAL VERIFICATION FUNCTIONS:
+async function verifyPayPalOrder(orderId, email) {
+  try {
+    console.log('🅿️ Verifying PayPal order:', orderId);
+
+    // Axios timeout pakai config
+    const response = await axios.post(
+      'https://backend-paypalblackhorsepuzzle.onrender.com/api/verify-paypal-order',
+      { orderId, email },
+      { timeout: 5000 }
+    );
+
+    const data = response.data;
+    console.log('🅿️ PayPal order verification result:', data);
+
+    return data.verified && data.status === 'COMPLETED';
+
+  } catch (error) {
+    console.warn('⚠️ PayPal order verification failed:', error.message);
+    
+    // ✅ FALLBACK - ASSUME VALID IF ORDER ID EXISTS:
+    if (orderId && orderId.length > 10) {
+      console.log('🅿️ Using fallback verification - order ID looks valid');
+      return true;
+    }
+    return false;
+  }
+}
+
+
+
+// ✅ TRY BACKEND - WITH BETTER ERROR HANDLING:
     try {
       console.log('🔗 Attempting backend connection...');
       
@@ -961,64 +1087,9 @@ window.checkPaymentStatus = async function(email) {
       return { paid: false, method: 'backend_unavailable' };
     }
   };
-// ✅ PAYPAL VERIFICATION FUNCTIONS:
-async function verifyPayPalOrder(orderId, email) {
-  try {
-    console.log('🅿️ Verifying PayPal order:', orderId);
 
-    // Axios timeout pakai config
-    const response = await axios.post(
-      'https://backend-paypalblackhorsepuzzle.onrender.com/api/verify-paypal-order',
-      { orderId, email },
-      { timeout: 5000 }
-    );
 
-    const data = response.data;
-    console.log('🅿️ PayPal order verification result:', data);
 
-    return data.verified && data.status === 'COMPLETED';
-
-  } catch (error) {
-    console.warn('⚠️ PayPal order verification failed:', error.message);
-    
-    // ✅ FALLBACK - ASSUME VALID IF ORDER ID EXISTS:
-    if (orderId && orderId.length > 10) {
-      console.log('🅿️ Using fallback verification - order ID looks valid');
-      return true;
-    }
-    
-    return false;
-  }
-}
-
-async function verifyPayPalToken(token, payerID, email) {
-  try {
-    console.log('🅿️ Verifying PayPal token:', token);
-
-    // Axios tidak mendukung AbortController langsung, jadi timeout pakai config
-    const response = await axios.post(
-      'https://backend-paypalblackhorsepuzzle.onrender.com/api/verify-paypal-token',
-      { token, payerID, email },
-      { timeout: 5000 } // timeout dalam ms
-    );
-
-    const data = response.data;
-    console.log('🅿️ PayPal token verification result:', data);
-
-    return data.verified && data.status === 'APPROVED';
-
-  } catch (error) {
-    console.warn('⚠️ PayPal token verification failed:', error.message);
-    
-    // ✅ FALLBACK - ASSUME VALID IF TOKEN AND PAYER ID EXIST:
-    if (token && payerID && token.length > 10 && payerID.length > 10) {
-      console.log('🅿️ Using fallback verification - token and PayerID look valid');
-      return true;
-    }
-    
-    return false;
-  }
-}
 //------------------------------------------------------------------------------------------------------------
 async function startPaymentMonitoring(email) {
   // Monitor payment status every minute
