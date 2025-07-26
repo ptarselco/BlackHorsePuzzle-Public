@@ -1486,10 +1486,11 @@ async checkGameOverStatusFromServer() {
 // Fungsi GET user progress
 async getUserProgress(email) {
   try {
-    const res = await axios.get(
-      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
-    //'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/progress',
-     { email: email.toLowerCase().trim() }, // email di body
+    const res = await axios.post(
+    // `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
+    'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/progress', {
+      email: this.username // tidak perlu encodeURIComponent
+    }, //jika tidak ada data progress, kirim objek kosong 
      { timeout: 5000 }
     );
     return res.data; // { progress: {...} }
