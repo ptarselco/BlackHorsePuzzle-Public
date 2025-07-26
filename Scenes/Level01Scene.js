@@ -662,7 +662,7 @@ class Level01Scene extends Phaser.Scene {
        wordWrap: { width: 800 }
        }).setOrigin(0, 0);
     };
-    });
+    
   
     // Tombol Prev
     let prevBtn = this.add.text(600, 1219, "Prev", {
@@ -752,8 +752,8 @@ class Level01Scene extends Phaser.Scene {
         if (helpTitle) { helpTitle.destroy(); helpTitle = null; }
         if (menuText) { menuText.destroy(); menuText = null; }
       });
+    });
     }
-  
     // Batas akhir help
     //---------------------------------------------------------------------------------------------------------
     // Aktifkan tombol BACK
