@@ -1371,7 +1371,7 @@ async checkUserStatusAndGameOver(email) {
   }
 
   // Tambah playCount setiap kali fungsi ini dipanggil (untuk user lama)
-   userData.playCount = (userData.playCount || 0) + 1;
+  // userData.playCount = (userData.playCount || 0) + 1;
 
    // Jika playCount >= 3 dan score masih 0, set game over
    if (userData.playCount >= 3 && (userData.score || 0) === 0) {
