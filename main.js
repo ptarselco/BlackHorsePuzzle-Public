@@ -3,6 +3,15 @@
 
 // Tambahkan ke window.helpText di main.js
 window.helpText1 = Object.assign(window.helpText1 || {}, {
+  en: {
+    title: "HELP GUIDE",
+    menu: "This game is designed to train focus, memory, and hand-brain coordination.\n\nLevel 01 consists of 10-puzzle and 20-puzzle series (coming soon).\nHow to play:\n\n1. Pay attention to the correct direction to touch (arrange) the black horse's face.\n\n2. Click 'Play' - the puzzle pieces will fall to the left grid. Click and arrange the pieces in the right grid.\n\n3. 🎮 The game consists of 3 rounds:\nRound 1 - 18 seconds: (3 seconds for pieces to fall, 5 seconds to observe, 10 seconds to arrange)\nRound 2 - 10 seconds: (Black Horse - warning, your time is running out!)\nRound 3 - 8 seconds: (Game Over - Black Horse is angry and won't be touched, failure annoys it!)"
+  },
+  id: {
+    title: "PANDUAN BANTUAN",
+    menu: "Game ini dirancang untuk melatih fokus, memori, dan koordinasi tangan-otak.\n\nLevel 01 terdiri dari seri 10 puzzle dan 20 puzzle (segera hadir).\nCara bermain:\n\n1. Perhatikan arah yang benar untuk menyentuh (menata) wajah Kuda Hitam.\n\n2. Klik 'Mainkan' - kepingan puzzle akan jatuh ke grid kiri. Klik dan tata kepingan di grid kanan.\n\n3. 🎮 Game terdiri dari 3 ronde:\nRonde 1 - 18 detik: (3 detik puzzle jatuh, 5 detik mengamati, 10 detik menata)\nRonde 2 - 10 detik: (Kuda Hitam - peringatan, waktu Anda hampir habis!)\nRonde 3 - 8 detik: (Game Over - Kuda Hitam marah dan tidak bisa disentuh, kegagalan membuatnya kesal!)"
+  },
+
   zh: {
     title: "帮助指南",
     menu: "本游戏旨在训练注意力、记忆力以及手部动作与大脑的协调。\n\n第01关包含10块拼图和20块拼图系列（即将推出）。\n玩法说明：\n\n1. 注意触摸（排列）黑马脸部的正确方向。\n\n2. 点击“开始”——拼图会掉落到左侧网格。\n点击并将拼图排列到右侧网格。\n\n3. 🎮 游戏共分为3轮：\n第1轮 - 18秒：（3秒拼图掉落，5秒观察拼图，10秒排列拼图）\n第2轮 - 10秒：（黑马警告——你的时间快用完了！）\n第3轮 - 8秒：（游戏结束——黑马生气了，不会再被触碰，\n失败会惹怒它！）"

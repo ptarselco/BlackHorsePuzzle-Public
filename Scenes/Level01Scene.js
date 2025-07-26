@@ -605,7 +605,6 @@ class Level01Scene extends Phaser.Scene {
        // Ganti gambar help sesuai bahasa dan halaman
        helpImg.setTexture(helpImages[getHelpImageKey(currentLang)][currentPage]);
        // Jika OTHER, update teks
-       let menu = "";
        if (getHelpImageKey(currentLang) === 'other') {
       //  if (getHelpImageKey(currentLang) === 'other' && currentPage === 0) {
        let t1 = window.helpText1[currentLang] || window.helpText1['other'];
