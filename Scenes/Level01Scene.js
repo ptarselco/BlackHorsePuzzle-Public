@@ -2116,14 +2116,6 @@ async updateTaxInBackground(musicTitle, x, y) {
       playBtn.setTexture('playSheriffL');
       playBtn.setScale(0.4);
 
-//-------------------------------------------------------------------------------------------------
-  // ✅ Ambil email dari localStorage
-const email = localStorage.getItem("playerEmail");
-let progress = await this.getUserProgress(email);
-progress.playCount = (progress.playCount || 0) + 1;
-await this.updateUserProgress(email, progress);
-
-//-------------------------------------------------------------------------------------------------
       if (this.isGameOver) {
       this.showGameOverReturnMessage();
       return;
