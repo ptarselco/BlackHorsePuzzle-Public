@@ -2117,19 +2117,11 @@ async updateTaxInBackground(musicTitle, x, y) {
       playBtn.setScale(0.4);
 
 //-------------------------------------------------------------------------------------------------
-//const email = localStorage.getItem("playerEmail");
+  // ✅ Ambil email dari localStorage
+const email = localStorage.getItem("playerEmail");
 let progress = await this.getUserProgress(email);
 progress.playCount = (progress.playCount || 0) + 1;
 await this.updateUserProgress(email, progress);
-
-// Cek apakah sudah 3x main dan score masih 0
-//if (progress.playCount >= 3 && (progress.score || 0) === 0) {
-  //await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/set-gameover', { email, isGameOver: true });
-  //this.isGameOver = true;
-  //this.showGameOverReturnMessage();
-  //this.lockAllGameplayButtons();
-  //return;
-//}
 
 //-------------------------------------------------------------------------------------------------
       if (this.isGameOver) {
@@ -2143,27 +2135,7 @@ await this.updateUserProgress(email, progress);
       this.playBtn.setVisible(true);
       }
 
-  // Tambah playCount setiap kali PlayBtn diklik
-  const email = localStorage.getItem('playerEmail');
-  let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {
-    playCount: 0,
-    isGameOver: false,
-    score: 0
-  };
-  userData.playCount = (userData.playCount || 0) + 1;
 
-  // Simpan kembali ke localStorage
-  localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
-
-  // Cek apakah sudah 3x main dan score 0
-  if (userData.playCount >= 3 && (userData.score || 0) === 0) {
-    userData.isGameOver = true;
-    localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
-    this.isGameOver = true;
-    this.showGameOverReturnMessage();
-    this.lockAllGameplayButtons();
-    return;
-  }
 //-------------------------------------------------------------------------------------------------
       if (this.claimHatBtn) {
         this.claimHatBtn.destroy();
