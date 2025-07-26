@@ -481,8 +481,10 @@ class Level01Scene extends Phaser.Scene {
         // --- TAMPILKAN TEKS JIKA OTHER ---
         //Jika OTHER, tambahkan teks di atas gambar
         if (getHelpImageKey(currentLang) === 'other') {
-        let t1 = window.helpText1[currentLang] || window.helpText1['other'];
-        let t2 = window.helpText2[currentLang] || window.helpText2['other'];
+        //let t1 = window.helpText1[currentLang] || window.helpText1['other'];
+        //let t2 = window.helpText2[currentLang] || window.helpText2['other'];
+        let t1 = window.helpText1[currentLang] || window.helpText1['other'] || { title: '', menu: '' };
+        let t2 = window.helpText2[currentLang] || window.helpText2['other'] || { title: '', menu: '' };
         // Pilih data sesuai halaman aktif
          let title = currentPage === 0 ? t1.title : t2.title;
          let menu = currentPage === 0 ? t1.menu : t2.menu;
