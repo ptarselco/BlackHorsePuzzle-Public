@@ -613,15 +613,12 @@ class Level01Scene extends Phaser.Scene {
        // Jika OTHER, update teks
        if (getHelpImageKey(currentLang) === 'other') {
       //  if (getHelpImageKey(currentLang) === 'other' && currentPage === 0) {
-       //let t1 = window.helpText1[currentLang] || window.helpText1['other'];
-       //let t2 = window.helpText2[currentLang] || window.helpText2['other'];
-       let t1 = window.helpText1[currentLang] || window.helpText1['other'] || { title: '', menu: '' };
-       let t2 = window.helpText2[currentLang] || window.helpText2['other'] || { title: '', menu: '' };
+       let t1 = window.helpText1[currentLang] || window.helpText1['other'];
+       let t2 = window.helpText2[currentLang] || window.helpText2['other'];
        // Pilih data sesuai halaman aktif
-       //let title = currentPage === 0 ? t1.title : t2.title;
-       //let menu = currentPage === 0 ? t1.menu : t2.menu;    
-       title = currentPage === 0 ? t1.title : t2.title;
-       menu = currentPage === 0 ? t1.menu : t2.menu;
+       let title = currentPage === 0 ? t1.title : t2.title;
+       let menu = currentPage === 0 ? t1.menu : t2.menu;    
+       
 
        // Update atau buat objek text
        if (!helpTitle) {
