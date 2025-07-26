@@ -136,7 +136,12 @@ class Level01Scene extends Phaser.Scene {
   const masihGratis = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) < 3;
   const gameOverState = localStorage.getItem(`gameOver_${email}`);
 
-  
+  if (this.playBtn) {
+    this.playBtn.disableInteractive();
+    this.playBtn.setAlpha(0.5);
+    this.playBtn.setVisible(true);
+  }
+
 
 // PANGGIL 5 FUNGSI YANG ADA DI CLASS (BELUM SEMUA DI PANGGIL DI SINI)
 
