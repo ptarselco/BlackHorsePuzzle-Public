@@ -1333,11 +1333,13 @@ startIntroSequence() {
 
 // ========== GAME OVER RETURN MESSAGE ==========
 //Versi Co 4.1
+// GET USER STATUS DARI BACKEND (POST)
 async getUserStatus(email, level = 'Level01') {
   try {
-    const res = await axios.get(
+    const res = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/status',
-      { params: { email, level } }
+      { email: email.toLowerCase().trim(), level },
+      { timeout: 5000 }
     );
     return res.data;
   } catch (error) {
@@ -1346,19 +1348,16 @@ async getUserStatus(email, level = 'Level01') {
   }
 }
 
+// GABUNGKAN CHECK USER STATUS DAN GAME OVER
 async checkUserStatusAndGameOver(email) {
-  // Ambil status user dari backend (GET, read-only)
+  // Ambil status user dari backend (POST)
   const status = await this.getUserStatus(email, 'Level01');
   if (!status) {
-   console.error('Gagal ambil status user');
+    console.error('Gagal ambil status user');
     return null;
-  } 
-  const res = await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/status', { email, level: 'Level01' });
-  const userData = res.data;
+  }
 
   // Cek status user lama/baru
-  const history = window.getPlayerGameHistory ? window.getPlayerGameHistory(email) : null;
-  //const isUserBaru = !history || !history.hasPlayedBefore;//bukan dari backend
   const isUserBaru = !status.playCount || status.playCount === 0;
 
   // Jika user baru, aktifkan tombol Play & Puzzle
@@ -1371,41 +1370,41 @@ async checkUserStatusAndGameOver(email) {
     }
     this.unblur10PuzzleButton && this.unblur10PuzzleButton();
     console.log('✅ User baru - tombol Play & Puzzle diaktifkan');
-    return userData;
+    return status;
   }
 
   // Cek status game over untuk user lama
-  if (userData.isGameOver) {
-    if (userData.score > 0) {
-      userData.isGameOver = false;
-      localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+  if (status.isGameOver) {
+    if (status.score > 0) {
+      status.isGameOver = false;
+      localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
       this.isGameOver = false;
       // Lanjutkan main
-      return userData;
+      return status;
     } else {
       this.isGameOver = true;
       this.showGameOverReturnMessage();
       this.lockAllGameplayButtons();
-      return userData;
+      return status;
     }
   }
 
   // Tambah playCount setiap kali fungsi ini dipanggil (untuk user lama)
-   userData.playCount = (userData.playCount || 0) + 1;
+  status.playCount = (status.playCount || 0) + 1;
 
-   // Jika playCount >= 3 dan score masih 0, set game over
-   if (userData.playCount >= 3 && (userData.score || 0) === 0) {
+  // Jika playCount >= 3 dan score masih 0, set game over
+  if (status.playCount >= 3 && (status.score || 0) === 0) {
     await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/set-gameover', { email, isGameOver: true });
-    userData.isGameOver = true;
-    localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+    status.isGameOver = true;
+    localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
     this.isGameOver = true;
     this.showGameOverReturnMessage();
     this.lockAllGameplayButtons();
-    return userData;
-   }
+    return status;
+  }
 
   // Simpan playCount terbaru ke localStorage
-  localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+  localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
 
   // Jika lolos semua, aktifkan tombol Play & Puzzle
   this.isGameOver = false;
@@ -1415,7 +1414,7 @@ async checkUserStatusAndGameOver(email) {
     this.playBtn.setVisible(true);
   }
   this.unblur10PuzzleButton && this.unblur10PuzzleButton();
-  return userData;
+  return status;
 }
 
 // LOCK LEVEL (mengunci akses level untuk user)
@@ -1488,8 +1487,10 @@ async checkGameOverStatusFromServer() {
 async getUserProgress(email) {
   try {
     const res = await axios.get(
-      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
-      { timeout: 5000 }
+     // `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
+    'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/progress',
+     { email: email.toLowerCase().trim() }, // email di body
+     { timeout: 5000 }
     );
     return res.data; // { progress: {...} }
   } catch (err) {
