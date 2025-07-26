@@ -123,6 +123,77 @@ class Level01Scene extends Phaser.Scene {
     return;
   }
 
+  // Deklarasi variabel utama
+  const email = localStorage.getItem("playerEmail");
+  let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {
+    playCount: 0,
+    isGameOver: false,
+    score: 0
+  };
+  const history = window.getPlayerGameHistory ? window.getPlayerGameHistory(email) : null;
+  const sudahMain3x = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) >= 3;
+  const isUserBaru = !history || !history.hasPlayedBefore;
+  const masihGratis = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) < 3;
+  const gameOverState = localStorage.getItem(`gameOver_${email}`);
+
+  this.playBtn = this.add.image(250, 830, 'playSheriff')
+    .setScale(0.3)
+    .setAlpha(0.5) // burem
+    .disableInteractive() // nonaktif
+    .setDepth(999);
+
+
+// PANGGIL 6 FUNGSI YANG ADA DI CLASS (BELUM SEMUA DI PANGGIL DI SINI)
+
+ // ✅ SCORE CALCULATION FIRST (BEFORE Game Over check):
+  let score = 0;
+  if (email) {
+    score = parseInt(localStorage.getItem(`score_${email}`)) || 0;
+  } else {
+    score = this.registry.get('score') || 0;
+  }
+  this.score = score;
+  this.registry.set('score', this.score);
+
+  
+  // === GET USER PROGRESS ===
+  this.getUserProgress(email).then(progress => {
+  if (progress) {
+    this.score = progress.score || 0;
+    this.playCount = progress.playCount || 0;
+    // === CEK UPDATE PROGRESS ===
+    this.updateUserProgress(email, progress);
+    // === CEK STATUS USER AND GAME OVER
+    this.checkUserStatusAndGameOver(email);
+    // === CEK GAME OVER STATUS DARI SERVER
+    if (progress.isGameOver) {
+      this.lockLevel(email, 'Level01');
+    }
+    this.checkGameOverStatusFromServer();
+   }
+});
+
+  // === CEK SCORE === // cek ulang penulisan
+  this.saveScore (this.score, email);
+
+ 
+  // ✅ SESSION-BASED WELCOME BACK FLAG:
+  // Only check once per browser session, not per scene load
+  if (!this.registry.get('welcomeBackShown')) { 
+    this.hasShownWelcomeBack = false; 
+  } else { 
+    this.hasShownWelcomeBack = true; 
+ } 
+
+  // ✅ ADD CONSOLE LOG HERE (after all Game Over logic):
+  console.log(`🔍 Game state check:
+- Email: ${email}
+- Score: ${this.score}  
+- Game Over State: ${gameOverState}
+- isUserBaru: ${isUserBaru}
+- Total Games Played: ${history?.totalGamesPlayed}
+- Final isGameOver: ${this.isGameOver}`);
+   
   
  //-------------------------------------------------------------
     // Background & board
@@ -346,74 +417,6 @@ class Level01Scene extends Phaser.Scene {
   });
 });
 
-// Deklarasi variabel utama
-  const email = localStorage.getItem("playerEmail");
-  let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {
-    playCount: 0,
-    isGameOver: false,
-    score: 0
-  };
-  const history = window.getPlayerGameHistory ? window.getPlayerGameHistory(email) : null;
-  const sudahMain3x = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) >= 3;
-  const isUserBaru = !history || !history.hasPlayedBefore;
-  const masihGratis = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) < 3;
-  const gameOverState = localStorage.getItem(`gameOver_${email}`);
-
-  
-
-
-// PANGGIL 6 FUNGSI YANG ADA DI CLASS (BELUM SEMUA DI PANGGIL DI SINI)
-
- // ✅ SCORE CALCULATION FIRST (BEFORE Game Over check):
-  let score = 0;
-  if (email) {
-    score = parseInt(localStorage.getItem(`score_${email}`)) || 0;
-  } else {
-    score = this.registry.get('score') || 0;
-  }
-  this.score = score;
-  this.registry.set('score', this.score);
-
-  
-  // === GET USER PROGRESS ===
-  this.getUserProgress(email).then(progress => {
-  if (progress) {
-    this.score = progress.score || 0;
-    this.playCount = progress.playCount || 0;
-    // === CEK UPDATE PROGRESS ===
-    this.updateUserProgress(email, progress);
-    // === CEK STATUS USER AND GAME OVER
-    this.checkUserStatusAndGameOver(email);
-    // === CEK GAME OVER STATUS DARI SERVER
-    if (progress.isGameOver) {
-      this.lockLevel(email, 'Level01');
-    }
-    this.checkGameOverStatusFromServer();
-   }
-});
-
-  // === CEK SCORE === // cek ulang penulisan
-  this.saveScore (this.score, email);
-
- 
-  // ✅ SESSION-BASED WELCOME BACK FLAG:
-  // Only check once per browser session, not per scene load
-  if (!this.registry.get('welcomeBackShown')) { 
-    this.hasShownWelcomeBack = false; 
-  } else { 
-    this.hasShownWelcomeBack = true; 
- } 
-
-  // ✅ ADD CONSOLE LOG HERE (after all Game Over logic):
-  console.log(`🔍 Game state check:
-- Email: ${email}
-- Score: ${this.score}  
-- Game Over State: ${gameOverState}
-- isUserBaru: ${isUserBaru}
-- Total Games Played: ${history?.totalGamesPlayed}
-- Final isGameOver: ${this.isGameOver}`);
-   
-  
  // Di dalam create()
 //--------------------------------------------------------------------------------------
     // Deklarasi Title dan Menu Text--> Mulai Help
