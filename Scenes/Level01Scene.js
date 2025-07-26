@@ -415,9 +415,7 @@ class Level01Scene extends Phaser.Scene {
  // Di dalam create()
 //--------------------------------------------------------------------------------------
     // Deklarasi Title dan Menu Text--> Mulai Help
-   // const updateHelpPanel = () => {
-    let menu = '';   // Deklarasi di atas
-    let title = '';  // Deklarasi di atas
+   
     let helpTitle, menuText;
     
     this.helpBtn = this.add.image(240, 1010, 'helpBtn').setScale(0.9).setDepth(3100).setInteractive({ useHandCursor: true }); 
@@ -484,13 +482,13 @@ class Level01Scene extends Phaser.Scene {
         // --- TAMPILKAN TEKS JIKA OTHER ---
         //Jika OTHER, tambahkan teks di atas gambar
         if (getHelpImageKey(currentLang) === 'other') {
-        //let t1 = window.helpText1[currentLang] || window.helpText1['other'];
-        //let t2 = window.helpText2[currentLang] || window.helpText2['other'];
-        let t1 = window.helpText1[currentLang] || window.helpText1['other'] || { title: '', menu: '' };
-        let t2 = window.helpText2[currentLang] || window.helpText2['other'] || { title: '', menu: '' };
+        let t1 = window.helpText1[currentLang] || window.helpText1['other'];
+        let t2 = window.helpText2[currentLang] || window.helpText2['other'];
+        //let t1 = window.helpText1[currentLang] || window.helpText1['other'] || { title: '', menu: '' };
+        //let t2 = window.helpText2[currentLang] || window.helpText2['other'] || { title: '', menu: '' };
         // Pilih data sesuai halaman aktif
-         title = currentPage === 0 ? t1.title : t2.title;
-         menu = currentPage === 0 ? t1.menu : t2.menu;
+        let title = currentPage === 0 ? t1.title : t2.title;
+        let menu = currentPage === 0 ? t1.menu : t2.menu;
        }
       
       
