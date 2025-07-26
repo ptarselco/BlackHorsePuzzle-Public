@@ -150,6 +150,7 @@ class Level01Scene extends Phaser.Scene {
   this.score = score;
   this.registry.set('score', this.score);
 
+  
   // === GET USER PROGRESS ===
   this.getUserProgress(email).then(progress => {
   if (progress) {
@@ -1332,14 +1333,33 @@ startIntroSequence() {
 
 // ========== GAME OVER RETURN MESSAGE ==========
 //Versi Co 4.1
+async getUserStatus(email, level = 'Level01') {
+  try {
+    const res = await axios.get(
+      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/status',
+      { params: { email, level } }
+    );
+    return res.data;
+  } catch (error) {
+    console.error('❌ Error getUserStatus:', error);
+    return null;
+  }
+}
+
 async checkUserStatusAndGameOver(email) {
-  // Ambil status user dari backend
+  // Ambil status user dari backend (GET, read-only)
+  const status = await this.getUserStatus(email, 'Level01');
+  if (!status) {
+   console.error('Gagal ambil status user');
+    return null;
+  } 
   const res = await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/status', { email, level: 'Level01' });
   const userData = res.data;
 
   // Cek status user lama/baru
   const history = window.getPlayerGameHistory ? window.getPlayerGameHistory(email) : null;
-  const isUserBaru = !history || !history.hasPlayedBefore;
+  //const isUserBaru = !history || !history.hasPlayedBefore;//bukan dari backend
+  const isUserBaru = !status.playCount || status.playCount === 0;
 
   // Jika user baru, aktifkan tombol Play & Puzzle
   if (isUserBaru) {
