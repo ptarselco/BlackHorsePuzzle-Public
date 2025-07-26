@@ -415,10 +415,13 @@ class Level01Scene extends Phaser.Scene {
  // Di dalam create()
 //--------------------------------------------------------------------------------------
     // Deklarasi Title dan Menu Text--> Mulai Help
-    let helpTitle, menu, menuText;
-
+    const updateHelpPanel = () => {
+    let menu = '';   // Deklarasi di atas
+    let title = '';  // Deklarasi di atas
+    let helpTitle, menuText;
+    
     this.helpBtn = this.add.image(240, 1010, 'helpBtn').setScale(0.9).setInteractive({ useHandCursor: true }); 
-   
+    
     this.helpBtn.on('pointerdown', () => {
       // Hapus help panel lama jika ada
       if (this.helpPanelGroup) {
@@ -486,10 +489,10 @@ class Level01Scene extends Phaser.Scene {
         let t1 = window.helpText1[currentLang] || window.helpText1['other'] || { title: '', menu: '' };
         let t2 = window.helpText2[currentLang] || window.helpText2['other'] || { title: '', menu: '' };
         // Pilih data sesuai halaman aktif
-         let title = currentPage === 0 ? t1.title : t2.title;
-         let menu = currentPage === 0 ? t1.menu : t2.menu;
+         title = currentPage === 0 ? t1.title : t2.title;
+         menu = currentPage === 0 ? t1.menu : t2.menu;
        }
-
+      
       
        // Buat rectangle di samping template
        let rect = this.add.rectangle(1707, 503, 450, 1600, 0x023d3f, 0.7)
@@ -559,7 +562,7 @@ class Level01Scene extends Phaser.Scene {
         this.otherLangBtns = [];
         updateHelpPanel();
         });
-     
+      
       
        // Saat klik OTHER:
        otherBtn.on('pointerdown', () => { // ini untuk Title dan Menu
@@ -601,6 +604,7 @@ class Level01Scene extends Phaser.Scene {
       // });
        return;
         }
+      
 //------------------------------------------------------------------------------      
         // --- FUNGSI UPDATE HELP PANEL ---
        const updateHelpPanel = () => {
@@ -615,7 +619,6 @@ class Level01Scene extends Phaser.Scene {
        let title = currentPage === 0 ? t1.title : t2.title;
        let menu = currentPage === 0 ? t1.menu : t2.menu;    
        
-    
        // Update atau buat objek text
        if (!helpTitle) {
         helpTitle = this.add.text(500, 80, title, {
@@ -631,6 +634,7 @@ class Level01Scene extends Phaser.Scene {
         }
 
         if (!menuText) {
+        // Sekarang menu dan title bisa dipakai di mana saja di fungsi ini  
         //let menu = "Ini baris pertama.\nIni baris kedua.\nIni baris ketiga.";
         menuText = this.add.text(500, 300, menu, {
           font: "30px Segoe UI", 
@@ -657,8 +661,9 @@ class Level01Scene extends Phaser.Scene {
        align: "left",
        wordWrap: { width: 800 }
        }).setOrigin(0, 0);
-       };
- 
+    };
+  
+  
     // Tombol Prev
     let prevBtn = this.add.text(600, 1219, "Prev", {
     font: "bold 52px Segoe UI", fill: "#00eaff", //mirip cyan tapi lebih gelap kalau kuning #ffff00
@@ -733,7 +738,7 @@ class Level01Scene extends Phaser.Scene {
       updateHelpPanel();
     }
   });
-
+    
 //-------------------------------------------------------------------------------------------
       // Tombol close
       let closeBtn = this.add.text(1444, 18, "X", {
@@ -748,6 +753,7 @@ class Level01Scene extends Phaser.Scene {
         if (menuText) { menuText.destroy(); menuText = null; }
       });
     });
+  }
     // Batas akhir help
     //---------------------------------------------------------------------------------------------------------
     // Aktifkan tombol BACK
