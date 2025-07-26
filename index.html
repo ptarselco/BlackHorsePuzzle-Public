@@ -125,6 +125,17 @@
   background: #00eaff;
   color: #181c24;
 }
+
+#resendVerificationBtn {
+  min-width: 120px; /* memastikan tombol tidak terlalu kecil */
+  padding: 8px 12px;
+  font-size: 1em;
+  margin-top: 6px; /* agar ada jarak dari tombol Verify */
+  display: block;  /* agar tombol berada di bawah, bukan samping */
+  margin-left: auto;
+  margin-right: auto;
+}
+
 #logoutBtn {
   background: #222;
   color: #fff;
@@ -260,6 +271,10 @@ if (payment === "cancelled") {
   </div>
   </div>
  
+  <!-- ✅ SINGLE LOGOUT BUTTON - PROPER PLACEMENT -->
+      <button id="logoutBtn" style="display:none; position: fixed; top: 18px; right: 32px; z-index: 99999;background: #222; color: #fff; border: 1px solid #00eaff; border-radius: 7px; padding: 7px 16px; font-size: 0.95em; cursor: pointer; box-shadow: 0 0 8px #00eaff60; pointer-events: auto;">
+      Logout
+    </button>
   
   <!-- === Form login === -->
     <div id="loginBox">
@@ -268,16 +283,14 @@ if (payment === "cancelled") {
       <button id="loginBtn">Login</button>
       </div>
       <div class="login-row">
-       <input type="text" id="verificationCodeInput" placeholder="Kode Verifikasi" autocomplete="off" />
+       <input type="text" id="verificationCodeInput" placeholder="Verification Code" autocomplete="off" />
        <button id="verifyBtn">Verify</button> 
-       <button id="resendVerificationBtn" style="margin-left:10px;">Kirim Ulang Kode</button>
-      <!-- ✅ SINGLE LOGOUT BUTTON - PROPER PLACEMENT -->
-      <button id="logoutBtn" style="display:none; position: fixed; top: 18px; right: 32px; z-index: 99999;background: #222; color: #fff; border: 1px solid #00eaff; border-radius: 7px; padding: 7px 16px; font-size: 0.95em; cursor: pointer; box-shadow: 0 0 8px #00eaff60; pointer-events: auto;">
-      Logout
-    </button>
- 
-
-    <!-- === End form login === -->
+      </div>
+      <div class="login-row">
+       <button id="resendVerificationBtn">Resend Code</button>
+      </div>
+    </div>
+    <!-- === End form login === style="margin-left:10px;" dikeluarkan dari Resend Code === -->
 
      <!-- Load main.js -->
     <script src="./main.js"></script>
@@ -339,17 +352,17 @@ window.resendVerificationEmail = async function(email) {
     );
     const data = response.data;
     if (data.success) {
-      alert('Kode verifikasi telah dikirim ulang ke email Anda.');
+      alert('Verification code has been resent to your email. Please check your inbox.');
       console.log('✅ Resend verification success:', email);
       return true;
     } else {
-      alert('Gagal mengirim ulang kode verifikasi. Coba lagi nanti.');
+      alert('Failed to resend verification code. Please try again later.');
       console.warn('❌ Resend verification failed:', data.message || 'Unknown error');
       return false;
     }
   } catch (error) {
     console.error('❌ Error resend verification:', error.message);
-    alert('Terjadi kesalahan saat mengirim ulang kode.');
+    alert('An error occurred while resending the code. Please try again later.');
     return false;
   }
 };
@@ -357,7 +370,7 @@ window.resendVerificationEmail = async function(email) {
 document.getElementById("resendVerificationBtn").onclick = async function() {
   const email = document.getElementById('emailInput').value.trim();
   if (!email) {
-    alert('Masukkan email terlebih dahulu!');
+    alert('Please enter your email address!');
     return;
   }
   await window.resendVerificationEmail(email);
@@ -369,10 +382,10 @@ document.getElementById("verifyBtn").onclick = async function() {
   const code = document.getElementById('verificationCodeInput').value.trim();
   const verified = await window.verifyEmailWithCode(email, code);
   if (verified) {
-    alert('Email verified! Silakan lanjut login.');
+    alert('Email verified! Please proceed to login.');
     // Lanjutkan proses login atau unlock fitur di sini
   } else {
-    alert('Kode verifikasi salah atau email belum terdaftar.');
+    alert('Verification code is incorrect or email is not registered.');
   }
 };
 

@@ -2123,13 +2123,13 @@ progress.playCount = (progress.playCount || 0) + 1;
 await this.updateUserProgress(email, progress);
 
 // Cek apakah sudah 3x main dan score masih 0
-if (progress.playCount >= 3 && (progress.score || 0) === 0) {
-  await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/set-gameover', { email, isGameOver: true });
-  this.isGameOver = true;
-  this.showGameOverReturnMessage();
-  this.lockAllGameplayButtons();
-  return;
-}
+//if (progress.playCount >= 3 && (progress.score || 0) === 0) {
+  //await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/set-gameover', { email, isGameOver: true });
+  //this.isGameOver = true;
+  //this.showGameOverReturnMessage();
+  //this.lockAllGameplayButtons();
+  //return;
+//}
 
 //-------------------------------------------------------------------------------------------------
       if (this.isGameOver) {
