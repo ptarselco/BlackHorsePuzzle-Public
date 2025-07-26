@@ -605,64 +605,67 @@ class Level01Scene extends Phaser.Scene {
       
 //------------------------------------------------------------------------------      
         // --- FUNGSI UPDATE HELP PANEL ---
-       const updateHelpPanel = () => {
-        let menu = ''; // Deklarasi di atas
-        let title = '';  
-       // Ganti gambar help sesuai bahasa dan halaman
-       helpImg.setTexture(helpImages[getHelpImageKey(currentLang)][currentPage]);
-       // Jika OTHER, update teks
-       if (getHelpImageKey(currentLang) === 'other') {
-      //  if (getHelpImageKey(currentLang) === 'other' && currentPage === 0) {
-       let t1 = window.helpText1[currentLang] || window.helpText1['other'];
-       let t2 = window.helpText2[currentLang] || window.helpText2['other'];
-       // Pilih data sesuai halaman aktif
-       let title = currentPage === 0 ? t1.title : t2.title;
-       let menu = currentPage === 0 ? t1.menu : t2.menu;    
-       
+  const updateHelpPanel = () => {
+  let menu = '';
+  let title = '';
+  helpImg.setTexture(helpImages[getHelpImageKey(currentLang)][currentPage]);
 
-       // Update atau buat objek text
-       if (!helpTitle) {
-        helpTitle = this.add.text(500, 80, title, {
-          font: "bold 50px Segoe UI", // atur ukuran font di sini
-          fill: "#fff",
-          align: "left",
-          wordWrap: { width: 900 }
-        }).setOrigin(0.0).setDepth(3020);
-        this.helpPanelGroup.add(helpTitle);
-        } else {
-        console.log('currentPage:', currentPage, 'title:', title, 'menu:', menu);
-        helpTitle.setText(title);
-        }
+  if (getHelpImageKey(currentLang) === 'other') {
+    let t1 = window.helpText1[currentLang] || window.helpText1['other'];
+    let t2 = window.helpText2[currentLang] || window.helpText2['other'];
+    title = currentPage === 0 ? t1.title : t2.title;
+    menu = currentPage === 0 ? t1.menu : t2.menu;
 
-        if (!menuText) {
-        // Sekarang menu dan title bisa dipakai di mana saja di fungsi ini  
-        //let menu = "Ini baris pertama.\nIni baris kedua.\nIni baris ketiga.";
-        menuText = this.add.text(500, 300, menu, {
-          font: "30px Segoe UI", 
-          fill: "#fff", 
+    // Tampilkan title
+    if (!helpTitle) {
+      helpTitle = this.add.text(500, 80, title, {
+        font: "bold 50px Segoe UI",
+        fill: "#fff",
+        align: "left",
+        wordWrap: { width: 900 }
+      }).setOrigin(0.0).setDepth(3020);
+      this.helpPanelGroup.add(helpTitle);
+    } else {
+      helpTitle.setText(title);
+    }
+
+    // Tampilkan menu
+    if (!menuText) {
+      menuText = this.add.text(500, 300, menu, {
+        font: "30px Segoe UI",
+        fill: "#fff",
+        align: "left",
+        wordWrap: { width: 900 }
+      }).setOrigin(0.0).setDepth(3020);
+      this.helpPanelGroup.add(menuText);
+    } else {
+      menuText.setText(menu);
+    }
+  } else {
+    // Jika bukan OTHER, sembunyikan teks
+    if (helpTitle) helpTitle.setText('');
+    if (menuText) menuText.setText('');
+
+    // Khusus Jepang, tampilkan menuText dengan font Jepang
+    if (currentLang === 'ja') {
+      let fontFamily = "Noto Sans JP, Arial, sans-serif";
+      let fontSize = "40px";
+      if (!menuText) {
+        menuText = this.add.text(80, 180, menu, {
+          font: `${fontSize} ${fontFamily}`,
+          fill: "#00eaff",
           align: "left",
-          wordWrap: { width: 900 }
-        }).setOrigin(0.0).setDepth(3020);
+          wordWrap: { width: 800 }
+        }).setOrigin(0, 0);
         this.helpPanelGroup.add(menuText);
-        } else {
+      } else {
         menuText.setText(menu);
-        }
-        } else {
-        // Jika bukan OTHER, sembunyikan teks
-        if (helpTitle) helpTitle.setText('');
-        if (menuText) menuText.setText('');
-       }
-       // Atur font Jepang
-       let fontFamily = currentLang === 'ja' ? "Noto Sans JP, Arial, sans-serif" : "Segoe UI, Arial, sans-serif";
-       let fontSize = currentLang === 'ja' ? "40px" : "30px";
-
-       menuText = this.add.text(80, 180, menu, {
-       font: `${fontSize} ${fontFamily}`,
-       fill: "#00eaff",
-       align: "left",
-       wordWrap: { width: 800 }
-       }).setOrigin(0, 0);
-    };
+        menuText.setFont(`${fontSize} ${fontFamily}`);
+        menuText.setFill("#00eaff");
+      }
+    }
+  }
+};  
     
   
     // Tombol Prev
