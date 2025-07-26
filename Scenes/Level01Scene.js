@@ -606,8 +606,8 @@ class Level01Scene extends Phaser.Scene {
 //------------------------------------------------------------------------------      
         // --- FUNGSI UPDATE HELP PANEL ---
        const updateHelpPanel = () => {
-        let menu = '' // Deklarasi di atas
-        let title = ''  
+        let menu = ''; // Deklarasi di atas
+        let title = '';  
        // Ganti gambar help sesuai bahasa dan halaman
        helpImg.setTexture(helpImages[getHelpImageKey(currentLang)][currentPage]);
        // Jika OTHER, update teks
@@ -618,10 +618,10 @@ class Level01Scene extends Phaser.Scene {
        let t1 = window.helpText1[currentLang] || window.helpText1['other'] || { title: '', menu: '' };
        let t2 = window.helpText2[currentLang] || window.helpText2['other'] || { title: '', menu: '' };
        // Pilih data sesuai halaman aktif
-       let title = currentPage === 0 ? t1.title : t2.title;
-       let menu = currentPage === 0 ? t1.menu : t2.menu;    
-       //title = currentPage === 0 ? t1.title : t2.title;
-       //menu = currentPage === 0 ? t1.menu : t2.menu;
+       //let title = currentPage === 0 ? t1.title : t2.title;
+       //let menu = currentPage === 0 ? t1.menu : t2.menu;    
+       title = currentPage === 0 ? t1.title : t2.title;
+       menu = currentPage === 0 ? t1.menu : t2.menu;
 
        // Update atau buat objek text
        if (!helpTitle) {
