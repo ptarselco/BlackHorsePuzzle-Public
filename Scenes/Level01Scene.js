@@ -420,7 +420,7 @@ class Level01Scene extends Phaser.Scene {
     let title = '';  // Deklarasi di atas
     let helpTitle, menuText;
     
-    this.helpBtn = this.add.image(240, 1010, 'helpBtn').setScale(0.9).setInteractive({ useHandCursor: true }); 
+    this.helpBtn = this.add.image(240, 1010, 'helpBtn').setScale(0.9).setDepth(3100).setInteractive({ useHandCursor: true }); 
     
     this.helpBtn.on('pointerdown', () => {
       // Hapus help panel lama jika ada
