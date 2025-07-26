@@ -528,24 +528,12 @@ function verifyEmailFormat(email) {
 
 // EMERGENCY FIX - PASTE SEKARANG:
 console.log('🚨 FIXING DUPLICATE FUNCTION - ADDING REAL BACKEND VERIFICATION');
-
-// Redefine verifyEmailWithBackend with actual backend connection
-//async function verifyEmailWithBackend(email) {
-window.verifyEmailWithBackend = async function(email) {
-  try {
-    console.log('📧 Verifying email with backend:', email);
-
-    // Step 1: Local format validation first
-    //const isValid = verifyEmailFormat(email);
-    const isValidFormat = verifyEmailFormat(email);
-    if (!isValidFormat) {
-      console.log('❌ Invalid email format');
-      return false;
-    }   
-
-        // Step 2: Backend verification
-    console.log('🔗 Attempting backend connection...');
     
+    
+console.log('Username yang dikirim:', this.username);
+   
+// Register user (di index.html)
+async function registerUser(email) { 
     try {
   const response = await axios.post(
     'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/register',
@@ -571,10 +559,36 @@ window.verifyEmailWithBackend = async function(email) {
 
   throw new Error(`Backend error: ${errorData.message}`);
 }
-}
-    } catch (error) {
+// Tambahan error handling
     console.error('❌ Backend verification failed:', error.message);
-     
+    return false;
+}
+}  
+
+// Redefine verifyEmailWithBackend with actual backend connection
+//async function verifyEmailWithBackend(email) {
+window.verifyEmailWithBackend = async function(email) {
+  try {
+    console.log('📧 Verifying email with backend:', email);
+
+    // Step 1: Local format validation first
+    //const isValid = verifyEmailFormat(email);
+    const isValidFormat = verifyEmailFormat(email);
+    if (!isValidFormat) {
+      console.log('❌ Invalid email format');
+      return false;
+    }   
+ 
+    // Step 2: Backend verification
+    console.log('🔗 Attempting backend connection...');
+    const result = await registerUser(email);
+    if (result) {
+      return true;
+    }
+
+     // Fallback jika backend gagal
+    return false;
+    } catch (error) {
     // Enhanced error handling with fallback
     if (error.name === 'AbortError') {
       console.log('⏰ Backend timeout - using fallback validation');
@@ -583,17 +597,17 @@ window.verifyEmailWithBackend = async function(email) {
     } else if (error.message.includes('CORS')) {
       console.log('🔒 CORS error - using fallback validation');
     }
-    
     // FALLBACK: If backend fails but email format is valid, allow login
     const isValidFormat = verifyEmailFormat(email);
     if (isValidFormat) {
       console.log('✅ Using fallback validation - email format valid');
       return true;
     }
-    
     return false;
   }
 };
+
+    
 
 console.log('✅ REAL BACKEND VERIFICATION READY - CONNECT TO RENDER.COM');
 
