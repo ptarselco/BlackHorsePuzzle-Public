@@ -415,7 +415,7 @@ class Level01Scene extends Phaser.Scene {
  // Di dalam create()
 //--------------------------------------------------------------------------------------
     // Deklarasi Title dan Menu Text--> Mulai Help
-    const updateHelpPanel = () => {
+   // const updateHelpPanel = () => {
     let menu = '';   // Deklarasi di atas
     let title = '';  // Deklarasi di atas
     let helpTitle, menuText;
@@ -753,7 +753,7 @@ class Level01Scene extends Phaser.Scene {
         if (menuText) { menuText.destroy(); menuText = null; }
       });
     });
-    }
+   // }
     // Batas akhir help
     //---------------------------------------------------------------------------------------------------------
     // Aktifkan tombol BACK
