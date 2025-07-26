@@ -2116,19 +2116,6 @@ async updateTaxInBackground(musicTitle, x, y) {
       playBtn.setTexture('playSheriffL');
       playBtn.setScale(0.4);
 
-      if (this.isGameOver) {
-      this.showGameOverReturnMessage();
-      return;
-     }
-
-      if (this.playBtn) {
-      this.playBtn.disableInteractive();
-      this.playBtn.setAlpha(0.5);
-      this.playBtn.setVisible(true);
-      }
-
-
-//-------------------------------------------------------------------------------------------------
       if (this.claimHatBtn) {
         this.claimHatBtn.destroy();
         this.claimHatBtn = null;
@@ -2679,13 +2666,13 @@ async updateTaxInBackground(musicTitle, x, y) {
 
     // 3 Ronde dan atur timer 00:00
     if (this.round === 2) {
-    // this.isGameOver = true;
+     this.isGameOver = true;
       this.timeElapsed = 0; //untuk mulai menu favorit saat timer over 00:00 19/06/25
       if (this.timerText) this.timerText.setText("00:00"); 
       this.showRoundMessage("");
 
     } else if (this.round === 3) {
-     //  this.isGameOver = true;
+       this.isGameOver = true;
       this.timeElapsed = 0; //untuk mulai menu favorit saat timer over 00:00 19/06/25
       if (this.timerText) this.timerText.setText("00:00"); 
       this.isGameOver = true;
