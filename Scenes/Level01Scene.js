@@ -159,12 +159,12 @@ class Level01Scene extends Phaser.Scene {
     // === CEK UPDATE PROGRESS ===
     this.updateUserProgress(email, progress);
     // === CEK STATUS USER AND GAME OVER >> Pindah ke line 417 (bisa mengaktifkan playBtn)
-   //this.checkUserStatusAndGameOver(email); 
+    this.checkUserStatusAndGameOver(email); 
       // === CEK GAME OVER STATUS DARI SERVER
     if (progress.isGameOver) {
       this.lockLevel(email, 'Level01');
     }
-   //this.checkGameOverStatusFromServer();// Pindah ke line 418 (bisa mengaktifkan playBtn)
+    this.checkGameOverStatusFromServer();// Pindah ke line 418 (bisa mengaktifkan playBtn)
    }
 });
 
@@ -413,9 +413,6 @@ class Level01Scene extends Phaser.Scene {
   });
 });
 
-// 2 Fungsi axios untuk mengirim data ke server
-   this.checkUserStatusAndGameOver(email);
-   this.checkGameOverStatusFromServer();
 
 // Di dalam create()
 //--------------------------------------------------------------------------------------
@@ -1380,11 +1377,11 @@ async checkUserStatusAndGameOver(email) {
   // Jika user baru, aktifkan tombol Play & Puzzle
   if (isUserBaru) {
     this.isGameOver = false;
-    if (this.playBtn) {
-      this.playBtn.setInteractive({ useHandCursor: true });
-      this.playBtn.setAlpha(1);
-      this.playBtn.setVisible(true);
-    }
+    //if (this.playBtn) {
+      //this.playBtn.setInteractive({ useHandCursor: true });
+      //this.playBtn.setAlpha(1);
+      //this.playBtn.setVisible(true);
+    //}
     this.unblur10PuzzleButton && this.unblur10PuzzleButton();
     console.log('✅ User baru - tombol Play & Puzzle diaktifkan');
     return status;
@@ -1425,11 +1422,11 @@ async checkUserStatusAndGameOver(email) {
 
   // Jika lolos semua, aktifkan tombol Play & Puzzle
   this.isGameOver = false;
-  if (this.playBtn) {
-    this.playBtn.setInteractive({ useHandCursor: true });
-    this.playBtn.setAlpha(1);
-    this.playBtn.setVisible(true);
-  }
+  //if (this.playBtn) {
+    //this.playBtn.setInteractive({ useHandCursor: true });
+    //this.playBtn.setAlpha(1);
+    //this.playBtn.setVisible(true);
+  //}
   this.unblur10PuzzleButton && this.unblur10PuzzleButton();
   return status;
 }
@@ -1442,6 +1439,8 @@ async lockLevel(email, level) {
       { email, level },
       { timeout: 5000 }
     );
+    // Tambahkan blur tombol di sini
+    this.blur10PuzzleButton();
     return res.data.success === true;
   } catch (err) {
     console.error('Lock level error:', err);
@@ -1551,9 +1550,22 @@ async saveScore(score, email) {
 //=================================================================================================
 
 //Fungsi di kosongkan dulu dengan TODO ini
-setupBoard(userData) {
-  // TODO: Isi logika setup board sesuai kebutuhan
-  // Contoh minimal:
+setupBoard(data) {
+  // Contoh: playBtn selalu burem dan nonaktif di awal
+  if (this.playBtn) {
+    this.playBtn.setAlpha(0.5);
+    this.playBtn.disableInteractive();
+    this.playBtn.setVisible(true);
+  }
+
+  // Jika ingin aktifkan playBtn setelah kondisi tertentu (misal: data.unlocked)
+  if (data && data.unlocked) {
+    if (this.playBtn) {
+      this.playBtn.setAlpha(1);
+      this.playBtn.setInteractive({ useHandCursor: true });
+      this.playBtn.setVisible(true);
+    }
+  }
   console.log('setupBoard dipanggil dengan:', userData);
   // Atau, panggil logika reset/init board yang sudah ada
 }
@@ -1807,7 +1819,7 @@ showLowScoreWarning() {
 blur10PuzzleButton() {
   // Find and blur the 10 puzzle button
   if (this.lv01Puzzle10Btn) {
-    this.lv01Puzzle10Btn.setAlpha(0.3); // Make it very blurred
+    this.lv01Puzzle10Btn.setAlpha(0.5); // Make it very blurred
     this.lv01Puzzle10Btn.disableInteractive(); // Disable clicks
   }
   
