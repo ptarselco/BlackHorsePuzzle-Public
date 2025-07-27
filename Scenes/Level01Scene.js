@@ -1568,7 +1568,7 @@ setupBoard(data) {
       this.playBtn.setVisible(true);
     }
   }
-  console.log('setupBoard dipanggil dengan:', userData);
+  console.log('setupBoard dipanggil dengan:', data);
   // Atau, panggil logika reset/init board yang sudah ada
 }
 
