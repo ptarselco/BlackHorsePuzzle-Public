@@ -159,12 +159,12 @@ class Level01Scene extends Phaser.Scene {
     // === CEK UPDATE PROGRESS ===
     this.updateUserProgress(email, progress);
     // === CEK STATUS USER AND GAME OVER >> Mengaktifkan playBtn jika belum Game Over
-   this.checkUserStatusAndGameOver(email); 
+   //this.checkUserStatusAndGameOver(email); 
       // === CEK GAME OVER STATUS DARI SERVER
     if (progress.isGameOver) {
       this.lockLevel(email, 'Level01');
     }
-    //this.checkGameOverStatusFromServer();
+   //this.checkGameOverStatusFromServer();
    }
 });
 
@@ -413,7 +413,11 @@ class Level01Scene extends Phaser.Scene {
   });
 });
 
- // Di dalam create()
+// 2 Fungsi axios untuk mengirim data ke server
+   this.checkUserStatusAndGameOver(email);
+   this.checkGameOverStatusFromServer();
+
+// Di dalam create()
 //--------------------------------------------------------------------------------------
     // Deklarasi Title dan Menu Text--> Mulai Help
    
