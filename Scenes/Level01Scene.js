@@ -158,13 +158,13 @@ class Level01Scene extends Phaser.Scene {
     this.playCount = progress.playCount || 0;
     // === CEK UPDATE PROGRESS ===
     this.updateUserProgress(email, progress);
-    // === CEK STATUS USER AND GAME OVER >> Mengaktifkan playBtn jika belum Game Over
+    // === CEK STATUS USER AND GAME OVER >> Pindah ke line 417 (bisa mengaktifkan playBtn)
    //this.checkUserStatusAndGameOver(email); 
       // === CEK GAME OVER STATUS DARI SERVER
     if (progress.isGameOver) {
       this.lockLevel(email, 'Level01');
     }
-   //this.checkGameOverStatusFromServer();
+   //this.checkGameOverStatusFromServer();// Pindah ke line 418 (bisa mengaktifkan playBtn)
    }
 });
 
