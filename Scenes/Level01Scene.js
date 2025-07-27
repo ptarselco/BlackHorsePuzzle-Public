@@ -159,7 +159,7 @@ class Level01Scene extends Phaser.Scene {
     // === CEK UPDATE PROGRESS ===
     this.updateUserProgress(email, progress);
     // === CEK STATUS USER AND GAME OVER 
-    this.checkUserStatusAndGameOver(email); 
+    //this.checkUserStatusAndGameOver(email); 
       // === CEK GAME OVER STATUS DARI SERVER
     if (progress.isGameOver) {
       this.lockLevel(email, 'Level01');
@@ -1111,6 +1111,9 @@ this.donationBtn.on('pointerdown', () => { // ini 1
       });
     });
 
+    // FUNGSI CHECK USER STATUS DAN GAME OVER DARI BACKEND
+    this.checkUserStatusAndGameOver(email); 
+    this.checkGameOverStatusFromServer();
 
     // === Tombol Play dengan animasi spiral ===
     this.createSheriffPlayButton();
@@ -1120,8 +1123,6 @@ this.donationBtn.on('pointerdown', () => { // ini 1
     this.playBtn.disableInteractive();
     this.playBtn.setVisible(true);  
     }
-
-   
 
     // === Panel help, musik, dsb ===
     this.createHelpPanel();
