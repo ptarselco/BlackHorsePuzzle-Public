@@ -136,7 +136,7 @@ class Level01Scene extends Phaser.Scene {
   const masihGratis = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) < 3;
   const gameOverState = localStorage.getItem(`gameOver_${email}`);
 
- 
+  
 
 // PANGGIL 6 FUNGSI YANG ADA DI CLASS (BELUM SEMUA DI PANGGIL DI SINI)
 
@@ -164,18 +164,14 @@ class Level01Scene extends Phaser.Scene {
     if (progress.isGameOver) {
       this.lockLevel(email, 'Level01');
     }
-    this.checkGameOverStatusFromServer();
+    //this.checkGameOverStatusFromServer();
    }
 });
 
   // === CEK SCORE === // cek ulang penulisan
   this.saveScore (this.score, email);
 
- this.playBtn = this.add.image(250, 830, 'playSheriff')
-          .setScale(0.3)
-          .setAlpha(0.5) // burem
-          .disableInteractive() // nonaktif
-          .setDepth(999);
+
 
   // ✅ SESSION-BASED WELCOME BACK FLAG:
   // Only check once per browser session, not per scene load
