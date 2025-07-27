@@ -1111,8 +1111,11 @@ this.donationBtn.on('pointerdown', () => { // ini 1
       });
     });
      
-  //✅ CEK STATUS USER DAN GAME OVER
-      this.isGameOver = true;
+    if (this.playBtn) {
+      this.playBtn.setAlpha(0.5);
+      this.playBtn.disableInteractive();
+      this.playBtn.setVisible(true);  
+    }
 
     // FUNGSI CHECK USER STATUS DAN GAME OVER DARI BACKEND
     this.checkUserStatusAndGameOver(email); 
