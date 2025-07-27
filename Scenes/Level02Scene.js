@@ -93,11 +93,7 @@ class Level02Scene extends Phaser.Scene {
 const backBtn = this.add.image(100, 1010, 'back').setScale(0.9).setDepth(6001).setInteractive({ useHandCursor: true });
 
 backBtn.on('pointerdown', () => {
-  if (this.isGameOver) {
-    this.showHoldMessageAboveNotes(); // Show "Please buy favorite menu" message
-    return; // Block BACK button if game over
-  } 
-  // Bersihkan donasi jika sedang tampil
+ // Bersihkan donasi jika sedang tampil
   if (this.donationTimer) {
     this.donationTimer.destroy();
     this.donationTimer = null;
