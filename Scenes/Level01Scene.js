@@ -160,12 +160,7 @@ class Level01Scene extends Phaser.Scene {
     this.updateUserProgress(email, progress);
     // === CEK STATUS USER AND GAME OVER >> Mengaktifkan playBtn jika belum Game Over
     this.checkUserStatusAndGameOver(email); 
-      this.playBtn = this.add.image(250, 830, 'playSheriff')
-          .setScale(0.3)
-          .setAlpha(0.5) // burem
-          .disableInteractive() // nonaktif
-          .setDepth(999);
-    // === CEK GAME OVER STATUS DARI SERVER
+      // === CEK GAME OVER STATUS DARI SERVER
     if (progress.isGameOver) {
       this.lockLevel(email, 'Level01');
     }
@@ -176,7 +171,12 @@ class Level01Scene extends Phaser.Scene {
   // === CEK SCORE === // cek ulang penulisan
   this.saveScore (this.score, email);
 
- 
+ this.playBtn = this.add.image(250, 830, 'playSheriff')
+          .setScale(0.3)
+          .setAlpha(0.5) // burem
+          .disableInteractive() // nonaktif
+          .setDepth(999);
+
   // ✅ SESSION-BASED WELCOME BACK FLAG:
   // Only check once per browser session, not per scene load
   if (!this.registry.get('welcomeBackShown')) { 
