@@ -158,13 +158,13 @@ class Level01Scene extends Phaser.Scene {
     this.playCount = progress.playCount || 0;
     // === CEK UPDATE PROGRESS ===
     this.updateUserProgress(email, progress);
-    // === CEK STATUS USER AND GAME OVER >> Pindah ke line 417 (bisa mengaktifkan playBtn)
+    // === CEK STATUS USER AND GAME OVER 
     this.checkUserStatusAndGameOver(email); 
       // === CEK GAME OVER STATUS DARI SERVER
     if (progress.isGameOver) {
       this.lockLevel(email, 'Level01');
     }
-    this.checkGameOverStatusFromServer();// Pindah ke line 418 (bisa mengaktifkan playBtn)
+    //this.checkGameOverStatusFromServer();
    }
 });
 
@@ -1377,11 +1377,11 @@ async checkUserStatusAndGameOver(email) {
   // Jika user baru, aktifkan tombol Play & Puzzle
   if (isUserBaru) {
     this.isGameOver = false;
-    //if (this.playBtn) {
-      //this.playBtn.setInteractive({ useHandCursor: true });
-      //this.playBtn.setAlpha(1);
-      //this.playBtn.setVisible(true);
-    //}
+    if (this.playBtn) {
+      this.playBtn.setInteractive({ useHandCursor: true });
+      this.playBtn.setAlpha(0.5);
+      this.playBtn.setVisible(true);
+    }
     this.unblur10PuzzleButton && this.unblur10PuzzleButton();
     console.log('✅ User baru - tombol Play & Puzzle diaktifkan');
     return status;
@@ -1422,11 +1422,11 @@ async checkUserStatusAndGameOver(email) {
 
   // Jika lolos semua, aktifkan tombol Play & Puzzle
   this.isGameOver = false;
-  //if (this.playBtn) {
-    //this.playBtn.setInteractive({ useHandCursor: true });
-    //this.playBtn.setAlpha(1);
-    //this.playBtn.setVisible(true);
-  //}
+  if (this.playBtn) {
+    this.playBtn.setInteractive({ useHandCursor: true });
+    this.playBtn.setAlpha(0.5);
+    this.playBtn.setVisible(true);
+  }
   this.unblur10PuzzleButton && this.unblur10PuzzleButton();
   return status;
 }
@@ -1455,6 +1455,7 @@ async  unlockLevel(email, level) {
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/unlock',
       { email, level }
     );
+    unblur10PuzzleButton(); // Hapus blur tombol 10 puzzle
     // Response backend bisa { success: true, unlocked: true }
     return res.data.success || res.data.unlocked === true;
   } catch (err) {
@@ -1463,6 +1464,7 @@ async  unlockLevel(email, level) {
   }
 }
 
+// CHECK GAME OVER STATUS DARI SERVER
 async checkGameOverStatusFromServer() {
   const email = localStorage.getItem('playerEmail');
   if (!email) return;
