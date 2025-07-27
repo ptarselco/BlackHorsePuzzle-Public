@@ -164,7 +164,7 @@ class Level01Scene extends Phaser.Scene {
     if (progress.isGameOver) {
       this.lockLevel(email, 'Level01');
     }
-    //this.checkGameOverStatusFromServer();
+    //this.checkGameOverStatusFromServer(); // pindah afterpurchase
    }
 });
 
@@ -1377,11 +1377,11 @@ async checkUserStatusAndGameOver(email) {
   // Jika user baru, aktifkan tombol Play & Puzzle
   if (isUserBaru) {
     this.isGameOver = false;
-    if (this.playBtn) {
-      this.playBtn.setInteractive({ useHandCursor: true });
-      this.playBtn.setAlpha(0.5);
-      this.playBtn.setVisible(true);
-    }
+    //if (this.playBtn) {
+      //this.playBtn.setInteractive({ useHandCursor: true });
+      //this.playBtn.setAlpha(1);
+      //this.playBtn.setVisible(true);
+    //}
     this.unblur10PuzzleButton && this.unblur10PuzzleButton();
     console.log('✅ User baru - tombol Play & Puzzle diaktifkan');
     return status;
@@ -1422,11 +1422,11 @@ async checkUserStatusAndGameOver(email) {
 
   // Jika lolos semua, aktifkan tombol Play & Puzzle
   this.isGameOver = false;
-  if (this.playBtn) {
-    this.playBtn.setInteractive({ useHandCursor: true });
-    this.playBtn.setAlpha(0.5);
-    this.playBtn.setVisible(true);
-  }
+  //if (this.playBtn) {
+    //this.playBtn.setInteractive({ useHandCursor: true });
+    //this.playBtn.setAlpha(1);
+    //this.playBtn.setVisible(true);
+  //}
   this.unblur10PuzzleButton && this.unblur10PuzzleButton();
   return status;
 }
@@ -1889,7 +1889,7 @@ unlockGameAfterPurchase() {
   }
   
   // Restore buttons to full functionality
-  this.unblur10PuzzleButton();
+  //this.unblur10PuzzleButton();
 
   // Re-enable buttons
   if (this.lv01Puzzle10Btn) {
@@ -1902,6 +1902,11 @@ unlockGameAfterPurchase() {
     this.lv01Puzzle20Btn.setAlpha(1);
   }
   
+  if (this.playBtn) {
+    this.playBtn.setInteractive();
+    this.playBtn.setAlpha(1);
+  }
+
   // Clear Game Over return message
   if (this.gameOverReturnElements) {
     this.gameOverReturnElements.forEach(element => {
