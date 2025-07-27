@@ -885,11 +885,11 @@ this.donationBtn.on('pointerout', () => {
 
 // ✅ CLICK EFFECTS (Maju ke depan + cahaya spiral)
 this.donationBtn.on('pointerdown', () => { // ini 1 
- // ✅ ADD GAME OVER PROTECTION:
-  if (this.isGameOver) {
-    this.showHoldMessageAboveNotes(); // Show "Please buy favorite menu" message
-    return; // Block donation button if game over
-  } 
+ // ✅ ADD GAME OVER PROTECTION: tidak perlu lock karena donasi
+ // if (this.isGameOver) {
+   // this.showHoldMessageAboveNotes(); // Show "Please buy favorite menu" message
+   // return; // Block donation button if game over
+  //} 
   // 1. Button press animation (maju ke depan seperti play button)
   this.tweens.add({
     targets: this.donationBtn,
