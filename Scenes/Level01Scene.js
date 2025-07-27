@@ -136,12 +136,7 @@ class Level01Scene extends Phaser.Scene {
   const masihGratis = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) < 3;
   const gameOverState = localStorage.getItem(`gameOver_${email}`);
 
-  this.playBtn = this.add.image(250, 830, 'playSheriff')
-    .setScale(0.3)
-    .setAlpha(0.5) // burem
-    .disableInteractive() // nonaktif
-    .setDepth(999);
-
+ 
 
 // PANGGIL 6 FUNGSI YANG ADA DI CLASS (BELUM SEMUA DI PANGGIL DI SINI)
 
@@ -163,8 +158,13 @@ class Level01Scene extends Phaser.Scene {
     this.playCount = progress.playCount || 0;
     // === CEK UPDATE PROGRESS ===
     this.updateUserProgress(email, progress);
-    // === CEK STATUS USER AND GAME OVER
-    this.checkUserStatusAndGameOver(email);
+    // === CEK STATUS USER AND GAME OVER >> Mengaktifkan playBtn jika belum Game Over
+    this.checkUserStatusAndGameOver(email); 
+      this.playBtn = this.add.image(250, 830, 'playSheriff')
+          .setScale(0.3)
+          .setAlpha(0.5) // burem
+          .disableInteractive() // nonaktif
+          .setDepth(999);
     // === CEK GAME OVER STATUS DARI SERVER
     if (progress.isGameOver) {
       this.lockLevel(email, 'Level01');
