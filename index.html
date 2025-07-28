@@ -279,11 +279,14 @@ if (payment === "cancelled") {
     </button>
   
   <!-- === Form login === -->
-    <div id="loginBox">
+    <div id="loginBox" style="display:block;">
       <div class="login-row">
     <input type="text" id="emailInput" placeholder="Email" autocomplete="off" />
       <button id="loginBtn">Login</button>
-      </div>
+    </div>
+  </div>
+      <!-- Verification Box: hanya kode verifikasi, tombol verify, dan resend -->
+      <div id="verificationBox" style="display:none;">
       <div class="login-row">
        <input type="text" id="verificationCodeInput" placeholder="Verification Code" autocomplete="off" />
        <button id="verifyBtn">Verify</button> 
