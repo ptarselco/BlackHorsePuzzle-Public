@@ -458,18 +458,25 @@ if (window.hidePleaseWaitMessage) hidePleaseWaitMessage();
     // Login sukses
     document.getElementById("loginBox").style.display = "none";
     document.getElementById("verificationBox").style.display = "block";
-    // Verifikasi sukses
+    document.getElementById("logoutBtn").style.display = "none"; // Jangan tampilkan logout dulu
+    // Verifikasi sukses (backend sukses)
     document.getElementById("verificationBox").style.display = "none";
     document.getElementById("logoutBtn").style.display = "inline-block";
-    // Logout button
-    document.getElementById("logoutBtn").onclick = function() {
-      document.getElementById("logoutBtn").style.display = "none";
-      document.getElementById("loginBox").style.display = "block";
-    // Kosongkan input email
-    document.getElementById("emailInput").value = "";
-    document.getElementById("verificationCodeInput").value = "";
-    };
-    
+    // Event handler tombol Verify
+    document.getElementById("verifyBtn").onclick = async function() {
+     const email = document.getElementById('emailInput').value.trim();
+     const code = document.getElementById('verificationCodeInput').value.trim();
+     const verified = await window.verifyEmailWithCode(email, code);
+     if (verified) {
+     alert('Email verified! Welcome.');
+     document.getElementById("verificationBox").style.display = "none";
+     document.getElementById("logoutBtn").style.display = "inline-block";
+     // Lanjutkan proses login/game di sini
+    } else {
+     alert('Verification code is incorrect or email is not registered.');
+    }
+  };
+
     // ✅ HIDE PLEASE WAIT MESSAGE AFTER EMAIL VERIFICATION:
     if (window.hidePleaseWaitMessage) hidePleaseWaitMessage();
     
