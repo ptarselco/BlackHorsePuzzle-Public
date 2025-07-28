@@ -129,6 +129,7 @@ level1.on("pointerdown", async () => {
     const level01 = this.scene.get('Level01Scene');
     if (level01 && typeof level01.showGameOverReturnMessage === 'function') {
       level01.showGameOverReturnMessage();
+      
     } else {
       // Jika belum ada instance, tampilkan pesan sederhana
       this.add.text(960, 800, "🔒 GAME OVER - Please buy favorite menu!", {

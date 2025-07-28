@@ -194,17 +194,19 @@ if ('serviceWorker' in navigator) {
 } else {
   console.log('⚠️ Service Worker not supported in this browser');
 }
-
+// 3. PAYMENT STATUS 
 window.checkPaymentStatusFromBackend = async function(email) {
   try {
-    const res = await axios.get(`https://backend-paypalblackhorsepuzzle.onrender.com/api/payment-status/${email}`);
+    const encodedEmail = encodeURIComponent(email);
+    const res = await axios.get(`https://backend-paypalblackhorsepuzzle.onrender.com/api/payment-status/${encodedEmail}`);
     const data = res.data;
-    return data && data.paid === true;
+    return data && data.isPaid === true;
   } catch (err) {
     console.error('Failed to check payment status:', err);
     return false;
   }
 };
+// 4. PAYMENT VERIFICATION
 const params = new URLSearchParams(window.location.search);
 const payment = params.get("payment");
 const txnId = params.get("txnId");
@@ -216,7 +218,7 @@ if (payment === "success" && txnId && email) {
   })
     .then(res => {
       const data = res.data;
-      if (data.paid) {
+      if (data.isPaid) {
         localStorage.setItem(`paymentVerified_${email}`, "true");
         localStorage.removeItem(`gameOver_${email}`);
         localStorage.setItem(`score_${email}`, "0");
@@ -322,15 +324,16 @@ let paymentCheckInterval = null;
 // Add scroll functionality to canvas
   window.addScrollToCanvas();
 
+// ✅ ENHANCED EMAIL VERIFICATION:
  window.verifyEmailWithCode = async function(email, code) {
   try {
     const response = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/verify-email',
-      { email, code },
-      { timeout: 8000 }
+      { email, verificationCode: code },
+      { timeout: 8000 } 
     );
     const data = response.data;
-    if (data.verified) {
+    if (data.emailVerified) {
       console.log('✅ Email verified successfully:', email);
       return true;
     } else {
@@ -343,6 +346,7 @@ let paymentCheckInterval = null;
   }
 }; 
 
+// ✅ ENHANCED EMAIL FORMAT VALIDATION: RESEND VERIFICATION CODE
 window.resendVerificationEmail = async function(email) {
   try {
     const response = await axios.post(
@@ -999,7 +1003,74 @@ window.checkPaymentStatus = async function(email) {
 //};
 
 //-------------------------------------------------------------------------------------------------------------------
- async function verifyPayPalToken(token, payerID, email) {
+// 1. CREATE ORDER PAYPAL
+async function createPayPalOrder(email, amount, message = 'Black Horse Puzzle Support') {
+  try {
+    const response = await axios.post(
+      'https://backend-paypalblackhorsepuzzle.onrender.com/api/create-order',
+      {
+        email,
+        amount,
+        message
+      },
+      { timeout: 8000 }
+    );
+    const data = response.data;
+    if (data.success && data.paypalOrderId && data.approvalUrl) {
+      // Simpan orderId untuk proses selanjutnya
+      localStorage.setItem(`paypalOrderId_${email}`, data.paypalOrderId);
+      // Redirect user ke PayPal approval
+      window.open(data.approvalUrl, '_blank');
+      return data.paypalOrderId;
+    } else {
+      alert('❌ Failed to create PayPal order: ' + (data.error || 'Unknown error'));
+      return null;
+    }
+  } catch (error) {
+    console.error('❌ Error creating PayPal order:', error.message);
+    alert('❌ Error creating PayPal order: ' + error.message);
+    return null;
+  }
+}
+
+// 2.✅ CAPTURE PEMBAYARAN SETELAH USER APPROVE DI PAYPAL
+async function capturePayPalOrder(paypalOrderId, email) {
+  try {
+    const response = await axios.post(
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/capture-order/${paypalOrderId}`,
+      { email },
+      { timeout: 8000 }
+    );
+    const data = response.data;
+    if (data.success && data.paypalOrderId === paypalOrderId) {
+      // Tandai payment verified di localStorage
+      localStorage.setItem(`paymentVerified_${email}`, 'true');
+      localStorage.removeItem(`gameOver_${email}`);
+      localStorage.setItem(`score_${email}`, "0");
+      // Unlock fitur game jika scene aktif
+      if (window.Level01Scene && typeof window.Level01Scene.prototype.unlockGameAfterPurchase === 'function') {
+        const scene = window.game && window.game.scene && window.game.scene.getScene('Level01Scene');
+        if (scene && typeof scene.unlockGameAfterPurchase === 'function') {
+          scene.unlockGameAfterPurchase();
+        }
+      }
+      window.location.href = "/index.html";
+      return true;
+    } else {
+      alert('❌ Payment not verified yet.');
+      window.location.href = "/payment-error.html";
+      return false;
+    }
+  } catch (error) {
+    console.error('❌ Error capturing PayPal order:', error.message);
+    alert('❌ Failed to capture PayPal payment: ' + error.message);
+    window.location.href = "/payment-error.html";
+    return false;
+  }
+}
+
+// 6.✅ PAYPAL TOKEN VERIFICATION FUNCTION:
+async function verifyPayPalToken(token, payerID, email) {
   try {
     console.log('🅿️ Verifying PayPal token:', token);
 
@@ -1028,15 +1099,15 @@ window.checkPaymentStatus = async function(email) {
   }
 }
 
-// ✅ PAYPAL VERIFICATION FUNCTIONS:
+// 5.✅ PAYPAL VERIFICATION FUNCTIONS: Verify Order PayPal
 async function verifyPayPalOrder(orderId, email) {
   try {
     console.log('🅿️ Verifying PayPal order:', orderId);
 
     // Axios timeout pakai config
     const response = await axios.post(
-      'https://backend-paypalblackhorsepuzzle.onrender.com/api/verify-paypal-order',
-      { orderId, email },
+      'https://backend-paypalblackhorsepuzzle.onrender.com/api/verify-paypal',
+      {paypalOrderId: orderId, email },
       { timeout: 5000 }
     );
 
@@ -1057,9 +1128,7 @@ async function verifyPayPalOrder(orderId, email) {
   }
 }
 
-
-
-// ✅ TRY BACKEND - WITH BETTER ERROR HANDLING:
+// 3.✅ TRY BACKEND - WITH BETTER ERROR HANDLING:
     try {
       console.log('🔗 Attempting backend connection...');
       

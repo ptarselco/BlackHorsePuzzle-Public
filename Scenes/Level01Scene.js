@@ -126,7 +126,7 @@ class Level01Scene extends Phaser.Scene {
   // Deklarasi variabel utama
   const email = localStorage.getItem("playerEmail");
   let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {
-    playCount: 0,
+    totalPlays: 0,
     isGameOver: false,
     score: 0
   };
@@ -155,7 +155,7 @@ class Level01Scene extends Phaser.Scene {
   this.getUserProgress(email).then(progress => {
   if (progress) {
     this.score = progress.score || 0;
-    this.playCount = progress.playCount || 0;
+    this.totalPlays = progress.totalPlays || 0;
     // === CEK UPDATE PROGRESS ===
     this.updateUserProgress(email, progress);
     // === CEK STATUS USER AND GAME OVER 
@@ -169,7 +169,7 @@ class Level01Scene extends Phaser.Scene {
 });
 
   // === CEK SCORE === // cek ulang penulisan
-  this.saveScore (this.score, email);
+  this.saveScoreToBackend (email, this.score);
 
 
 
@@ -1346,7 +1346,6 @@ startIntroSequence() {
   }
 }
 
-
 // ========== GAME OVER RETURN MESSAGE ==========
 //Versi Co 4.1
 // GET USER STATUS DARI BACKEND (POST)
@@ -1374,7 +1373,7 @@ async checkUserStatusAndGameOver(email) {
   }
 
   // Cek status user lama/baru
-  const isUserBaru = !status.playCount || status.playCount === 0;
+  const isUserBaru = !status.totalPlays || status.totalPlays === 0;
 
   // Jika user baru, aktifkan tombol Play & Puzzle
   if (isUserBaru) {
@@ -1405,11 +1404,11 @@ async checkUserStatusAndGameOver(email) {
     }
   }
 
-  // Tambah playCount setiap kali fungsi ini dipanggil (untuk user lama)
-  status.playCount = (status.playCount || 0) + 1;
+  // Tambah totalPlays setiap kali fungsi ini dipanggil (untuk user lama)
+  status.totalPlays = (status.totalPlays || 0) + 1;
 
-  // Jika playCount >= 3 dan score masih 0, set game over
-  if (status.playCount >= 3 && (status.score || 0) === 0) {
+  // Jika totalPlays >= 3 dan score masih 0, set game over
+  if (status.totalPlays >= 3 && (status.score || 0) === 0) {
     await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/set-gameover', { email, isGameOver: true });
     status.isGameOver = true;
     localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
@@ -1419,7 +1418,7 @@ async checkUserStatusAndGameOver(email) {
     return status;
   }
 
-  // Simpan playCount terbaru ke localStorage
+  // Simpan totalPlays terbaru ke localStorage
   localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
 
   // Jika lolos semua, aktifkan tombol Play & Puzzle
@@ -1451,7 +1450,7 @@ async lockLevel(email, level) {
 }
 
 // UNLOCK LEVEL
-async  unlockLevel(email, level) {
+async  unlockedLevels(email, level) {
   try {
     const res = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/unlock',
@@ -1534,22 +1533,21 @@ async updateUserProgress(email, progressData) {
   }
 }
 
-// SIMPAN SCORE KE MONGODB 
-async saveScore(score, email) {
-    try {
-      await this.saveScoreToMongo(score, email);
-      localStorage.removeItem(`tempScore_${email}`);
-    } catch (e) {
-      console.warn("MongoDB unreachable. Saving score locally.");
-      localStorage.setItem(`tempScore_${email}`, JSON.stringify({ score, email }));
+// SEND SCORE TO BACKEND (KIRIM SKOR KE BACKEND SETELAH USER SELESAI LEVEL)
+async saveScoreToBackend(email, score) {
+  try {
+    const res = await axios.post(
+      'https://backend-paypalblackhorsepuzzle.onrender.com/api/update-score',
+      { email, score }
+    );
+    const data = res.data;
+    if (data.success) {
+      console.log('Score updated:', data.level01Score, 'High Score:', data.level01HighScore);
     }
+  } catch (err) {
+    console.error('Failed to save score:', err);
   }
-
-  async saveScoreToMongo(score, email) {
-    const res = await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/score', { score, email });
-    if (res.status !== 200) throw new Error("Failed to save score to MongoDB");
-  }
-
+}
 
 //=================================================================================================
 
@@ -1573,7 +1571,6 @@ setupBoard(data) {
   console.log('setupBoard dipanggil dengan:', data);
   // Atau, panggil logika reset/init board yang sudah ada
 }
-
 
 showGameOverReturnMessage() {
   // ✅ CHECK SCORE FIRST - If score > 0, allow playing
@@ -1675,6 +1672,9 @@ showGameOverReturnMessage() {
 
   // Store references for cleanup
   this.gameOverReturnElements = [overlay, messagePanel, title, message, continueBtn];
+
+// Tambahkan ini untuk memastikan status game over aktif:
+  this.isGameOver = true;
 
   // Lock all gameplay buttons immediately
   this.lockAllGameplayButtons();
@@ -2548,7 +2548,7 @@ async updateTaxInBackground(musicTitle, x, y) {
       this.scoreText.setText(this.score.toString().padStart(5, '0')); // Tambahkan baris ini
       this.registry.set('score', this.score);
       const email = localStorage.getItem('playerEmail');
-      if (email) this.saveScore(this.score, email);
+      if (email) this.saveScoreToBackend(email, this.score);
       //if (email && typeof safeUpdateGameScore === 'function') { ////hendle score saat menang diganti dgn saveScore
       //safeUpdateGameScore(email, this.score);
       //}
@@ -2586,22 +2586,7 @@ async updateTaxInBackground(musicTitle, x, y) {
       this.onTimeUp();
     }
   }
-// ========== UNBLUR 10 PUZZLE BUTTON ==========
- //  unblur10PuzzleButton() {
-  // Aktifkan tombol 10 Puzzle
- // if (this.lv01Puzzle10Btn) {
- // this.lv01Puzzle10Btn.setAlpha(1);
- //   this.lv01Puzzle10Btn.setInteractive({ useHandCursor: true });
- // }
 
-  // Aktifkan tombol Play
-  //if (this.playBtn) {
-    //this.playBtn.setAlpha(1);
-    //this.playBtn.setInteractive({ useHandCursor: true });
-  //}
-
- // console.log('✅ 10 Puzzle and Play buttons restored');
-//}
 //================================================
 
   // filepath: [Level01Scene.js](http://_vscodecontentref_/2)
@@ -2675,7 +2660,7 @@ async updateTaxInBackground(musicTitle, x, y) {
     this.registry.set('score', this.score);
     // Simpan score ke localStorage saat mongodb offline
     const email = localStorage.getItem('playerEmail');
-    if (email) this.saveScore(this.score, email);
+    if (email) this.saveScoreToBackend(email, this.score);
     //if (email && typeof safeUpdateGameScore === 'function') { //hendle score saat kalah diganti dgn saveScore
     //safeUpdateGameScore(email, this.score);
     //}
@@ -3500,11 +3485,11 @@ showHoldMessageAboveNotes() {
               this.unlockGameAfterPurchase();
               // PANGGIL UNLOCK LEVEL DI SINI
               const email = localStorage.getItem('playerEmail');
-              const unlocked = await unlockLevel(email, 'Level01Scene');
+              const unlocked = await unlockedLevels(email, 'Level01Scene');
               if (unlocked) {
               // Reset localStorage gameData user
               const resetData = {
-              playCount: 0,
+              totalPlays: 0,
               isGameOver: false,
               score: 0
               };
@@ -3714,11 +3699,11 @@ showHoldMessageAboveNotes() {
               this.unlockGameAfterPurchase();
               // PANGGIL UNLOCK LEVEL DI SINI
               const email = localStorage.getItem('playerEmail');
-              const unlocked = await unlockLevel(email, 'Level01Scene');
+              const unlocked = await unlockedLevels(email, 'Level01Scene');
               if (unlocked) {
               // Reset localStorage gameData user
               const resetData = {
-              playCount: 0,
+              totalPlays: 0,
               isGameOver: false,
               score: 0
               };
