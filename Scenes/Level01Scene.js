@@ -111,9 +111,14 @@ class Level01Scene extends Phaser.Scene {
 } else {
   document.getElementById("loginBox").style.display = "none";    document.getElementById("logoutBtn").style.display = "inline-block";
  }
-
+ //Jalankan animasi dan musik setelah asset siap
+  this.introMusic.play();
+  this.showHorseShakeHead();
+  this.sound.play('horseNeigh');
+  this.sound.play('horseSnort');
+  console.log('Preload selesai, asset siap:', this.assetsReady);
 });  
-  }
+}
 
   create() {
     console.log("Level01 create, login:", localStorage.getItem("playerEmail"));
@@ -152,7 +157,9 @@ class Level01Scene extends Phaser.Scene {
 
   
   // === GET USER PROGRESS ===
+  console.log('Mulai request backend getUserProgress');
   this.getUserProgress(email).then(progress => {
+    console.log('Selesai request backend getUserProgress', progress);
   if (progress) {
     this.score = progress.score || 0;
     this.totalPlays = progress.totalPlays || 0;
