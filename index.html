@@ -279,19 +279,18 @@ if (payment === "cancelled") {
     </button>
   
   <!-- === Form login === -->
-    <div id="loginBox">
-      <div class="login-row">
-    <input type="text" id="emailInput" placeholder="Email" autocomplete="off" />
-      <button id="loginBtn">Login</button>
-      </div>
-      <div class="login-row">
-       <input type="text" id="verificationCodeInput" placeholder="Verification Code" autocomplete="off" />
-       <button id="verifyBtn">Verify</button> 
-      </div>
-      <div class="login-row">
-       <button id="resendVerificationBtn">Resend Code</button>
-      </div>
-    </div>
+    <div id="loginBox" style="display:block;">
+  <input type="text" id="emailInput" placeholder="Email" />
+  <button id="loginBtn">Login</button>
+</div>
+
+<div id="verificationBox" style="display:none;">
+  <input type="text" id="verificationCodeInput" placeholder="Verification Code" />
+  <button id="verifyBtn">Verify</button>
+  <button id="resendVerificationBtn">Resend Code</button>
+</div>
+
+<button id="logoutBtn" style="display:none;">Logout</button>
     <!-- === End form login === style="margin-left:10px;" dikeluarkan dari Resend Code === -->
 
      <!-- Load main.js -->
@@ -385,7 +384,7 @@ document.getElementById("verifyBtn").onclick = async function() {
   const email = document.getElementById('emailInput').value.trim();
   const code = document.getElementById('verificationCodeInput').value.trim();
   const verified = await window.verifyEmailWithCode(email, code);
-  if (verified) {
+  if (emailVerified) {
     alert('Email verified! Please proceed to login.');
     // Lanjutkan proses login atau unlock fitur di sini
   } else {
@@ -456,9 +455,20 @@ if (window.hidePleaseWaitMessage) hidePleaseWaitMessage();
     const userScore = parseInt(localStorage.getItem(`score_${inputEmail}`) || 0);
     
     // Update UI
+    // Login sukses
     document.getElementById("loginBox").style.display = "none";
+    document.getElementById("verificationBox").style.display = "block";
+    // Verifikasi sukses
+    document.getElementById("verificationBox").style.display = "none";
     document.getElementById("logoutBtn").style.display = "inline-block";
+    // Logout button
+    document.getElementById("logoutBtn").onclick = function() {
+      document.getElementById("logoutBtn").style.display = "none";
+      document.getElementById("loginBox").style.display = "block";
+    // Kosongkan input email
     document.getElementById("emailInput").value = "";
+    document.getElementById("verificationCodeInput").value = "";
+    };
     
     // ✅ HIDE PLEASE WAIT MESSAGE AFTER EMAIL VERIFICATION:
     if (window.hidePleaseWaitMessage) hidePleaseWaitMessage();
