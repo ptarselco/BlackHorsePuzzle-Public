@@ -279,18 +279,26 @@ if (payment === "cancelled") {
     </button>
   
   <!-- === Form login === -->
-    <div id="loginBox" style="display:block;">
-  <input type="text" id="emailInput" placeholder="Email" />
-  <button id="loginBtn">Login</button>
-</div>
+ div id="loginBox" style="display:block;">
+  <div class="login-row">
+    <input type="text" id="emailInput" placeholder="Email" autocomplete="off" />
+    <button id="loginBtn">Login</button>
+  </div>
+</div> 
 
+<!-- Verification Box: hanya kode verifikasi, tombol verify, dan resend -->
 <div id="verificationBox" style="display:none;">
-  <input type="text" id="verificationCodeInput" placeholder="Verification Code" />
-  <button id="verifyBtn">Verify</button>
-  <button id="resendVerificationBtn">Resend Code</button>
+  <div class="login-row">
+    <input type="text" id="verificationCodeInput" placeholder="Verification Code" autocomplete="off" />
+    <button id="verifyBtn">Verify</button>
+  </div>
+  <div class="login-row">
+    <button id="resendVerificationBtn">Resend Code</button>
+  </div>
 </div>
 
-<button id="logoutBtn" style="display:none;">Logout</button>
+<!--
+<button id="logoutBtn" style="display:none;">Logout</button>-->
     <!-- === End form login === style="margin-left:10px;" dikeluarkan dari Resend Code === -->
 
      <!-- Load main.js -->
