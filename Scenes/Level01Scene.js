@@ -103,7 +103,7 @@ class Level01Scene extends Phaser.Scene {
     
     // Sembunyikan loader please wait (dari Co)
   this.load.on('complete', () => {
-    document.getElementById('loader').style.display = 'none';
+  document.getElementById('loader').style.display = 'none';
       // Tampilkan loginBox jika user belum login
  if (!localStorage.getItem("playerEmail")) {
   document.getElementById("loginBox").style.display = "block";
