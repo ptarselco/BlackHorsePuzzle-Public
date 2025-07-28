@@ -455,18 +455,18 @@ if (window.hidePleaseWaitMessage) hidePleaseWaitMessage();
     const userScore = parseInt(localStorage.getItem(`score_${inputEmail}`) || 0);
     
     // Update UI
-    // Login sukses
+    // Setelah login sukses
+  if (playerEmail && !emailVerified) {
     document.getElementById("loginBox").style.display = "none";
     document.getElementById("verificationBox").style.display = "block";
-    document.getElementById("logoutBtn").style.display = "none"; // Jangan tampilkan logout dulu
-    // Verifikasi sukses (backend sukses)
-    //document.getElementById("verificationBox").style.display = "none";
-    //document.getElementById("logoutBtn").style.display = "inline-block";
+    document.getElementById("logoutBtn").style.display = "none";
+  }
+    
     // Event handler tombol Verify
     document.getElementById("verifyBtn").onclick = async function() {
      const email = document.getElementById('emailInput').value.trim();
      const code = document.getElementById('verificationCodeInput').value.trim();
-     const verified = await window.verifyEmailWithCode(email, code);
+     const emailVerified = await window.verifyEmailWithCode(email, code);
      if (emailVerified) {
      alert('Email verified! Welcome.');
      document.getElementById("verificationBox").style.display = "none";
