@@ -126,6 +126,23 @@
   color: #181c24;
 }
 
+#verificationBox {
+  position: absolute;
+  top: 6%;
+  left: 88%;
+  transform: translate(-50%, -50%);
+  background: rgba(30, 34, 44, 0.92);
+  border-radius: 12px;
+  box-shadow: 0 4px 24px #00eaff40;
+  padding: 18px 24px 14px 24px;
+  min-width: 340px;
+  z-index: 1000;
+  display: none;
+  text-align: center;
+  border: 1.5px solid #00eaff;
+  backdrop-filter: blur(6px);
+}
+
 #resendVerificationBtn {
   min-width: 120px; /* memastikan tombol tidak terlalu kecil */
   padding: 8px 12px;
@@ -287,7 +304,7 @@ if (payment === "cancelled") {
   </div>
 </div>
 
-<!-- Verification Box: hanya kode verifikasi, tombol verify, dan resend -->
+<!-- Verification Box: kode verifikasi, tombol verify, dan resend -->
 <div id="verificationBox" style="display:none;">
   <div class="login-row">
     <input type="text" id="verificationCodeInput" placeholder="Verification Code" autocomplete="off" />
@@ -297,7 +314,6 @@ if (payment === "cancelled") {
     <button id="resendVerificationBtn">Resend Code</button>
   </div>
 </div>
-
 
 
 <!--
