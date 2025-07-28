@@ -279,23 +279,20 @@ if (payment === "cancelled") {
     </button>
   
   <!-- === Form login === -->
- div id="loginBox" style="display:block;">
-  <div class="login-row">
+    <div id="loginBox">
+      <div class="login-row">
     <input type="text" id="emailInput" placeholder="Email" autocomplete="off" />
-    <button id="loginBtn">Login</button>
-  </div>
-</div> 
+      <button id="loginBtn">Login</button>
+      </div>
+      <div class="login-row">
+       <input type="text" id="verificationCodeInput" placeholder="Verification Code" autocomplete="off" />
+       <button id="verifyBtn">Verify</button> 
+      </div>
+      <div class="login-row">
+       <button id="resendVerificationBtn">Resend Code</button>
+      </div>
+    </div>
 
-<!-- Verification Box: hanya kode verifikasi, tombol verify, dan resend -->
-<div id="verificationBox" style="display:none;">
-  <div class="login-row">
-    <input type="text" id="verificationCodeInput" placeholder="Verification Code" autocomplete="off" />
-    <button id="verifyBtn">Verify</button>
-  </div>
-  <div class="login-row">
-    <button id="resendVerificationBtn">Resend Code</button>
-  </div>
-</div>
 
 <!--
 <button id="logoutBtn" style="display:none;">Logout</button>-->
@@ -426,21 +423,7 @@ document.getElementById("resendVerificationBtn").onclick = async function() {
 if (window.showPleaseWaitMessage) {
   showPleaseWaitMessage('Verifying email with backend...');
 } 
-  
-  // Verify email with backend (verifyEmailWithBackend function)
-try {
-  const emailVerified = await verifyEmailWithBackend(inputEmail);
-  if (!emailVerified) {
-    if (window.hidePleaseWaitMessage) hidePleaseWaitMessage();
-    throw new Error("Email verification failed! Please use a valid email address.");
-  }
-} catch (backendError) {
-  if (window.hidePleaseWaitMessage) hidePleaseWaitMessage();
-  console.warn('⚠️ Backend verification failed:', backendError.message);
-  throw new Error("Email verification failed! Please check your connection and try again.");
-}
-
-// ✅ Enhanced login success - show verification box
+ // ✅ Enhanced login success - show verification box
 document.getElementById("verifyBtn").onclick = async function() {
   const email = document.getElementById('emailInput').value.trim();
   const code = document.getElementById('verificationCodeInput').value.trim();
@@ -454,6 +437,21 @@ document.getElementById("verifyBtn").onclick = async function() {
     alert('Verification code is incorrect or email is not registered.');
   }
 };
+ 
+  // Verify email with backend (verifyEmailWithBackend function)
+try {
+  const emailVerified = await verifyEmailWithBackend(inputEmail);
+  if (!emailVerified) {
+    if (window.hidePleaseWaitMessage) hidePleaseWaitMessage();
+    throw new Error("Email verification failed! Please use a valid email address.");
+  }
+} catch (backendError) {
+  if (window.hidePleaseWaitMessage) hidePleaseWaitMessage();
+  console.warn('⚠️ Backend verification failed:', backendError.message);
+  throw new Error("Email verification failed! Please check your connection and try again.");
+}
+
+
 
 //✅ HIDE PLEASE WAIT MESSAGE AFTER EMAIL VERIFICATION:
 if (window.hidePleaseWaitMessage) hidePleaseWaitMessage();
