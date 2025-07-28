@@ -467,7 +467,7 @@ if (window.hidePleaseWaitMessage) hidePleaseWaitMessage();
      const email = document.getElementById('emailInput').value.trim();
      const code = document.getElementById('verificationCodeInput').value.trim();
      const verified = await window.verifyEmailWithCode(email, code);
-     if (verified) {
+     if (emailVerified) {
      alert('Email verified! Welcome.');
      document.getElementById("verificationBox").style.display = "none";
      document.getElementById("logoutBtn").style.display = "inline-block";
