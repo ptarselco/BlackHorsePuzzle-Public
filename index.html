@@ -452,7 +452,7 @@ document.getElementById("resendVerificationBtn").onclick = async function() {
 
     // Handler tombol Verify
     document.getElementById("verifyBtn").onclick = async function() {
-      const email = document.getElementById('emailInput').value.trim();
+      //const email = document.getElementById('emailInput').value.trim();
       const code = document.getElementById('verificationCodeInput').value.trim();
       const emailVerified = await window.verifyEmailWithCode(email, code);
       if (emailVerified) {
