@@ -444,6 +444,14 @@ document.getElementById("resendVerificationBtn").onclick = async function() {
   try {
     const inputEmail = document.getElementById('emailInput').value.trim();
 
+     // Tambahkan definisi dan assignment emailVerified di sini:
+  let emailVerified = false;
+  try {
+    emailVerified = await checkEmailVerifiedFromBackend(inputEmail);
+  } catch (error) {
+    emailVerified = false;
+  }
+
   // Enhanced validation
     if (!inputEmail) {
     throw new Error("Please enter your email address!");
@@ -1788,7 +1796,7 @@ function showPleaseWaitMessage(text = 'Please wait...') {
   message.innerHTML = `
     <div style="margin-bottom: 10px;">⏳</div>
     <div>${text}</div>
-    <div style="color: #ccc; font-size: 14px; margin-top: 5px;">Mohon tunggu...</div>
+    <div style="color: #ccc; font-size: 14px; margin-top: 5px;">Please Wait...</div>
   `;
   
   document.body.appendChild(message);
