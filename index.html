@@ -431,7 +431,7 @@ document.getElementById("resendVerificationBtn").onclick = async function() {
   const loginBtn = document.getElementById('loginBtn');
   const originalText = loginBtn.textContent;
   loginBtn.disabled = true;
-  loginBtn.textContent = 'Verifying...';
+  loginBtn.textContent = 'Please Wait...';
   loginBtn.style.opacity = '0.6';
 
   try {
@@ -439,54 +439,34 @@ document.getElementById("resendVerificationBtn").onclick = async function() {
     if (!inputEmail) throw new Error("Please enter your email address!");
     if (!verifyEmailFormat(inputEmail)) throw new Error("Please enter a valid email address!");
 
-    // Cek status verifikasi email dari backend
-    let emailVerified = false;
-    try {
-      emailVerified = await checkEmailVerifiedFromBackend(inputEmail);
-    } catch (error) {
-      emailVerified = false;
-    }
+    // Selalu cek ke backend, kirim kode verifikasi ke email
+    await window.resendVerificationEmail(inputEmail);
 
-    if (!emailVerified) {
-      // Email belum terverifikasi, tampilkan verificationBox
-      document.getElementById("loginBox").style.display = "none";
-      document.getElementById("verificationBox").style.display = "block";
-      document.getElementById("logoutBtn").style.display = "none";
-      // Handler tombol Verify (hanya aktif saat verificationBox tampil)
-      document.getElementById("verifyBtn").onclick = async function() {
-        const code = document.getElementById('verificationCodeInput').value.trim();
-        const verified = await window.verifyEmailWithCode(inputEmail, code);
-        if (verified) {
-          alert('Email verified! Welcome.');
-          localStorage.setItem("playerEmail", inputEmail);
-          document.getElementById("verificationBox").style.display = "none";
-          document.getElementById("logoutBtn").style.display = "inline-block";
-          // Lanjutkan proses game di sini
-          if (window.Phaser && window.game && window.game.scene) {
-            window.game.scene.start('SplashScene');
-          }
-          if (window.showSuccessNotification) {
-            showSuccessNotification('✅ Email Verified - Welcome!');
-          }
-        } else {
-          alert('Verification code is incorrect or email is not registered.');
-        }
-      };
-      return; // Stop proses login sampai verifikasi selesai
-    }
-
-    // Jika email sudah terverifikasi, langsung login
-    localStorage.setItem("playerEmail", inputEmail);
+    // Tampilkan verificationBox, sembunyikan logoutBtn
     document.getElementById("loginBox").style.display = "none";
-    document.getElementById("verificationBox").style.display = "none";
-    document.getElementById("logoutBtn").style.display = "inline-block";
-    // Lanjutkan proses game di sini
-    if (window.Phaser && window.game && window.game.scene) {
-      window.game.scene.start('SplashScene');
-    }
-    if (window.showSuccessNotification) {
-      showSuccessNotification('✅ Login Successful - Welcome!');
-    }
+    document.getElementById("verificationBox").style.display = "block";
+    document.getElementById("logoutBtn").style.display = "none";
+
+    // Handler tombol Verify
+    document.getElementById("verifyBtn").onclick = async function() {
+      const code = document.getElementById('verificationCodeInput').value.trim();
+      const verified = await window.verifyEmailWithCode(inputEmail, code);
+      if (verified) {
+        alert('Email verified! Welcome.');
+        localStorage.setItem("playerEmail", inputEmail);
+        document.getElementById("verificationBox").style.display = "none";
+        document.getElementById("logoutBtn").style.display = "inline-block";
+        // Masuk ke game
+        if (window.Phaser && window.game && window.game.scene) {
+          window.game.scene.start('SplashScene');
+        }
+        if (window.showSuccessNotification) {
+          showSuccessNotification('✅ Email Verified - Welcome!');
+        }
+      } else {
+        alert('Verification failed: Please check your email address.');
+      }
+    };
 
   } catch (error) {
     if (window.hidePleaseWaitMessage) hidePleaseWaitMessage();
@@ -501,7 +481,6 @@ document.getElementById("resendVerificationBtn").onclick = async function() {
     }, 800);
   }
 };
-
 //--------------Batas login handler-------------------
   
 //  Create missing window.gameUtils
