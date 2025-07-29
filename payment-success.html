@@ -67,7 +67,7 @@
   }, { timeout: 5000 })
     .then(res => {
       const data = res.data;
-      if (data.verified) {
+      if (data.emailVerified) {
         localStorage.setItem(`paymentVerified_${email}`, 'true');
         localStorage.removeItem(`gameOver_${email}`);
         localStorage.setItem(`score_${email}`, "0");
@@ -135,7 +135,7 @@ axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/verify-paypa
 }, { timeout: 5000 })
 .then(res => {
   const data = res.data;
-  if (data.verified && data.status === 'COMPLETED') {
+  if (data.emailVerified&& data.status === 'COMPLETED') {
     // Payment sukses, unlock fitur game
     localStorage.setItem(`paymentVerified_${email}`, 'true');
     window.location.href = "/index.html";

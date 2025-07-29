@@ -450,9 +450,10 @@ document.getElementById("resendVerificationBtn").onclick = async function() {
 
     // Handler tombol Verify
     document.getElementById("verifyBtn").onclick = async function() {
+      const email = document.getElementById('emailInput').value.trim();
       const code = document.getElementById('verificationCodeInput').value.trim();
-      const verified = await window.verifyEmailWithCode(inputEmail, code);
-      if (verified) {
+      const emailVerified = await window.verifyEmailWithCode(email, code);
+      if (emailVerified) {
         alert('Email verified! Welcome.');
         localStorage.setItem("playerEmail", inputEmail);
         document.getElementById("verificationBox").style.display = "none";
