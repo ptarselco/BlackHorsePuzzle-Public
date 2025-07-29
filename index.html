@@ -354,7 +354,7 @@ async function checkEmailVerifiedFromBackend(email) {
   try {
     const response = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/check-email',
-      { email },
+      { email: inputEmail},
       { timeout: 8000 }
     );
     return response.data && response.data.emailVerified === true;
@@ -500,7 +500,7 @@ if (window.hidePleaseWaitMessage) hidePleaseWaitMessage();
     
     // Update UI
     // Setelah login sukses
-  if (playerEmail && !emailVerified) {
+  if (inputEmail && !emailVerified) {
     document.getElementById("loginBox").style.display = "none";
     document.getElementById("verificationBox").style.display = "block";
     document.getElementById("logoutBtn").style.display = "none";
@@ -821,7 +821,7 @@ if (!emailVerified) {
   document.getElementById("loginBox").style.display = "none";
   document.getElementById("verificationBox").style.display = "block";
   document.getElementById("logoutBtn").style.display = "none";
-  //return
+
 } else {
   // Email sudah terverifikasi, tampilkan logoutBtn
   document.getElementById("loginBox").style.display = "none";
