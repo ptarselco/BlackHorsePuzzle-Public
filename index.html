@@ -126,28 +126,29 @@
   color: #181c24;
 }
 
-#verificationBox {
-  position: absolute;
-  top: 6%;
-  left: 88%;
-  transform: translate(-50%, -50%);
-  background: rgba(30, 34, 44, 0.92);
-  border-radius: 12px;
-  box-shadow: 0 4px 24px #00eaff40;
-  padding: 18px 24px 14px 24px;
-  min-width: 340px;
-  z-index: 1000;
-  display: none;
-  text-align: center;
-  border: 1.5px solid #00eaff;
-  backdrop-filter: blur(6px);
+#verificationBox input[type="text"] {
+  width: 200px;
+  padding: 12px 16px;
+  font-size: 1.2em;
+  border: 2px solid #00eaff;
+  border-radius: 8px;
+  background: #23283a;
+  color: #fff;
+  margin-bottom: 12px;
+  box-shadow: 0 0 6px #00eaff40 inset;
+}
+
+#verificationBox button {
+  padding: 8px 18px;
+  font-size: 1em;
+  border-radius: 7px;
 }
 
 #resendVerificationBtn {
-  min-width: 120px; /* memastikan tombol tidak terlalu kecil */
-  padding: 8px 12px;
-  font-size: 1em;
-  margin-top: 6px; /* agar ada jarak dari tombol Verify */
+  min-width: 100px; /* memastikan tombol tidak terlalu kecil */
+  padding: 7px 12px;
+  font-size: 0.9em;
+  margin-top: 8px; /* agar ada jarak dari tombol Verify */
   display: block;  /* agar tombol berada di bawah, bukan samping */
   margin-left: auto;
   margin-right: auto;
@@ -395,7 +396,7 @@ window.resendVerificationEmail = async function(email) {
     );
     const data = response.data;
     if (data.success) {
-      alert('Verification code has been resent to your email. Please check your inbox.');
+      alert('Verification code has been sent to your email. Please check your inbox or spam.');
       console.log('✅ Resend verification success:', email);
       return true;
     } else {
