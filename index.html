@@ -445,8 +445,10 @@ document.getElementById("resendVerificationBtn").onclick = async function() {
 
     // Tampilkan verificationBox, sembunyikan logoutBtn
     document.getElementById("loginBox").style.display = "none";
-    document.getElementById("verificationBox").style.display = "block";
     document.getElementById("logoutBtn").style.display = "none";
+    // Tampilkan verificationBox
+    document.getElementById("verificationBox").style.display = "block";
+    
 
     // Handler tombol Verify
     document.getElementById("verifyBtn").onclick = async function() {
