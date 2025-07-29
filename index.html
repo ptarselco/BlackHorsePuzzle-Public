@@ -350,6 +350,19 @@ let paymentCheckInterval = null;
 // Add scroll functionality to canvas
   window.addScrollToCanvas();
 
+async function checkEmailVerifiedFromBackend(email) {
+  try {
+    const response = await axios.post(
+      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/check-email',
+      { email },
+      { timeout: 8000 }
+    );
+    return response.data && response.data.emailVerified === true;
+  } catch (error) {
+    return false;
+  }
+}
+
 // ✅ ENHANCED EMAIL VERIFICATION:
  window.verifyEmailWithCode = async function(email, code) {
   try {
@@ -711,14 +724,6 @@ function showGameOverWarning(email) {
   const warning = document.createElement('div');
   
 
-  // Tempelkan di dekat loginBox
-  //if (loginBox && loginBox.parentElement) {
-    //loginBox.parentElement.appendChild(warning);
-  //} else {
-  //document.body.appendChild(warning);
-}
-//}
-
 // NEW USER SCORE INITIALIZATION: DARI 536 BELUM MASUK
 
 //-------------------------------------------------------------------------------------------
@@ -780,6 +785,7 @@ window.addEventListener('DOMContentLoaded', async function() {
     document.getElementById("loginBtn").style.display = "inline-block";
     document.getElementById("logoutBtn").style.display = "none";
     document.getElementById("loginBox").style.display = "block";
+    document.getElementById("verificationBox").style.display = "none";
     console.log('📝 No login found - showing login form');
   }
   
@@ -799,22 +805,28 @@ window.addEventListener('DOMContentLoaded', async function() {
     }
     
     console.log('🔄 Starting enhanced login process...');
-    
-    let isVerified = false;
-    try {
-      isVerified = await verifyEmailWithBackend(inputEmail);
-      console.log('🔗 Backend verification:', isVerified ? 'SUCCESS' : 'FAILED');
-    } catch (error) {
-      console.warn('⚠️ Backend verification failed, using local mode:', error.message);
-      isVerified = true;
-    }
-    
-   if (isVerified) {
-      const scoreStatus = checkPlayerScoreStatus(inputEmail);
-      
-      localStorage.setItem("playerEmail", inputEmail);
-      document.getElementById("loginBox").style.display = "none";
-      document.getElementById("logoutBtn").style.display = "inline-block";
+
+// Verifikasi Box muncul jika email belum terverifikasi    
+let emailVerified = false;
+try {
+  emailVerified = await checkEmailVerifiedFromBackend(inputEmail);
+} catch (error) {
+  emailVerified = false;
+}
+
+localStorage.setItem("playerEmail", inputEmail);
+
+if (!emailVerified) {
+  // Email belum terverifikasi, tampilkan verificationBox
+  document.getElementById("loginBox").style.display = "none";
+  document.getElementById("verificationBox").style.display = "block";
+  document.getElementById("logoutBtn").style.display = "none";
+} else {
+  // Email sudah terverifikasi, tampilkan logoutBtn
+  document.getElementById("loginBox").style.display = "none";
+  document.getElementById("verificationBox").style.display = "none";
+  document.getElementById("logoutBtn").style.display = "inline-block";
+}
       
       if (scoreStatus.needsFavorite) {
         //console.log('⚠️ Returning user with no score - showing game over warning');
@@ -849,13 +861,11 @@ window.addEventListener('DOMContentLoaded', async function() {
       }
     }, 1000); // 1 detik setelah scene start 
     }
-
-    
       console.log('✅ Enhanced login complete');
-    } else {
+    }; // else {
       alert("Login failed. Please try again.");
-    }
-  };
+    //}
+
 
 
   // ✅ ENHANCED LOGOUT BUTTON:
@@ -976,7 +986,7 @@ function updateGameScore(email, newScore) {
   }
 console.log('📊 Score updated:', email, newScore);
  }
-  
+}
 
   //--------------------------------------------------------------------------------------------
 
