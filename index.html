@@ -738,8 +738,20 @@ window.addEventListener('DOMContentLoaded', async function() {
       // ✅ CHECK SCORE STATUS FOR EXISTING USER:
       const scoreStatus = checkPlayerScoreStatus(playerEmail);
       
-      document.getElementById("loginBox").style.display = "none";
-      document.getElementById("logoutBtn").style.display = "inline-block";
+    // Setelah login sukses dan sebelum tampilkan logoutBtn
+    const emailVerified = await checkEmailVerifiedFromBackend(playerEmail); // Buat fungsi ini sesuai backend kamu
+
+    if (!emailVerified) {
+    // Email belum terverifikasi, tampilkan verificationBox
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("verificationBox").style.display = "block";
+    document.getElementById("logoutBtn").style.display = "none";
+   } else {
+    // Email sudah terverifikasi, tampilkan logoutBtn
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("verificationBox").style.display = "none";
+    document.getElementById("logoutBtn").style.display = "inline-block";
+   }
       
       console.log('🔍 Score status check:', scoreStatus);
       
