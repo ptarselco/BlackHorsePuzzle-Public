@@ -111,39 +111,7 @@ level1.on("pointerdown", async () => {
     return;
   }
 
-  // Cek status game over dari backend
-  let isGameOver = false;
-  try {
-    const response = await axios.post(
-      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/gameover',
-      { email }
-    );
-    isGameOver = response.data && response.data.isGameOver;
-  } catch (err) {
-    // Fallback ke localStorage jika backend gagal
-    isGameOver = localStorage.getItem(`gameOver_${email}`) === 'true';
-  }
-
-  if (isGameOver) {
-    // Buat instance Level01Scene untuk akses showGameOverReturnMessage
-    const level01 = this.scene.get('Level01Scene');
-    if (level01 && typeof level01.showGameOverReturnMessage === 'function') {
-      level01.showGameOverReturnMessage();
-      
-    } else {
-      // Jika belum ada instance, tampilkan pesan sederhana
-      this.add.text(960, 800, "🔒 GAME OVER - Please buy favorite menu!", {
-        font: "bold 36px Segoe UI",
-        fill: "#ff0000",
-        backgroundColor: "#fff",
-        padding: { left: 30, right: 30, top: 10, bottom: 10 }
-      }).setOrigin(0.5).setDepth(5001);
-    }
-    return;
-    }
-
-    // Jika tidak game over, lanjut ke Level01Scene
-    this.scene.start("Level01Scene");
+  
   
 
       // Show loading indicator
