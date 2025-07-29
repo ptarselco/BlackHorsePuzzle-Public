@@ -421,20 +421,13 @@ document.getElementById("resendVerificationBtn").onclick = async function() {
 
 
 // ✅ ENHANCED LOGIN HANDLER: ------ Mulai login handler ------------------- 
-  document.getElementById("loginBtn").onclick = async function(event) {
+ document.getElementById("loginBtn").onclick = async function(event) {
   event.preventDefault();
   event.stopPropagation();
-  
-  // Prevent double-click
-  if (loginInProgress) {
-    console.log('⏳ Login already in progress - ignoring click');
-    return;
-  }
-  
-  console.log('🔐 Starting enhanced login process');
+
+  if (loginInProgress) return;
   loginInProgress = true;
-  
-  // Disable button with visual feedback
+
   const loginBtn = document.getElementById('loginBtn');
   const originalText = loginBtn.textContent;
   loginBtn.disabled = true;
@@ -443,126 +436,68 @@ document.getElementById("resendVerificationBtn").onclick = async function() {
 
   try {
     const inputEmail = document.getElementById('emailInput').value.trim();
+    if (!inputEmail) throw new Error("Please enter your email address!");
+    if (!verifyEmailFormat(inputEmail)) throw new Error("Please enter a valid email address!");
 
-     // Tambahkan definisi dan assignment emailVerified di sini:
-  let emailVerified = false;
-  try {
-    emailVerified = await checkEmailVerifiedFromBackend(inputEmail);
-  } catch (error) {
-    emailVerified = false;
-  }
+    // Cek status verifikasi email dari backend
+    let emailVerified = false;
+    try {
+      emailVerified = await checkEmailVerifiedFromBackend(inputEmail);
+    } catch (error) {
+      emailVerified = false;
+    }
 
-  // Enhanced validation
-    if (!inputEmail) {
-    throw new Error("Please enter your email address!");
+    if (!emailVerified) {
+      // Email belum terverifikasi, tampilkan verificationBox
+      document.getElementById("loginBox").style.display = "none";
+      document.getElementById("verificationBox").style.display = "block";
+      document.getElementById("logoutBtn").style.display = "none";
+      // Handler tombol Verify
+      document.getElementById("verifyBtn").onclick = async function() {
+        const code = document.getElementById('verificationCodeInput').value.trim();
+        const verified = await window.verifyEmailWithCode(inputEmail, code);
+        if (verified) {
+          alert('Email verified! Welcome.');
+          localStorage.setItem("playerEmail", inputEmail);
+          document.getElementById("verificationBox").style.display = "none";
+          document.getElementById("logoutBtn").style.display = "inline-block";
+          // Lanjutkan proses game di sini
+          if (window.Phaser && window.game && window.game.scene) {
+            window.game.scene.start('SplashScene');
+          }
+        } else {
+          alert('Verification code is incorrect or email is not registered.');
+        }
+      };
+      return; // Stop proses login sampai verifikasi selesai
     }
-    
-    const isValidFormat = await verifyEmailFormat(inputEmail);
-    if (!isValidFormat) {
-      throw new Error("Please enter a valid email address!");
-    }
-  //------------------------------------------ 
- // ✅ SHOW SIMPLE PLEASE WAIT MESSAGE (AFTER VALIDATION):
-if (window.showPleaseWaitMessage) {
-  showPleaseWaitMessage('Verifying email with backend...');
-} 
- // ✅ Enhanced login success - show verification box
-document.getElementById("verifyBtn").onclick = async function() {
-  const email = document.getElementById('emailInput').value.trim();
-  const code = document.getElementById('verificationCodeInput').value.trim();
-  const emailVerified = await window.verifyEmailWithCode(email, code);
-  if (emailVerified) {
-    alert('Email verified! Welcome.');
+
+    // Jika email sudah terverifikasi, langsung login
+    localStorage.setItem("playerEmail", inputEmail);
+    document.getElementById("loginBox").style.display = "none";
     document.getElementById("verificationBox").style.display = "none";
     document.getElementById("logoutBtn").style.display = "inline-block";
-    // Lanjutkan proses login/game di sini
-  } else {
-    alert('Verification code is incorrect or email is not registered.');
-  }
-};
- 
-  // Verify email with backend (verifyEmailWithBackend function)
-try {
-  const emailVerified = await verifyEmailWithBackend(inputEmail);
-  if (!emailVerified) {
-    if (window.hidePleaseWaitMessage) hidePleaseWaitMessage();
-    throw new Error("Email verification failed! Please use a valid email address.");
-  }
-} catch (backendError) {
-  if (window.hidePleaseWaitMessage) hidePleaseWaitMessage();
-  console.warn('⚠️ Backend verification failed:', backendError.message);
-  throw new Error("Email verification failed! Please check your connection and try again.");
-}
+    // Lanjutkan proses game di sini
+    if (window.Phaser && window.game && window.game.scene) {
+      window.game.scene.start('SplashScene');
+    }
 
+    if (window.showSuccessNotification) {
+      showSuccessNotification('✅ Login Successful - Welcome!');
+    }
 
-
-//✅ HIDE PLEASE WAIT MESSAGE AFTER EMAIL VERIFICATION:
-if (window.hidePleaseWaitMessage) hidePleaseWaitMessage();
-  
-//-------------------------------------------
-    // Save verified email
-    localStorage.setItem("playerEmail", inputEmail);
-    
-    // Load user score
-    const userScore = parseInt(localStorage.getItem(`score_${inputEmail}`) || 0);
-    
-    // Update UI
-    // Setelah login sukses
-  if (inputEmail && !emailVerified) {
-    document.getElementById("loginBox").style.display = "none";
-    document.getElementById("verificationBox").style.display = "block";
-    document.getElementById("logoutBtn").style.display = "none";
-  }
-    
-    
-
-    // ✅ HIDE PLEASE WAIT MESSAGE AFTER EMAIL VERIFICATION:
-    if (window.hidePleaseWaitMessage) hidePleaseWaitMessage();
-    
-    // Check payment status (SILENT - in background)
-    checkPaymentStatus(inputEmail);
-    
-    // Start payment monitoring
-    startPaymentMonitoring(inputEmail); 
-
-    // LOGIN HANDLER (Start game) 
-     // ✅ DIRECT TO LEVEL01SCENE - No black horse watching!
-  if (window.Phaser && window.game && window.game.scene) {
-  console.log('🎮 Redirecting directly to SplashScene...'); // Kembalikan ke splashscene dulu
-  setTimeout(() => {
-    window.game.scene.start('SplashScene'); // ✅ LANGSUNG KE PUZZLE alihkan ke Splashscene dulu suka hilang animasi jika langsung
-    console.log('✅ Welcome to Black Horse Puzzle - Ready to play!');
-
-    // ✅ UPDATE GAME SCORE AFTER SCENE LOADS:
-    setTimeout(() => {
-      safeUpdateGameScore(inputEmail, userScore);
-    }, 1000); // Wait 1 second for scene to fully load
-
-  }, 300);
-  }
-
-  console.log('✅ Enhanced login successful!');
-
-   // ✅ SHOW SUCCESS NOTIFICATION:
-  if (window.showSuccessNotification) {
-    showSuccessNotification('✅ Login Successful - Welcome!');
-  }
-    
   } catch (error) {
-     // ✅ HIDE WAIT MESSAGE ON ERROR:
-  if (window.hidePleaseWaitMessage) hidePleaseWaitMessage();
+    if (window.hidePleaseWaitMessage) hidePleaseWaitMessage();
     console.error('❌ Login error:', error.message);
-      alert('Login Error: ' + error.message);
+    alert('Login Error: ' + error.message);
   } finally {
-    // Restore button state
     setTimeout(() => {
       loginBtn.disabled = false;
       loginBtn.textContent = originalText;
       loginBtn.style.opacity = '1';
       loginInProgress = false;
     }, 800);
-  }  
-  
+  }
 };
 //--------------Batas login handler-------------------
   
