@@ -114,17 +114,17 @@ level1.on("pointerdown", async () => {
    // ✅ Cek status payment dan game over ke backend
   try {
     const response = await axios.post(
-      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/check-status',
+      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/status',
       { email },
       { timeout: 8000 }
     );
     const data = response.data;
 
     // Cek payment
-    if (!data.paymentVerified) {
-      alert("Payment belum selesai. Silakan selesaikan pembayaran untuk lanjut.");
-      return;
-    }
+    //if (!data.paymentVerified) {
+      //alert("Payment belum selesai. Silakan selesaikan pembayaran untuk lanjut.");
+      //return;
+    //}
 
     // Cek game over
     if (data.isGameOver) {
