@@ -485,7 +485,8 @@ document.getElementById("verifyBtn").onclick = async function() {
     const data = response.data;
     console.log('✅ Email verification response:', data);
 
-    if (data.emailVerified === true) {
+    //if (data.emailVerified === true) {
+    if (data.user && data.user.emailVerified === true) {
       alert('Email verified successfully! Welcome to Black Horse Puzzle!');
       localStorage.setItem("playerEmail", email);
       document.getElementById("verificationBox").style.display = "none";
