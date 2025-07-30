@@ -380,25 +380,66 @@ let paymentCheckInterval = null;
   loginBtn.textContent = 'Please Wait...';
   loginBtn.style.opacity = '0.6';
 
-  try {
-    localStorage.setItem("playerEmail", inputEmail);
+
+ // Register user (di index.html)
+async function registerUser(email) { 
+    try {
+  const response = await axios.post(
+    'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/register',
+    { email: email.toLowerCase().trim() },
+    { timeout: 8000 }
+  );
+  const data = response.data;
+  console.log('✅ Backend email verification successful:', data.message);
+  return true;
+} catch (error) {
+ if (error.response && error.response.data) {
+  const errorData = error.response.data;
+  console.log('⚠️ Backend responded with error:', errorData.message);
+
+  // If email already exists, that's OK for login
+  if (error.response.status === 409 && errorData.message.includes('already exists')) {
+    console.log('✅ Email already registered - allowing login');
+    return true;
+  }
+
+  throw new Error(`Backend error: ${errorData.message}`);
+}
+// Tambahan error handling
+    console.error('❌ Backend verification failed:', error.message);
+    return false;
+}
+}  
+try {
+    // Proses register ke backend
+    const registered = await registerUser(inputEmail);
+    if (!registered) {
+      alert('Failed to register email. Please try again.');
+      return;
+    }
+
+    //localStorage.setItem("playerEmail", inputEmail);
     console.log('📧 Attempting login with email:', inputEmail);
    
     // Selalu cek ke backend, kirim kode verifikasi ke email
     await window.resendVerificationEmail(inputEmail);
 
-    // Tampilkan verificationBox, sembunyikan logoutBtn
+    // Tampilkan verificationBox, sembunyikan login dan logoutBtn
     document.getElementById("loginBox").style.display = "none";
     document.getElementById("logoutBtn").style.display = "none";
     // Tampilkan verificationBox
+    document.getElementById("verificationBox").style.zIndex = "1000";
     document.getElementById("verificationBox").style.display = "block";
     document.getElementById("verificationCodeInput").style.display = "inline-block";
     document.getElementById("verifyBtn").style.display = "inline-block";
     console.log('✅ Verification box displayed');
   } catch (error) {
-    if (window.hidePleaseWaitMessage) hidePleaseWaitMessage();
-    console.error('❌ Login error:', error.message);
-    alert('Login Error: ' + error.message);
+    if (error.response && error.response.data) {
+      const errorData = error.response.data;
+    }
+   // if (window.hidePleaseWaitMessage) hidePleaseWaitMessage();
+   // console.error('❌ Login error:', error.message);
+   // alert('Login Error: ' + error.message);
   } finally {
     setTimeout(() => {
       loginBtn.disabled = false;
@@ -407,31 +448,40 @@ let paymentCheckInterval = null;
       loginInProgress = false;
     }, 800);
   }
-};
+  }
 //--------------Batas login handler-------------------
 
 // ✅ ENHANCED VERIFICATION HANDLER:
  // Handler tombol Verify
-    document.getElementById("verifyBtn").onclick = async function() {
-      const email = document.getElementById('emailInput').value.trim();
-      const code = document.getElementById('verificationCodeInput').value.trim();
-      const emailVerified = await window.verifyEmailWithCode(email, code);
-      if (emailVerified) {
-        alert('Email verified! Welcome.');
-        localStorage.setItem("playerEmail", inputEmail);
-        document.getElementById("verificationBox").style.display = "none";
-        document.getElementById("logoutBtn").style.display = "inline-block";
-        // Masuk ke game
-        if (window.Phaser && window.game && window.game.scene) {
-          window.game.scene.start('SplashScene');
-        }
-        if (window.showSuccessNotification) {
-          showSuccessNotification('✅ Email Verified - Welcome!');
-        }
-      } else {
-        alert('Verification failed: Please check your email address.');
+   document.getElementById("verifyBtn").onclick = async function() {
+  const email = document.getElementById('emailInput').value.trim();
+  const code = document.getElementById('verificationCodeInput').value.trim();
+
+  try {
+    const response = await axios.post(
+      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/verify-email',
+      { email, verificationCode: code },
+      { timeout: 8000 }
+    );
+    const data = response.data;
+    if (data.emailVerified) {
+      alert('Email verified! Welcome.');
+      localStorage.setItem("playerEmail", email);
+      document.getElementById("verificationBox").style.display = "none";
+      document.getElementById("logoutBtn").style.display = "inline-block";
+      if (window.Phaser && window.game && window.game.scene) {
+        window.game.scene.start('SplashScene');
       }
-    };
+      if (window.showSuccessNotification) {
+        showSuccessNotification('✅ Email Verified - Welcome!');
+      }
+    } else {
+      alert('Verification failed: ' + (data.message || 'Please check your email address.'));
+    }
+  } catch (error) {
+    alert('Verification failed: ' + error.message);
+  }
+};
 
 //  EMAIL VERIFICATION FUNCTIONS:
 function verifyEmailFormat(email) {
@@ -456,62 +506,23 @@ async function checkEmailVerifiedFromBackend(email) {
   }
 }
 
-// Register user (di index.html)
-async function registerUser(email) { 
-    try {
-  const response = await axios.post(
-    'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/register',
-    {
-      email: email.toLowerCase().trim(),
-      source: 'game_login'
-    },
-    { timeout: 8000 }
-  );
-  const data = response.data;
-  console.log('✅ Backend email verification successful:', data.message);
-  return true;
-} catch (error) {
- if (error.response && error.response.data) {
-  const errorData = error.response.data;
-  console.log('⚠️ Backend responded with error:', errorData.message);
-
-  // If email already exists, that's OK for login
-  if (error.response.status === 409 && errorData.message.includes('already exists')) {
-    console.log('✅ Email already registered - allowing login');
-    return true;
+//RESEND VERIFICATION BUTTON HANDLER
+document.getElementById("resendVerificationBtn").onclick = async function() {
+  const email = document.getElementById('emailInput').value.trim();
+  if (!email) {
+    alert('Please enter your email address!');
+    return;
   }
+  await window.resendVerificationEmail(email);
+};
 
-  throw new Error(`Backend error: ${errorData.message}`);
-}
-// Tambahan error handling
-    console.error('❌ Backend verification failed:', error.message);
-    return false;
-}
-}  
-
-// ✅ ENHANCED EMAIL VERIFICATION:
- window.verifyEmailWithCode = async function(email, code) {
-  try {
-    const response = await axios.post(
-      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/verify-email',
-      { email, verificationCode: code },
-      { timeout: 8000 } 
-    );
-    const data = response.data;
-    if (data.emailVerified) {
-      console.log('✅ Email verified successfully:', email);
-      return true;
-    } else {
-      console.warn('❌ Email verification failed:', data.message || 'Unknown error');
-      return false;
+//  Create missing window.gameUtils
+window.gameUtils = {
+    validateEmail: function(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
     }
-  } catch (error) {
-    console.error('❌ Error verifying email:', error.message);
-    return false;
-  }
-}; 
-
-
+};
     // ✅ ENHANCED EMAIL RESEND VERIFICATION CODE
 window.resendVerificationEmail = async function(email) {
   try {
@@ -537,22 +548,6 @@ window.resendVerificationEmail = async function(email) {
   }
 };
 
-document.getElementById("resendVerificationBtn").onclick = async function() {
-  const email = document.getElementById('emailInput').value.trim();
-  if (!email) {
-    alert('Please enter your email address!');
-    return;
-  }
-  await window.resendVerificationEmail(email);
-};
-
-//  Create missing window.gameUtils
-window.gameUtils = {
-    validateEmail: function(email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    }
-};
 
 //  Create proper showMessage function
 window.showMessage = function(message, color = '#ff6b6b') {
@@ -685,9 +680,9 @@ function showLoginForm() {
   document.getElementById("loginBox").style.display = "block";
   document.getElementById("emailInput").style.display = "inline-block";
   document.getElementById("loginBtn").style.display = "inline-block";
-  document.getElementById("verificationBox").style.display = "block";
-  document.getElementById("verificationCodeInput").style.display = "inline-block";
-  document.getElementById("resendVerificationBtn").style.display = "inline-block";
+  //document.getElementById("verificationBox").style.display = "block";
+  //document.getElementById("verificationCodeInput").style.display = "inline-block";
+  //document.getElementById("resendVerificationBtn").style.display = "inline-block";
   document.getElementById("logoutBtn").style.display = "none";
 }
 
