@@ -391,9 +391,9 @@ let paymentCheckInterval = null;
     document.getElementById("loginBox").style.display = "none";
     document.getElementById("logoutBtn").style.display = "none";
     // Tampilkan verificationBox
-    document.getElementById("verificationBox").style.display = "block";
-    document.getElementById("verificationCodeInput").style.display = "inline-block";
-    document.getElementById("verifyBtn").style.display = "inline-block";
+    //document.getElementById("verificationBox").style.display = "block";
+    //document.getElementById("verificationCodeInput").style.display = "inline-block";
+    //document.getElementById("verifyBtn").style.display = "inline-block";
     console.log('✅ Verification box displayed');
   } catch (error) {
     if (window.hidePleaseWaitMessage) hidePleaseWaitMessage();
@@ -685,9 +685,9 @@ function showLoginForm() {
   document.getElementById("loginBox").style.display = "block";
   document.getElementById("emailInput").style.display = "inline-block";
   document.getElementById("loginBtn").style.display = "inline-block";
-  //document.getElementById("verificationBox").style.display = "block";
-  //document.getElementById("verificationCodeInput").style.display = "inline-block";
-  //document.getElementById("resendVerificationBtn").style.display = "inline-block";
+  document.getElementById("verificationBox").style.display = "block";
+  document.getElementById("verificationCodeInput").style.display = "inline-block";
+  document.getElementById("resendVerificationBtn").style.display = "inline-block";
   document.getElementById("logoutBtn").style.display = "none";
 }
 
@@ -751,7 +751,7 @@ window.addEventListener('DOMContentLoaded', async function() {
     document.getElementById("loginBtn").style.display = "inline-block";
     document.getElementById("logoutBtn").style.display = "none";
     document.getElementById("loginBox").style.display = "block";
-    document.getElementById("verificationBox").style.display = "none";
+    //document.getElementById("verificationBox").style.display = "none";
     console.log('📝 No login found - showing login form');
   }
    }); 
