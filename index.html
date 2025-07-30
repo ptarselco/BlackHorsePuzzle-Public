@@ -381,7 +381,7 @@ let paymentCheckInterval = null;
   loginBtn.style.opacity = '0.6';
 
   try {
-    //localStorage.setItem("playerEmail", inputEmail);
+    localStorage.setItem("playerEmail", inputEmail);
     console.log('📧 Attempting login with email:', inputEmail);
    
     // Selalu cek ke backend, kirim kode verifikasi ke email
