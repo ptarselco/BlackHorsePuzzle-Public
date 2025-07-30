@@ -472,7 +472,7 @@ document.getElementById("verifyBtn").onclick = async function() {
     );
     const data = response.data;
     if (data.emailVerified) {
-      alert('Email verified! Welcome.');
+      alert('Email verified successfully! Welcome to Black Horse Puzzle!');
       localStorage.setItem("playerEmail", email);
       document.getElementById("verificationBox").style.display = "none";
       document.getElementById("logoutBtn").style.display = "inline-block";
@@ -488,7 +488,8 @@ document.getElementById("verifyBtn").onclick = async function() {
   } catch (error) {
     alert('Verification failed: ' + error.message);
   }
-};
+}
+
 
 //  EMAIL VERIFICATION FUNCTIONS:
 function verifyEmailFormat(email) {
