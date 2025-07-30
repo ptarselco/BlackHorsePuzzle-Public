@@ -126,10 +126,30 @@
   color: #181c24;
 }
 
-#resendVerificationBtn {
-  min-width: 120px; /* memastikan tombol tidak terlalu kecil */
+#verificationCodeInput {
+  min-width: 120px;
   padding: 8px 12px;
-  font-size: 1em;
+  font-size: 0.95em;
+  margin-top: 6px; /* jarak dari input email */
+  display: block;  /* agar input berada di bawah, bukan samping */
+  margin-left: auto;
+  margin-right: auto;
+  border: 1.2px solid #00eaff;
+  border-radius: 7px;
+  background: #23283a;
+  color: #fff;
+  box-shadow: 0 0 6px #00eaff40 inset;
+  outline: none;
+  text-align: center;
+}
+#verificationCodeInput:focus {
+  border: 1.2px solid #fff;
+}
+
+#resendVerificationBtn {
+  min-width: 100px; /* memastikan tombol tidak terlalu kecil */
+  padding: 8px 12px;
+  font-size: 0.85em;
   margin-top: 6px; /* agar ada jarak dari tombol Verify */
   display: block;  /* agar tombol berada di bawah, bukan samping */
   margin-left: auto;
@@ -276,20 +296,26 @@ if (payment === "cancelled") {
       Logout
     </button>
   
-  <!-- === Form login === -->
-    <div id="loginBox">
-      <div class="login-row">
+  <!-- === Form login & Verification Box === -->
+  <!-- Login Box -->
+<div id="loginBox">
+  <div class="login-row">
     <input type="text" id="emailInput" placeholder="Email" autocomplete="off" />
-      <button id="loginBtn">Login</button>
-      </div>
-      <div class="login-row">
-       <input type="text" id="verificationCodeInput" placeholder="Verification Code" autocomplete="off" />
-       <button id="verifyBtn">Verify</button> 
-      </div>
-      <div class="login-row">
-       <button id="resendVerificationBtn">Resend Code</button>
-      </div>
-    </div>
+    <button id="loginBtn">Login</button>
+  </div>
+</div>
+
+<!-- Verification Box -->
+<div id="verificationBox" style="display:none;">
+  <div class="login-row">
+    <input type="text" id="verificationCodeInput" placeholder="Verification Code" autocomplete="off" />
+    <button id="verifyBtn">Verify</button>
+  </div>
+  <div class="login-row">
+    <button id="resendVerificationBtn">Resend Code</button>
+  </div>
+</div>
+
     <!-- === End form login === style="margin-left:10px;" dikeluarkan dari Resend Code === -->
 
      <!-- Load main.js -->
@@ -352,7 +378,7 @@ window.resendVerificationEmail = async function(email) {
     );
     const data = response.data;
     if (data.success) {
-      alert('Verification code has been resent to your email. Please check your inbox.');
+      alert('Verification code has been resent to your email. Please check your inbox or spam.');
       console.log('✅ Resend verification success:', email);
       return true;
     } else {
@@ -374,6 +400,10 @@ document.getElementById("resendVerificationBtn").onclick = async function() {
     return;
   }
   await window.resendVerificationEmail(email);
+
+ // Tampilkan verificationBox setelah kode dikirim
+  document.getElementById("loginBox").style.display = "none";
+  document.getElementById("verificationBox").style.display = "block"; 
 };
 
 // Tambahkan event handler di bawah deklarasi fungsi verifyEmailWithCode
