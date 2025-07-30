@@ -312,13 +312,16 @@ if (payment === "cancelled") {
 </div>
 
 <!-- Verification Box: kode verifikasi, tombol verify, dan resend -->
-<div id="verificationBox" style="display:block;">
-  <h2 style="color:#fff;">TEST VERIFICATION BOX</h2>
-  <input type="text" id="verificationCodeInput" placeholder="Verification Code" />
-  <button id="verifyBtn">Verify</button>
-  <button id="resendVerificationBtn">Resend Code</button>
+<div id="verificationBox" style="display:none;">
+  <div class="login-row">
+    <input type="text" id="verificationCodeInput" placeholder="Verification Code" autocomplete="off" />
+    <button id="verifyBtn">Verify</button>
+  </div>
+  <div class="login-row">
+    <button id="resendVerificationBtn">Resend Code</button>
+  </div>
 </div>
-</div>
+
 
 
 <!--
@@ -471,7 +474,9 @@ document.getElementById("verifyBtn").onclick = async function() {
       { timeout: 8000 }
     );
     const data = response.data;
-    if (data.emailVerified) {
+    console.log('✅ Email verification response:', data);
+
+    if (data.emailVerified === true) {
       alert('Email verified successfully! Welcome to Black Horse Puzzle!');
       localStorage.setItem("playerEmail", email);
       document.getElementById("verificationBox").style.display = "none";
