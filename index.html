@@ -351,6 +351,96 @@ let paymentCheckInterval = null;
 // Add scroll functionality to canvas
   window.addScrollToCanvas();
 
+  // ✅ ENHANCED LOGIN BUTTON WITH SCORE MANAGEMENT: WITH LAZY LOAD 
+// ✅ ENHANCED LOGIN HANDLER: ------ Mulai login handler ------------------- 
+  document.getElementById("loginBtn").onclick = async function(event) {
+  event.preventDefault();
+  event.stopPropagation();
+ 
+  const inputEmail = document.getElementById('emailInput').value.trim();
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  
+  if (!inputEmail) {
+    alert("Please enter your email address!");
+    loginInProgress = false;
+    return;
+  }
+  if (!emailPattern.test(inputEmail)) {
+    alert("Please enter a valid email address!");
+    loginInProgress = false;
+    return;
+  }
+
+  if (loginInProgress) return;
+  loginInProgress = true;
+
+  const loginBtn = document.getElementById('loginBtn');
+  const originalText = loginBtn.textContent;
+  loginBtn.disabled = true;
+  loginBtn.textContent = 'Please Wait...';
+  loginBtn.style.opacity = '0.6';
+
+  try {
+    localStorage.setItem("playerEmail", inputEmail);
+    console.log('📧 Attempting login with email:', inputEmail);
+   
+    // Selalu cek ke backend, kirim kode verifikasi ke email
+    await window.resendVerificationEmail(inputEmail);
+
+    // Tampilkan verificationBox, sembunyikan logoutBtn
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("logoutBtn").style.display = "none";
+    // Tampilkan verificationBox
+    document.getElementById("verificationBox").style.display = "block";
+    
+  } catch (error) {
+    if (window.hidePleaseWaitMessage) hidePleaseWaitMessage();
+    console.error('❌ Login error:', error.message);
+    alert('Login Error: ' + error.message);
+  } finally {
+    setTimeout(() => {
+      loginBtn.disabled = false;
+      loginBtn.textContent = originalText;
+      loginBtn.style.opacity = '1';
+      loginInProgress = false;
+    }, 800);
+  }
+};
+//--------------Batas login handler-------------------
+
+// ✅ ENHANCED VERIFICATION HANDLER:
+ // Handler tombol Verify
+    document.getElementById("verifyBtn").onclick = async function() {
+      const email = document.getElementById('emailInput').value.trim();
+      const code = document.getElementById('verificationCodeInput').value.trim();
+      const emailVerified = await window.verifyEmailWithCode(email, code);
+      if (emailVerified) {
+        alert('Email verified! Welcome.');
+        localStorage.setItem("playerEmail", inputEmail);
+        document.getElementById("verificationBox").style.display = "none";
+        document.getElementById("logoutBtn").style.display = "inline-block";
+        // Masuk ke game
+        if (window.Phaser && window.game && window.game.scene) {
+          window.game.scene.start('SplashScene');
+        }
+        if (window.showSuccessNotification) {
+          showSuccessNotification('✅ Email Verified - Welcome!');
+        }
+      } else {
+        alert('Verification failed: Please check your email address.');
+      }
+    };
+
+//  EMAIL VERIFICATION FUNCTIONS:
+function verifyEmailFormat(email) {
+  const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return emailPattern.test(email);
+}
+// EMERGENCY FIX - PASTE SEKARANG:
+console.log('🚨 FIXING DUPLICATE FUNCTION - ADDING REAL BACKEND VERIFICATION');
+console.log('Username yang dikirim:', this.username);
+
+
 async function checkEmailVerifiedFromBackend(email) {
   try {
     const response = await axios.post(
@@ -587,7 +677,7 @@ function showGameOverWarning(email) {
   
   const warning = document.createElement('div');
 }
-
+}
 // ✅ UTILITY FUNCTIONS:
 function showLoginForm() {
   document.getElementById("loginBox").style.display = "block";
@@ -660,114 +750,10 @@ window.addEventListener('DOMContentLoaded', async function() {
     console.log('📝 No login found - showing login form');
   }
   
-  
-// ✅ ENHANCED LOGIN HANDLER: ------ Mulai login handler ------------------- 
-  document.getElementById("loginBtn").onclick = async function(event) {
-  event.preventDefault();
-  event.stopPropagation();
 
-  const inputEmail = document.getElementById('emailInput').value.trim();
-  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  
-  if (!inputEmail) {
-    alert("Please enter your email address!");
-    loginInProgress = false;
-    return;
-  }
-  if (!emailPattern.test(inputEmail)) {
-    alert("Please enter a valid email address!");
-    loginInProgress = false;
-    return;
-  }
-
-  if (loginInProgress) return;
-  loginInProgress = true;
-
-  const loginBtn = document.getElementById('loginBtn');
-  const originalText = loginBtn.textContent;
-  loginBtn.disabled = true;
-  loginBtn.textContent = 'Please Wait...';
-  loginBtn.style.opacity = '0.6';
-
-  try {
-    localStorage.setItem("playerEmail", inputEmail);
-    console.log('📧 Attempting login with email:', inputEmail);
-   
-    // Selalu cek ke backend, kirim kode verifikasi ke email
-    await window.resendVerificationEmail(inputEmail);
-
-    // Tampilkan verificationBox, sembunyikan logoutBtn
-    document.getElementById("loginBox").style.display = "none";
-    document.getElementById("logoutBtn").style.display = "none";
-    // Tampilkan verificationBox
-    document.getElementById("verificationBox").style.display = "block";
-    
-  } catch (error) {
-    if (window.hidePleaseWaitMessage) hidePleaseWaitMessage();
-    console.error('❌ Login error:', error.message);
-    alert('Login Error: ' + error.message);
-  } finally {
-    setTimeout(() => {
-      loginBtn.disabled = false;
-      loginBtn.textContent = originalText;
-      loginBtn.style.opacity = '1';
-      loginInProgress = false;
-    }, 800);
-  }
-};
-//--------------Batas login handler-------------------
-
-// ✅ ENHANCED VERIFICATION HANDLER:
- // Handler tombol Verify
-    document.getElementById("verifyBtn").onclick = async function() {
-      const email = document.getElementById('emailInput').value.trim();
-      const code = document.getElementById('verificationCodeInput').value.trim();
-      const emailVerified = await window.verifyEmailWithCode(email, code);
-      if (emailVerified) {
-        alert('Email verified! Welcome.');
-        localStorage.setItem("playerEmail", inputEmail);
-        document.getElementById("verificationBox").style.display = "none";
-        document.getElementById("logoutBtn").style.display = "inline-block";
-        // Masuk ke game
-        if (window.Phaser && window.game && window.game.scene) {
-          window.game.scene.start('SplashScene');
-        }
-        if (window.showSuccessNotification) {
-          showSuccessNotification('✅ Email Verified - Welcome!');
-        }
-      } else {
-        alert('Verification failed: Please check your email address.');
-      }
-    };
-
-//  EMAIL VERIFICATION FUNCTIONS:
-function verifyEmailFormat(email) {
-  const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  return emailPattern.test(email);
-}
-// EMERGENCY FIX - PASTE SEKARANG:
-console.log('🚨 FIXING DUPLICATE FUNCTION - ADDING REAL BACKEND VERIFICATION');
-console.log('Username yang dikirim:', this.username);
-
-  // ✅ ENHANCED LOGIN BUTTON WITH SCORE MANAGEMENT: WITH LAZY LOAD
-  //document.getElementById("loginBtn").onclick = async function() {
-    //const inputEmail = document.getElementById('emailInput').value.trim();
-    
-
-//if (!emailVerified) {
-  // Email belum terverifikasi, tampilkan verificationBox
-  //document.getElementById("loginBox").style.display = "none";
-  //document.getElementById("verificationBox").style.display = "block";
-  //document.getElementById("logoutBtn").style.display = "none";
-
-//} else {
-  // Email sudah terverifikasi, tampilkan logoutBtn
-  //document.getElementById("loginBox").style.display = "none";
-  //document.getElementById("verificationBox").style.display = "none";
-  //document.getElementById("logoutBtn").style.display = "inline-block";
-//}
-      
-      if (scoreStatus.needsFavorite) {
+ 
+ 
+    if (scoreStatus.needsFavorite) {
         //console.log('⚠️ Returning user with no score - showing game over warning');
         //showGameOverWarning(inputEmail);
       } else if (scoreStatus.hasPlayedBefore && scoreStatus.currentScore > 0) {
@@ -801,10 +787,8 @@ console.log('Username yang dikirim:', this.username);
     }, 1000); // 1 detik setelah scene start 
     }
       console.log('✅ Enhanced login complete');
-    }); // else {
-      alert("Login failed. Please try again.");
-    //}
-
+     alert("Login failed. Please try again.");
+   
 
 
   // ✅ ENHANCED LOGOUT BUTTON:
@@ -876,7 +860,7 @@ console.log('Username yang dikirim:', this.username);
     
     console.log('✅ Logout button setup complete');
   }
-};
+
 
 // ✅ ENHANCED SCORE UPDATE FUNCTION:
 function updateGameScore(email, newScore) {
@@ -923,9 +907,9 @@ function updateGameScore(email, newScore) {
       }
     }, 1000);
   }
-console.log('📊 Score updated:', email, newScore);
+ console.log('📊 Score updated:', email, newScore);
  }
-
+});
 
   //--------------------------------------------------------------------------------------------
 
