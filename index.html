@@ -602,7 +602,7 @@ window.addEventListener('DOMContentLoaded', async function() {
   console.log('📄 Enhanced Black Horse Puzzle - Initializing secure system');
   
   // ✅ SIMPLE LOGIN/LOGOUT LOGIC WITH SCORE MANAGEMENT:
-  let playerEmail = localStorage.getItem("playerEmail");
+ // let playerEmail = localStorage.getItem("playerEmail");
   
   if (playerEmail) {
     console.log('🔍 Existing login found:', playerEmail);
@@ -659,29 +659,23 @@ window.addEventListener('DOMContentLoaded', async function() {
     console.log('📝 No login found - showing login form');
   }
   
-  // Verifikasi Box muncul jika email belum terverifikasi    
-let emailVerified = false;
-try {
-  emailVerified = await checkEmailVerifiedFromBackend(inputEmail);
-} catch (error) {
-  emailVerified = false;
-}
-
-localStorage.setItem("playerEmail", inputEmail);
-
+  
 // ✅ ENHANCED LOGIN HANDLER: ------ Mulai login handler ------------------- 
- document.getElementById("loginBtn").onclick = async function(event) {
+  document.getElementById("loginBtn").onclick = async function(event) {
   event.preventDefault();
   event.stopPropagation();
 
   const inputEmail = document.getElementById('emailInput').value.trim();
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  
   if (!inputEmail) {
     alert("Please enter your email address!");
+    loginInProgress = false;
     return;
   }
   if (!emailPattern.test(inputEmail)) {
     alert("Please enter a valid email address!");
+    loginInProgress = false;
     return;
   }
 
@@ -695,10 +689,9 @@ localStorage.setItem("playerEmail", inputEmail);
   loginBtn.style.opacity = '0.6';
 
   try {
-    const inputEmail = document.getElementById('emailInput').value.trim();
-    if (!inputEmail) throw new Error("Please enter your email address!");
-    if (!verifyEmailFormat(inputEmail)) throw new Error("Please enter a valid email address!");
-
+    localStorage.setItem("playerEmail", inputEmail);
+    console.log('📧 Attempting login with email:', inputEmail);
+   
     // Selalu cek ke backend, kirim kode verifikasi ke email
     await window.resendVerificationEmail(inputEmail);
 
