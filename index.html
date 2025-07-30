@@ -542,6 +542,10 @@ document.getElementById("resendVerificationBtn").onclick = async function() {
     return;
   }
   await window.resendVerificationEmail(email);
+  
+// Tampilkan verificationBox setelah kode dikirim
+  document.getElementById("loginBox").style.display = "none";
+  document.getElementById("verificationBox").style.display = "block";
 };
 
 //  Create missing window.gameUtils
