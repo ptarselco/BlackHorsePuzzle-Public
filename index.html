@@ -364,6 +364,39 @@ async function checkEmailVerifiedFromBackend(email) {
   }
 }
 
+// Register user (di index.html)
+async function registerUser(email) { 
+    try {
+  const response = await axios.post(
+    'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/register',
+    {
+      email: email.toLowerCase().trim(),
+      source: 'game_login'
+    },
+    { timeout: 8000 }
+  );
+  const data = response.data;
+  console.log('✅ Backend email verification successful:', data.message);
+  return true;
+} catch (error) {
+ if (error.response && error.response.data) {
+  const errorData = error.response.data;
+  console.log('⚠️ Backend responded with error:', errorData.message);
+
+  // If email already exists, that's OK for login
+  if (error.response.status === 409 && errorData.message.includes('already exists')) {
+    console.log('✅ Email already registered - allowing login');
+    return true;
+  }
+
+  throw new Error(`Backend error: ${errorData.message}`);
+}
+// Tambahan error handling
+    console.error('❌ Backend verification failed:', error.message);
+    return false;
+}
+}  
+
 // ✅ ENHANCED EMAIL VERIFICATION:
  window.verifyEmailWithCode = async function(email, code) {
   try {
@@ -386,7 +419,8 @@ async function checkEmailVerifiedFromBackend(email) {
   }
 }; 
 
-// ✅ ENHANCED EMAIL FORMAT VALIDATION: RESEND VERIFICATION CODE
+
+    // ✅ ENHANCED EMAIL RESEND VERIFICATION CODE
 window.resendVerificationEmail = async function(email) {
   try {
     const response = await axios.post(
@@ -420,73 +454,6 @@ document.getElementById("resendVerificationBtn").onclick = async function() {
   await window.resendVerificationEmail(email);
 };
 
-
-// ✅ ENHANCED LOGIN HANDLER: ------ Mulai login handler ------------------- 
- document.getElementById("loginBtn").onclick = async function(event) {
-  event.preventDefault();
-  event.stopPropagation();
-
-  if (loginInProgress) return;
-  loginInProgress = true;
-
-  const loginBtn = document.getElementById('loginBtn');
-  const originalText = loginBtn.textContent;
-  loginBtn.disabled = true;
-  loginBtn.textContent = 'Please Wait...';
-  loginBtn.style.opacity = '0.6';
-
-  try {
-    const inputEmail = document.getElementById('emailInput').value.trim();
-    if (!inputEmail) throw new Error("Please enter your email address!");
-    if (!verifyEmailFormat(inputEmail)) throw new Error("Please enter a valid email address!");
-
-    // Selalu cek ke backend, kirim kode verifikasi ke email
-    await window.resendVerificationEmail(inputEmail);
-
-    // Tampilkan verificationBox, sembunyikan logoutBtn
-    document.getElementById("loginBox").style.display = "none";
-    document.getElementById("logoutBtn").style.display = "none";
-    // Tampilkan verificationBox
-    document.getElementById("verificationBox").style.display = "block";
-    
-
-    // Handler tombol Verify
-    document.getElementById("verifyBtn").onclick = async function() {
-      //const email = document.getElementById('emailInput').value.trim();
-      const code = document.getElementById('verificationCodeInput').value.trim();
-      const emailVerified = await window.verifyEmailWithCode(email, code);
-      if (emailVerified) {
-        alert('Email verified! Welcome.');
-        localStorage.setItem("playerEmail", inputEmail);
-        document.getElementById("verificationBox").style.display = "none";
-        document.getElementById("logoutBtn").style.display = "inline-block";
-        // Masuk ke game
-        if (window.Phaser && window.game && window.game.scene) {
-          window.game.scene.start('SplashScene');
-        }
-        if (window.showSuccessNotification) {
-          showSuccessNotification('✅ Email Verified - Welcome!');
-        }
-      } else {
-        alert('Verification failed: Please check your email address.');
-      }
-    };
-
-  } catch (error) {
-    if (window.hidePleaseWaitMessage) hidePleaseWaitMessage();
-    console.error('❌ Login error:', error.message);
-    alert('Login Error: ' + error.message);
-  } finally {
-    setTimeout(() => {
-      loginBtn.disabled = false;
-      loginBtn.textContent = originalText;
-      loginBtn.style.opacity = '1';
-      loginInProgress = false;
-    }, 800);
-  }
-};
-//--------------Batas login handler-------------------
-  
 //  Create missing window.gameUtils
 window.gameUtils = {
     validateEmail: function(email) {
@@ -501,50 +468,6 @@ window.showMessage = function(message, color = '#ff6b6b') {
     console.log('📢 Message:', message);
 };   
 
-//  EMAIL VERIFICATION FUNCTIONS:
-function verifyEmailFormat(email) {
-  const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  return emailPattern.test(email);
-}
-
-// EMERGENCY FIX - PASTE SEKARANG:
-console.log('🚨 FIXING DUPLICATE FUNCTION - ADDING REAL BACKEND VERIFICATION');
-    
-    
-console.log('Username yang dikirim:', this.username);
-   
-// Register user (di index.html)
-async function registerUser(email) { 
-    try {
-  const response = await axios.post(
-    'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/register',
-    {
-      email: email.toLowerCase().trim(),
-      source: 'game_login'
-    },
-    { timeout: 8000 }
-  );
-  const data = response.data;
-  console.log('✅ Backend email verification successful:', data.message);
-  return true;
-} catch (error) {
- if (error.response && error.response.data) {
-  const errorData = error.response.data;
-  console.log('⚠️ Backend responded with error:', errorData.message);
-
-  // If email already exists, that's OK for login
-  if (error.response.status === 409 && errorData.message.includes('already exists')) {
-    console.log('✅ Email already registered - allowing login');
-    return true;
-  }
-
-  throw new Error(`Backend error: ${errorData.message}`);
-}
-// Tambahan error handling
-    console.error('❌ Backend verification failed:', error.message);
-    return false;
-}
-}  
 
 // Redefine verifyEmailWithBackend with actual backend connection
 //async function verifyEmailWithBackend(email) {
@@ -588,8 +511,6 @@ window.verifyEmailWithBackend = async function(email) {
   }
 };
 
-    
-
 console.log('✅ REAL BACKEND VERIFICATION READY - CONNECT TO RENDER.COM');
 
 
@@ -598,6 +519,7 @@ console.log('✅ REAL BACKEND VERIFICATION READY - CONNECT TO RENDER.COM');
   // INSERT THIS ENHANCED VERSION starting from line 508:
 
 // ✅ ENHANCED SCORE MANAGEMENT FUNCTIONS (ADD FIRST):
+// ✅ ENHANCED GET PLAYER GAME SCORE AND HISTORY
 function getPlayerGameHistory(email) {
   const history = localStorage.getItem(`gameHistory_${email}`);
   return history ? JSON.parse(history) : {
@@ -610,6 +532,7 @@ function getPlayerGameHistory(email) {
   };
 }
 
+// ✅ ENHANCED UPDATE PLAYER GAME SCORE HISTORY
 function updatePlayerGameHistory(email, updates) {
   const history = getPlayerGameHistory(email);
   const updatedHistory = { ...history, ...updates };
@@ -618,7 +541,7 @@ function updatePlayerGameHistory(email, updates) {
   return updatedHistory;
 }
 
-//CheckPlayerScoreStatus - Enhanced version
+// ✅ ENHANCED CHECK PLAYER SCORE STATUS 
 function checkPlayerScoreStatus(email) {
   const currentScore = parseInt(localStorage.getItem(`score_${email}`) || 0);
   //localStorage.setItem(`score_${email}`, '0');
@@ -641,8 +564,20 @@ function checkPlayerScoreStatus(email) {
   };
 }
 
+// ✅ ENHANCED SAFETY CHECK in updateGameScore function:
+function updateGameScore(email, newScore) { //versi co 4.1 
+  newScore = parseInt(newScore) || 0;
+  localStorage.setItem(`score_${email}`, newScore.toString());
+  window.score = newScore;
+  window.playerScore = newScore;
 
-//pesan ini untuk pemain lama yang sudah game over
+  const history = getPlayerGameHistory(email);
+  updatePlayerGameHistory(email, {
+    highestScore: Math.max(history.highestScore, newScore),
+    lastPlayedDate: new Date().toISOString()
+  });
+
+// ✅ pesan ini untuk pemain lama yang sudah game over
 function showGameOverWarning(email) {
   console.log('⚠️ Showing game over warning for:', email);
 
@@ -651,9 +586,15 @@ function showGameOverWarning(email) {
   const rect = logoutBtn ? logoutBtn.getBoundingClientRect() : { top: 20, left: window.innerWidth - 180 };
   
   const warning = document.createElement('div');
-  
+}
 
-// NEW USER SCORE INITIALIZATION: DARI 536 BELUM MASUK
+// ✅ UTILITY FUNCTIONS:
+function showLoginForm() {
+  document.getElementById("loginBox").style.display = "block";
+  document.getElementById("emailInput").style.display = "inline-block";
+  document.getElementById("loginBtn").style.display = "inline-block";
+  document.getElementById("logoutBtn").style.display = "none";
+}
 
 //-------------------------------------------------------------------------------------------
 // ✅ ENHANCED DOMCONTENTLOADED WITH SCORE MANAGEMENT:
@@ -718,24 +659,7 @@ window.addEventListener('DOMContentLoaded', async function() {
     console.log('📝 No login found - showing login form');
   }
   
-  // ✅ ENHANCED LOGIN BUTTON WITH SCORE MANAGEMENT: WITH LAZY LOAD
-  document.getElementById("loginBtn").onclick = async function() {
-    const inputEmail = document.getElementById('emailInput').value.trim();
-    
-    if (!inputEmail) {
-      alert("Please enter your email address!");
-      return;
-    }
-    
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailPattern.test(inputEmail)) {
-      alert("Please enter a valid email address!");
-      return;
-    }
-    
-    console.log('🔄 Starting enhanced login process...');
-
-// Verifikasi Box muncul jika email belum terverifikasi    
+  // Verifikasi Box muncul jika email belum terverifikasi    
 let emailVerified = false;
 try {
   emailVerified = await checkEmailVerifiedFromBackend(inputEmail);
@@ -745,18 +669,109 @@ try {
 
 localStorage.setItem("playerEmail", inputEmail);
 
-if (!emailVerified) {
-  // Email belum terverifikasi, tampilkan verificationBox
-  document.getElementById("loginBox").style.display = "none";
-  document.getElementById("verificationBox").style.display = "block";
-  document.getElementById("logoutBtn").style.display = "none";
+// ✅ ENHANCED LOGIN HANDLER: ------ Mulai login handler ------------------- 
+ document.getElementById("loginBtn").onclick = async function(event) {
+  event.preventDefault();
+  event.stopPropagation();
 
-} else {
-  // Email sudah terverifikasi, tampilkan logoutBtn
-  document.getElementById("loginBox").style.display = "none";
-  document.getElementById("verificationBox").style.display = "none";
-  document.getElementById("logoutBtn").style.display = "inline-block";
+  const inputEmail = document.getElementById('emailInput').value.trim();
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!inputEmail) {
+    alert("Please enter your email address!");
+    return;
+  }
+  if (!emailPattern.test(inputEmail)) {
+    alert("Please enter a valid email address!");
+    return;
+  }
+
+  if (loginInProgress) return;
+  loginInProgress = true;
+
+  const loginBtn = document.getElementById('loginBtn');
+  const originalText = loginBtn.textContent;
+  loginBtn.disabled = true;
+  loginBtn.textContent = 'Please Wait...';
+  loginBtn.style.opacity = '0.6';
+
+  try {
+    const inputEmail = document.getElementById('emailInput').value.trim();
+    if (!inputEmail) throw new Error("Please enter your email address!");
+    if (!verifyEmailFormat(inputEmail)) throw new Error("Please enter a valid email address!");
+
+    // Selalu cek ke backend, kirim kode verifikasi ke email
+    await window.resendVerificationEmail(inputEmail);
+
+    // Tampilkan verificationBox, sembunyikan logoutBtn
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("logoutBtn").style.display = "none";
+    // Tampilkan verificationBox
+    document.getElementById("verificationBox").style.display = "block";
+    
+  } catch (error) {
+    if (window.hidePleaseWaitMessage) hidePleaseWaitMessage();
+    console.error('❌ Login error:', error.message);
+    alert('Login Error: ' + error.message);
+  } finally {
+    setTimeout(() => {
+      loginBtn.disabled = false;
+      loginBtn.textContent = originalText;
+      loginBtn.style.opacity = '1';
+      loginInProgress = false;
+    }, 800);
+  }
+};
+//--------------Batas login handler-------------------
+
+// ✅ ENHANCED VERIFICATION HANDLER:
+ // Handler tombol Verify
+    document.getElementById("verifyBtn").onclick = async function() {
+      const email = document.getElementById('emailInput').value.trim();
+      const code = document.getElementById('verificationCodeInput').value.trim();
+      const emailVerified = await window.verifyEmailWithCode(email, code);
+      if (emailVerified) {
+        alert('Email verified! Welcome.');
+        localStorage.setItem("playerEmail", inputEmail);
+        document.getElementById("verificationBox").style.display = "none";
+        document.getElementById("logoutBtn").style.display = "inline-block";
+        // Masuk ke game
+        if (window.Phaser && window.game && window.game.scene) {
+          window.game.scene.start('SplashScene');
+        }
+        if (window.showSuccessNotification) {
+          showSuccessNotification('✅ Email Verified - Welcome!');
+        }
+      } else {
+        alert('Verification failed: Please check your email address.');
+      }
+    };
+
+//  EMAIL VERIFICATION FUNCTIONS:
+function verifyEmailFormat(email) {
+  const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return emailPattern.test(email);
 }
+// EMERGENCY FIX - PASTE SEKARANG:
+console.log('🚨 FIXING DUPLICATE FUNCTION - ADDING REAL BACKEND VERIFICATION');
+console.log('Username yang dikirim:', this.username);
+
+  // ✅ ENHANCED LOGIN BUTTON WITH SCORE MANAGEMENT: WITH LAZY LOAD
+  //document.getElementById("loginBtn").onclick = async function() {
+    //const inputEmail = document.getElementById('emailInput').value.trim();
+    
+
+//if (!emailVerified) {
+  // Email belum terverifikasi, tampilkan verificationBox
+  //document.getElementById("loginBox").style.display = "none";
+  //document.getElementById("verificationBox").style.display = "block";
+  //document.getElementById("logoutBtn").style.display = "none";
+
+//} else {
+  // Email sudah terverifikasi, tampilkan logoutBtn
+  //document.getElementById("loginBox").style.display = "none";
+  //document.getElementById("verificationBox").style.display = "none";
+  //document.getElementById("logoutBtn").style.display = "inline-block";
+//}
       
       if (scoreStatus.needsFavorite) {
         //console.log('⚠️ Returning user with no score - showing game over warning');
@@ -792,7 +807,7 @@ if (!emailVerified) {
     }, 1000); // 1 detik setelah scene start 
     }
       console.log('✅ Enhanced login complete');
-    }; // else {
+    }); // else {
       alert("Login failed. Please try again.");
     //}
 
@@ -867,7 +882,7 @@ if (!emailVerified) {
     
     console.log('✅ Logout button setup complete');
   }
-});
+};
 
 // ✅ ENHANCED SCORE UPDATE FUNCTION:
 function updateGameScore(email, newScore) {
@@ -916,13 +931,13 @@ function updateGameScore(email, newScore) {
   }
 console.log('📊 Score updated:', email, newScore);
  }
-}
+
 
   //--------------------------------------------------------------------------------------------
 
     
 // ✅ ENHANCED MULTI-PAYMENT VERIFICATION FUNCTIONS:
-<!-- FIND function checkPaymentStatus around line 350 dan REPLACE dengan: -->
+//<!-- FIND function checkPaymentStatus around line 350 dan REPLACE dengan: -->
 window.checkPaymentStatus = async function(email) {
   let result = { paid: false, method: null };
 
@@ -1171,8 +1186,6 @@ async function verifyPayPalOrder(orderId, email) {
     }
   };
 
-
-
 //------------------------------------------------------------------------------------------------------------
 async function startPaymentMonitoring(email) {
   // Monitor payment status every minute
@@ -1282,30 +1295,8 @@ function stopPaymentMonitoring() {
   }
 }
 
-// ✅ UTILITY FUNCTIONS:
-function showLoginForm() {
-  document.getElementById("loginBox").style.display = "block";
-  document.getElementById("emailInput").style.display = "inline-block";
-  document.getElementById("loginBtn").style.display = "inline-block";
-  document.getElementById("logoutBtn").style.display = "none";
-}
 
-
- 
 // mulai co 4.1
-// ✅ ENHANCED SAFETY CHECK in updateGameScore function:
-function updateGameScore(email, newScore) { //versi co 4.1 
-  newScore = parseInt(newScore) || 0;
-  localStorage.setItem(`score_${email}`, newScore.toString());
-  window.score = newScore;
-  window.playerScore = newScore;
-
-  const history = getPlayerGameHistory(email);
-  updatePlayerGameHistory(email, {
-    highestScore: Math.max(history.highestScore, newScore),
-    lastPlayedDate: new Date().toISOString()
-  });
-
   // Cek apakah sudah main minimal 3 ronde (atau sesuai logic kamu)
   //const isGameOver = newScore === 0 && history.hasPlayedBefore && history.totalGamesPlayed >= 3;
 
@@ -1354,7 +1345,7 @@ function updateGameScore(email, newScore) { //versi co 4.1
   }
   console.log('📊 Score updated for', email, newScore);
 }
-}         
+         
 
 window.lockPlayAndShowGameOver = function() {
   setTimeout(() => {
