@@ -533,9 +533,6 @@ window.resendVerificationEmail = async function(email) {
     alert('An error occurred while resending the code. Please try again later.');
     return false;
   }
-  document.getElementById("verificationBox").style.display = "block";
-  document.getElementById("verificationCodeInput").style.display = "inline-block";
-  document.getElementById("verifyBtn").style.display = "inline-block";
 };
 
 document.getElementById("resendVerificationBtn").onclick = async function() {
