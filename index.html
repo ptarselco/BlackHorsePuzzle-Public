@@ -542,6 +542,9 @@ document.getElementById("resendVerificationBtn").onclick = async function() {
     return;
   }
   await window.resendVerificationEmail(email);
+document.getElementById("verificationBox").style.display = "block";
+  document.getElementById("verificationCodeInput").style.display = "inline-block";
+  document.getElementById("verifyBtn").style.display = "inline-block";
 };
 
 //  Create missing window.gameUtils
