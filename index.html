@@ -381,7 +381,7 @@ let paymentCheckInterval = null;
   loginBtn.style.opacity = '0.6';
 
   try {
-    localStorage.setItem("playerEmail", inputEmail);
+    //localStorage.setItem("playerEmail", inputEmail);
     console.log('📧 Attempting login with email:', inputEmail);
    
     // Selalu cek ke backend, kirim kode verifikasi ke email
@@ -392,7 +392,9 @@ let paymentCheckInterval = null;
     document.getElementById("logoutBtn").style.display = "none";
     // Tampilkan verificationBox
     document.getElementById("verificationBox").style.display = "block";
-    
+    document.getElementById("verificationCodeInput").style.display = "inline-block";
+    document.getElementById("verifyBtn").style.display = "inline-block";
+
   } catch (error) {
     if (window.hidePleaseWaitMessage) hidePleaseWaitMessage();
     console.error('❌ Login error:', error.message);
