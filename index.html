@@ -599,6 +599,7 @@ function showLoginForm() {
 //-------------------------------------------------------------------------------------------
 // ✅ ENHANCED DOMCONTENTLOADED WITH SCORE MANAGEMENT:
 window.addEventListener('DOMContentLoaded', async function() {
+  let playerEmail = localStorage.getItem("playerEmail"); 
   console.log('📄 Enhanced Black Horse Puzzle - Initializing secure system');
   
   // ✅ SIMPLE LOGIN/LOGOUT LOGIC WITH SCORE MANAGEMENT:
@@ -628,19 +629,19 @@ window.addEventListener('DOMContentLoaded', async function() {
     document.getElementById("logoutBtn").style.display = "inline-block";
    }
       
-      console.log('🔍 Score status check:', scoreStatus);
+    console.log('🔍 Score status check:', scoreStatus);
       
-      if (scoreStatus.needsFavorite) {
-        console.log('⚠️ User needs to give favorite to continue');
-        showGameOverWarning(playerEmail);
+    if (scoreStatus.needsFavorite) {
+      console.log('⚠️ User needs to give favorite to continue');
+      showGameOverWarning(playerEmail);
       } else if (scoreStatus.canPlay) {
-        console.log('✅ User can continue playing with score:', scoreStatus.currentScore);
-        const userScore = parseInt(localStorage.getItem(`score_${playerEmail}`) || 0);
-        updateGameScore(playerEmail, userScore);
+      console.log('✅ User can continue playing with score:', scoreStatus.currentScore);
+      const userScore = parseInt(localStorage.getItem(`score_${playerEmail}`) || 0);
+      updateGameScore(playerEmail, userScore);
         
-        const paymentResult = await checkPaymentStatus(playerEmail);
-        console.log('💳 Payment status:', paymentResult);
-        startPaymentMonitoring(playerEmail);
+      const paymentResult = await checkPaymentStatus(playerEmail);
+      console.log('💳 Payment status:', paymentResult);
+      startPaymentMonitoring(playerEmail);
       }
       
       console.log('✅ User logged in successfully with enhanced features');
