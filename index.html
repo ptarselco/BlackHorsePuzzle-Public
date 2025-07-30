@@ -695,22 +695,33 @@ window.addEventListener('DOMContentLoaded', async function() {
   let playerEmail = localStorage.getItem("playerEmail"); 
   console.log('📄 Enhanced Black Horse Puzzle - Initializing secure system');
   
-  // ✅ SIMPLE LOGIN/LOGOUT LOGIC WITH SCORE MANAGEMENT:
- // let playerEmail = localStorage.getItem("playerEmail");
-  
-  if (playerEmail) {
-    console.log('🔍 Existing login found:', playerEmail);
-    const emailVerified = await checkEmailVerifiedFromBackend(playerEmail);
-    if (!emailVerified) {
-      // Tampilkan verificationBox, sembunyikan loginBox
-      document.getElementById("loginBox").style.display = "none";
-      document.getElementById("verificationBox").style.display = "block";
-      document.getElementById("logoutBtn").style.display = "none";
+   if (playerEmail) {
+    const isValidEmail = verifyEmailFormat(playerEmail);
+    if (isValidEmail) {
+      const scoreStatus = checkPlayerScoreStatus(playerEmail);
+      const emailVerified = await checkEmailVerifiedFromBackend(playerEmail);
+
+      // ...lanjutkan logika sesuai status emailVerified dan scoreStatus...
+      console.log('🔍 Score status check:', scoreStatus);
+
+      if (scoreStatus.needsFavorite) {
+        console.log('⚠️ User needs to give favorite to continue');
+        showGameOverWarning(playerEmail);
+      } else if (scoreStatus.canPlay) {
+        console.log('✅ User can continue playing with score:', scoreStatus.currentScore);
+        const userScore = parseInt(localStorage.getItem(`score_${playerEmail}`) || 0);
+        updateGameScore(playerEmail, userScore);
+
+        const paymentResult = await checkPaymentStatus(playerEmail);
+        console.log('💳 Payment status:', paymentResult);
+        startPaymentMonitoring(playerEmail);
+      }
+
+      console.log('✅ User logged in successfully with enhanced features');
     } else {
-      // Email sudah terverifikasi, tampilkan logoutBtn
-      document.getElementById("loginBox").style.display = "none";
-      document.getElementById("verificationBox").style.display = "none";
-      document.getElementById("logoutBtn").style.display = "inline-block";
+      console.log('❌ Invalid email format, clearing login');
+      localStorage.removeItem("playerEmail");
+      showLoginForm();
     }
   } else {
     // Belum login, tampilkan login form
@@ -719,61 +730,7 @@ window.addEventListener('DOMContentLoaded', async function() {
     document.getElementById("logoutBtn").style.display = "none";
   }
 });
-    const isValidEmail = verifyEmailFormat(playerEmail);
-     if (playerEmail) {
-    const isValidEmail = verifyEmailFormat(playerEmail);
-    if (isValidEmail) {
-      // ✅ CHECK SCORE STATUS FOR EXISTING USER:
-    const scoreStatus = checkPlayerScoreStatus(playerEmail);
-      
-    // Setelah login sukses dan sebelum tampilkan logoutBtn
-    const emailVerified = await checkEmailVerifiedFromBackend(playerEmail); // Buat fungsi ini sesuai backend kamu
-
-    //if (!emailVerified) {
-    // Email belum terverifikasi, tampilkan verificationBox
-    //document.getElementById("loginBox").style.display = "none";
-    //document.getElementById("verificationBox").style.display = "block";
-    //document.getElementById("logoutBtn").style.display = "none";
-   //} else {
-    // Email sudah terverifikasi, tampilkan logoutBtn
-    //document.getElementById("loginBox").style.display = "none";
-    //document.getElementById("verificationBox").style.display = "none";
-    //document.getElementById("logoutBtn").style.display = "inline-block";
-   //}
-    
-    console.log('🔍 Score status check:', scoreStatus);
-      
-    if (scoreStatus.needsFavorite) {
-      console.log('⚠️ User needs to give favorite to continue');
-      showGameOverWarning(playerEmail);
-      } else if (scoreStatus.canPlay) {
-      console.log('✅ User can continue playing with score:', scoreStatus.currentScore);
-      const userScore = parseInt(localStorage.getItem(`score_${playerEmail}`) || 0);
-      updateGameScore(playerEmail, userScore);
-        
-      const paymentResult = await checkPaymentStatus(playerEmail);
-      console.log('💳 Payment status:', paymentResult);
-      startPaymentMonitoring(playerEmail);
-      }
-      
-      console.log('✅ User logged in successfully with enhanced features');
-      
-    } else {
-      console.log('❌ Invalid email format, clearing login');
-      localStorage.removeItem("playerEmail");
-      showLoginForm();
-    }
-  }
-  //} else {
-    //document.getElementById("emailInput").style.display = "inline-block";
-    //document.getElementById("loginBtn").style.display = "inline-block";
-    //document.getElementById("logoutBtn").style.display = "none";
-    //document.getElementById("loginBox").style.display = "block";
-    //document.getElementById("verificationBox").style.display = "none";
-    //console.log('📝 No login found - showing login form');
-  //}
- //}); 
-
+ 
  
  async function ScoreStatus(inputEmail, scoreStatus) {
     if (scoreStatus.needsFavorite) {
