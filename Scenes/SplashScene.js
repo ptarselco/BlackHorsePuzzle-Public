@@ -115,7 +115,7 @@ level1.on("pointerdown", async () => {
   try {
     const response = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/status',
-      { email },
+      { email, level: 'Level01' },
       { timeout: 8000 }
     );
     const data = response.data;
