@@ -1538,7 +1538,7 @@ async updateUserProgress(email, progressData) {
 async saveScoreToBackend(email, score) {
   try {
     const res = await axios.post(
-      'https://backend-paypalblackhorsepuzzle.onrender.com/api/update-score',
+      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/update-score',
       { email, score }
     );
     const data = res.data;

@@ -126,45 +126,81 @@
   color: #181c24;
 }
 
+/* Verification Box mirip Login Box */
 #verificationBox {
-  display: block !important;
-  position: fixed;
-  top: 50px;
-  left: 30%;
-  transform: translateX(-50%);
-  z-index: 99999;
-  background: rgba(35, 40, 58, 0.5); /* setAlpa 0.5 */
-  padding: 8px 10px;
+  position: absolute;
+  top: 120px; /* di bawah loginBox */
+  left: 50%;
+  transform: translate(-50%, 0);
+  background: rgba(30, 34, 44, 0.92);
   border-radius: 12px;
   box-shadow: 0 4px 24px #00eaff40;
-  min-width: 260px;
-  max-width: 320px;
-  width: 180px;
+  padding: 18px 24px 14px 24px;
+  min-width: 340px;
+  z-index: 1000;
   text-align: center;
-  border: 2px solid #00eaff;
+  border: 1.5px solid #00eaff;
+  backdrop-filter: blur(6px);
+  display: none;
 }
 
+/* Input kode verifikasi mirip login */
 #verificationBox input[type="text"] {
-  width: 160px; /* lebih pendek */
+  width: 200px;
   padding: 8px 10px;
-  font-size: 0.75em;
-}
-
-#verifyBtn {
-  min-width: 120px;
-  padding: 8px 18px;
-  font-size: 0.75em;
+  border: 1.2px solid #00eaff;
   border-radius: 7px;
+  font-size: 1em;
+  background: #23283a;
+  color: #fff;
+  outline: none;
+  box-shadow: 0 0 6px #00eaff40 inset;
+  transition: border 0.2s;
+}
+#verificationBox input[type="text"]:focus {
+  border: 1.2px solid #fff;
 }
 
+/* Tombol Verify mirip Login */
+#verifyBtn {
+  background: linear-gradient(90deg, #00eaff 0%, #0078ff 100%);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 8px 22px;
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 0 12px #00eaff60;
+  letter-spacing: 1px;
+  transition: background 0.2s, box-shadow 0.2s;
+  margin-left: 10px;
+}
+#verifyBtn:hover {
+  background: linear-gradient(90deg, #0078ff 0%, #00eaff 100%);
+  box-shadow: 0 0 18px #00eaffcc;
+}
+
+/* Tombol Resend sejajar kanan, di bawah Verify */
 #resendVerificationBtn {
-  min-width: 100px; /* memastikan tombol tidak terlalu kecil */
-  padding: 6px 10px;
-  font-size: 0.75em;
-  margin-top: 8px; /* agar ada jarak dari tombol Verify */
-  display: block;  /* agar tombol berada di bawah, bukan samping */
-  margin-left: auto;
-  margin-right: auto;
+  background: linear-gradient(90deg, #00eaff 0%, #0078ff 100%);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 8px 22px;
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 0 12px #00eaff60;
+  letter-spacing: 1px;
+  transition: background 0.2s, box-shadow 0.2s;
+  margin-top: 12px;
+  float: right;
+  margin-right: 0;
+}
+#resendVerificationBtn:hover {
+  background: linear-gradient(90deg, #0078ff 0%, #00eaff 100%);
+  box-shadow: 0 0 18px #00eaffcc;
 }
 
 #logoutBtn {
