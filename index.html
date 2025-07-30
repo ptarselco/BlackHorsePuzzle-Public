@@ -126,16 +126,22 @@
   color: #181c24;
 }
 
-#verificationBox input[type="text"] {
-  width: 200px;
-  padding: 12px 16px;
-  font-size: 1.2em;
-  border: 2px solid #00eaff;
-  border-radius: 8px;
+#verificationBox {
+  display: block !important;
+  position: fixed;
+  top: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 99999;
   background: #23283a;
-  color: #fff;
-  margin-bottom: 12px;
-  box-shadow: 0 0 6px #00eaff40 inset;
+  padding: 24px 32px;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px #00eaff40;
+  min-width: 340px;
+  max-width: 400px;
+  width: 340px;
+  text-align: center;
+  border: 2px solid #00eaff;
 }
 
 #verificationBox button {
