@@ -755,7 +755,7 @@ window.addEventListener('DOMContentLoaded', async function() {
    }); 
 
  
- async function handleScoreStatus(inputEmail, scoreStatus) {
+ async function ScoreStatus(inputEmail, scoreStatus) {
     if (scoreStatus.needsFavorite) {
         //console.log('⚠️ Returning user with no score - showing game over warning');
         //showGameOverWarning(inputEmail);
@@ -772,9 +772,10 @@ window.addEventListener('DOMContentLoaded', async function() {
         });
         updateGameScore(inputEmail, 0);
       
+        async function checkPaymentStatus(email) {
         const paymentResult = await checkPaymentStatus(inputEmail);
         startPaymentMonitoring(inputEmail);
-      
+        }
         //if (window.showSuccessNotification) {
           //showSuccessNotification(`✅ Welcome new player! You have 3 points to start.`);
         //}
