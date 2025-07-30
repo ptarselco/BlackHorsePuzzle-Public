@@ -412,7 +412,9 @@ async function registerUser(email) {
 }  
 try {
     // Proses register ke backend
+    console.log('Step 1: Registering user...');
     const registered = await registerUser(inputEmail);
+    console.log('Step 2: Registered?', registered);
     if (!registered) {
       alert('Failed to register email. Please try again.');
       return;
@@ -420,10 +422,11 @@ try {
 
     //localStorage.setItem("playerEmail", inputEmail);
     console.log('📧 Attempting login with email:', inputEmail);
-   
+    
+    console.log('Step 3: Sending verification email...');
     // Selalu cek ke backend, kirim kode verifikasi ke email
     await window.resendVerificationEmail(inputEmail);
-
+    console.log('Step 4: Showing verification box...');
     // Tampilkan verificationBox, sembunyikan login dan logoutBtn
     document.getElementById("loginBox").style.display = "none";
     document.getElementById("logoutBtn").style.display = "none";
@@ -697,27 +700,45 @@ window.addEventListener('DOMContentLoaded', async function() {
   
   if (playerEmail) {
     console.log('🔍 Existing login found:', playerEmail);
-    
+    const emailVerified = await checkEmailVerifiedFromBackend(playerEmail);
+    if (!emailVerified) {
+      // Tampilkan verificationBox, sembunyikan loginBox
+      document.getElementById("loginBox").style.display = "none";
+      document.getElementById("verificationBox").style.display = "block";
+      document.getElementById("logoutBtn").style.display = "none";
+    } else {
+      // Email sudah terverifikasi, tampilkan logoutBtn
+      document.getElementById("loginBox").style.display = "none";
+      document.getElementById("verificationBox").style.display = "none";
+      document.getElementById("logoutBtn").style.display = "inline-block";
+    }
+  } else {
+    // Belum login, tampilkan login form
+    document.getElementById("loginBox").style.display = "block";
+    document.getElementById("verificationBox").style.display = "none";
+    document.getElementById("logoutBtn").style.display = "none";
+  }
+});
     const isValidEmail = verifyEmailFormat(playerEmail);
     
     if (isValidEmail) {
       // ✅ CHECK SCORE STATUS FOR EXISTING USER:
-      const scoreStatus = checkPlayerScoreStatus(playerEmail);
+    const scoreStatus = checkPlayerScoreStatus(playerEmail);
       
     // Setelah login sukses dan sebelum tampilkan logoutBtn
     const emailVerified = await checkEmailVerifiedFromBackend(playerEmail); // Buat fungsi ini sesuai backend kamu
 
-    if (!emailVerified) {
+    //if (!emailVerified) {
     // Email belum terverifikasi, tampilkan verificationBox
-    document.getElementById("loginBox").style.display = "none";
+    //document.getElementById("loginBox").style.display = "none";
     //document.getElementById("verificationBox").style.display = "block";
-    document.getElementById("logoutBtn").style.display = "none";
-   } else {
+    //document.getElementById("logoutBtn").style.display = "none";
+   //} else {
     // Email sudah terverifikasi, tampilkan logoutBtn
-    document.getElementById("loginBox").style.display = "none";
+    //document.getElementById("loginBox").style.display = "none";
     //document.getElementById("verificationBox").style.display = "none";
-    document.getElementById("logoutBtn").style.display = "inline-block";
-   }
+    //document.getElementById("logoutBtn").style.display = "inline-block";
+   //}
     
     console.log('🔍 Score status check:', scoreStatus);
       
@@ -741,15 +762,15 @@ window.addEventListener('DOMContentLoaded', async function() {
       localStorage.removeItem("playerEmail");
       showLoginForm();
     }
-  } else {
-    document.getElementById("emailInput").style.display = "inline-block";
-    document.getElementById("loginBtn").style.display = "inline-block";
-    document.getElementById("logoutBtn").style.display = "none";
-    document.getElementById("loginBox").style.display = "block";
+  //} else {
+    //document.getElementById("emailInput").style.display = "inline-block";
+    //document.getElementById("loginBtn").style.display = "inline-block";
+    //document.getElementById("logoutBtn").style.display = "none";
+    //document.getElementById("loginBox").style.display = "block";
     //document.getElementById("verificationBox").style.display = "none";
-    console.log('📝 No login found - showing login form');
-  }
-   }); 
+    //console.log('📝 No login found - showing login form');
+  //}
+ //}); 
 
  
  async function ScoreStatus(inputEmail, scoreStatus) {
