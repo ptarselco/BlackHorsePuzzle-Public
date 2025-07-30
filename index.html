@@ -133,27 +133,36 @@
   left: 50%;
   transform: translateX(-50%);
   z-index: 99999;
-  background: #23283a;
-  padding: 24px 32px;
+  background: rgba(35, 40, 58, 0.3); /* setAlpa 0.3 */
+  padding: 8px 10px;
   border-radius: 12px;
   box-shadow: 0 4px 24px #00eaff40;
-  min-width: 340px;
-  max-width: 400px;
-  width: 340px;
+  min-width: 120px;
+  max-width: 320px;
+  width: 120px;
   text-align: center;
   border: 2px solid #00eaff;
 }
 
-#verificationBox button {
+#verificationBox input[type="text"] {
+  width: 120px; /* lebih pendek */
+  padding: 8px 10px;
+  font-size: 1.1em;
+}
+
+#verifyBtn {
+  min-width: 120px;
   padding: 8px 18px;
   font-size: 1em;
   border-radius: 7px;
 }
 
+
+
 #resendVerificationBtn {
   min-width: 100px; /* memastikan tombol tidak terlalu kecil */
-  padding: 7px 12px;
-  font-size: 0.9em;
+  padding: 6px 10px;
+  font-size: 0.6em;
   margin-top: 8px; /* agar ada jarak dari tombol Verify */
   display: block;  /* agar tombol berada di bawah, bukan samping */
   margin-left: auto;
@@ -495,12 +504,6 @@ document.getElementById("verifyBtn").onclick = async function() {
   }
 }
 
-res.json({
-  success: true,
-  emailVerified: true,
-  message: "Email verified successfully! Welcome to Black Horse Puzzle!",
-  user: userData
-});
 
 //  EMAIL VERIFICATION FUNCTIONS:
 function verifyEmailFormat(email) {
