@@ -111,9 +111,27 @@ level1.on("pointerdown", async () => {
     return;
   }
 
-  
-  
+   // ✅ Cek status payment dan game over ke backend
+  try {
+    const response = await axios.post(
+      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/check-status',
+      { email },
+      { timeout: 8000 }
+    );
+    const data = response.data;
 
+    // Cek payment
+    if (!data.paymentVerified) {
+      alert("Payment belum selesai. Silakan selesaikan pembayaran untuk lanjut.");
+      return;
+    }
+
+    // Cek game over
+    if (data.isGameOver) {
+      alert("Game Over! Silakan beli menu favorit untuk unlock dan main lagi.");
+      // Tetap izinkan masuk Level01 agar bisa beli favorit
+      // (Jangan return di sini)
+    }
       // Show loading indicator
       const loadingText = this.add.text(960, 850, '', {
         fontSize: '24px', fill: '#00eaff'
@@ -132,7 +150,10 @@ level1.on("pointerdown", async () => {
         btnBlue.setVisible(false);
         this.scene.start("Level01Scene");
       });
-    });
+    } catch (error) {
+    alert("Gagal cek status user: " + error.message);
+  }
+  });
 
     // Background music delayed
     this.time.delayedCall(3000, () => {
