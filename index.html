@@ -721,7 +721,7 @@ window.addEventListener('DOMContentLoaded', async function() {
     document.getElementById("verificationBox").style.display = "none";
     document.getElementById("logoutBtn").style.display = "inline-block";
    }
-      
+    
     console.log('🔍 Score status check:', scoreStatus);
       
     if (scoreStatus.needsFavorite) {
@@ -752,7 +752,7 @@ window.addEventListener('DOMContentLoaded', async function() {
     document.getElementById("verificationBox").style.display = "none";
     console.log('📝 No login found - showing login form');
   }
-  
+   }); 
 
  
  
@@ -912,7 +912,7 @@ function updateGameScore(email, newScore) {
   }
  console.log('📊 Score updated:', email, newScore);
  }
-});
+//});
 
   //--------------------------------------------------------------------------------------------
 
