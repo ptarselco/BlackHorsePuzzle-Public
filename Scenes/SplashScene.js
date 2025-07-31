@@ -134,12 +134,12 @@ level1.on("pointerdown", async () => {
       this.scene.start("Level01Scene", { isGameOver: true, score: score });
       return; 
     }
-    // Jika tidak game over, lanjutkan seperti biasa
-        this.scene.start("Level01Scene", { isGameOver: false, score: score });
     } catch (error) {
-     alert("Gagal cek status user: " + error.message);
-    }
-   });
+    alert("Failed to check user status: " + error.message);
+  }
+  });
+    
+
       // Show loading indicator
       const loadingText = this.add.text(960, 850, '', {
         fontSize: '24px', fill: '#00eaff'
@@ -158,7 +158,7 @@ level1.on("pointerdown", async () => {
         btnBlue.setVisible(false);
         this.scene.start("Level01Scene");
       });
- 
+    
 
     // Background music delayed
     this.time.delayedCall(3000, () => {
