@@ -118,7 +118,8 @@ level1.on("pointerdown", async () => {
       { email, level: 'Level01' },
       { timeout: 8000 }
     );
-    const score = response.data.score || 0;
+    const data = response.data;
+    const score = data.score || 0;
     localStorage.setItem(`score_${email}`, score);
     updateGameScore(email, score);
     // Cek payment
