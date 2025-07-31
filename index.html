@@ -522,9 +522,11 @@ document.getElementById("verifyBtn").onclick = async function() {
     //if (data.emailVerified === true) {
     if (data.user && data.user.emailVerified === true) {
       alert('Email verified successfully! Welcome to Black Horse Puzzle!');
+      document.getElementById("verificationCodeInput").value = "";
       localStorage.setItem("playerEmail", email);
       document.getElementById("verificationBox").style.display = "none";
       document.getElementById("logoutBtn").style.display = "inline-block";
+      document.getElementById("verificationCodeInput").value = "";
       if (window.Phaser && window.game && window.game.scene) {
         window.game.scene.start('SplashScene');
       }
