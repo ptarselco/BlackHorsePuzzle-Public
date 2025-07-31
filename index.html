@@ -605,7 +605,6 @@ window.resendVerificationEmail = async function(email) {
   }
 };
 
-
 //  Create proper showMessage function
 window.showMessage = function(message, color = '#ff6b6b') {
     alert(message);
@@ -863,7 +862,9 @@ window.addEventListener('DOMContentLoaded', async function() {
       if (level01 && level01.playBtn) {
         level01.playBtn.disableInteractive();
         level01.playBtn.setAlpha(0.5);
-        console.log('INDEX: PlayBtn diaktifkan di sini', { isPaid, isUserBaru, masihGratis });
+        //console.log('INDEX: PlayBtn diaktifkan di sini', { isPaid, isUserBaru, masihGratis });
+         const paymentResult = await checkPaymentStatus(email);
+         console.log('INDEX: PlayBtn diaktifkan di sini', { isPaid: paymentResult.paid, isUserBaru, masihGratis });
       }
       
       setTimeout(() => {
@@ -878,7 +879,7 @@ window.addEventListener('DOMContentLoaded', async function() {
   // ✅ SETUP LOGOUT BUTTON:
   const logoutBtn = document.getElementById('logoutBtn');
   if (logoutBtn) {
-    logoutBtn.style.zIndex = '99999';
+    logoutBtn.style.zIndex = '9998';
     logoutBtn.style.position = 'fixed';
     logoutBtn.style.pointerEvents = 'auto';
     logoutBtn.style.top = '18px';
@@ -928,7 +929,7 @@ function updateGameScore(email, newScore) {
           level01.playBtn.disableInteractive();
           level01.playBtn.setAlpha(0.5);
           console.log('INDEX: PlayBtn diaktifkan di sini', { isPaid, isUserBaru, masihGratis });
-        }
+         }
         // Kunci tombol 10 Puzzle
         if (level01.lv01Puzzle10Btn) {
           level01.lv01Puzzle10Btn.disableInteractive();
