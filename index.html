@@ -864,9 +864,13 @@ window.addEventListener('DOMContentLoaded', async function() {
       if (level01 && level01.playBtn) {
         level01.playBtn.disableInteractive();
         level01.playBtn.setAlpha(0.5);
+
+        const history = getPlayerGameHistory(email);
+        const isUserBaru = history && !history.hasPlayedBefore;
+        const masihGratis = history && (history.totalGamesPlayed || 0) < 3;
         //console.log('INDEX: PlayBtn diaktifkan di sini', { isPaid, isUserBaru, masihGratis });
-         const paymentResult = await checkPaymentStatus(email);
-         console.log('INDEX: PlayBtn diaktifkan di sini', { isPaid: paymentResult.paid, isUserBaru, masihGratis });
+        const paymentResult = await checkPaymentStatus(email);
+        console.log('INDEX: PlayBtn diaktifkan di sini', { isPaid: paymentResult.paid, isUserBaru, masihGratis });
       }
       
       setTimeout(() => {
