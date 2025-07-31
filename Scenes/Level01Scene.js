@@ -148,23 +148,8 @@ class Level01Scene extends Phaser.Scene {
   }
   this.score = score;
   this.registry.set('score', this.score);
- 
-  // ✅ GAME OVER STATE CHECK: PENGECEKAN FLAG DAN PANGGIL PESAN GAME OVER
-  this.isGameOver = data.isGameOver;
-  this.score = data.score;
 
-  if (this.isGameOver) {
-    // Loc level di backend
-    (async () => {
-      await this.lockLevel(email, 'Level01Scene');
-      // Tampilkan pesan Game Over
-      console.log('Game Over detected, showing message...');
-      this.showGameOverReturnMessage();
-      this.lockAllGameplayButtons();
-      return; // Stop setup board, hanya tampilkan pesan Game Over
-    })();
-  }
-
+  
   // === GET USER PROGRESS ===
   console.log('Mulai request backend getUserProgress');
   this.getUserProgress(email).then(progress => {
@@ -1470,7 +1455,7 @@ async  unlockedLevels(email, level) {
   try {
     const res = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/unlock',
-      { email, level: 'Level01Scene' },
+      { email, level }
     );
     unblur10PuzzleButton(); // Hapus blur tombol 10 puzzle
     // Response backend bisa { success: true, unlocked: true }
@@ -1618,48 +1603,50 @@ showGameOverReturnMessage() {
   console.log('🔒 Score is 0 - Full Game Over protection active');
 
   // Background overlay
-  const overlay = this.add.rectangle(960, 640, 1200, 600, 0x000000, 0.1)
+  const overlay = this.add.rectangle(960, 640, 1920, 1280, 0x000000, 0.1)
     .setDepth(9998);
 
   // Main message panel
-  const messagePanel = this.add.rectangle(960, 640, 900, 420, 0x023d3f, 1)
-    .setStrokeStyle(4, 0x00eaff) //0xff0000
+  const messagePanel = this.add.rectangle(960, 640, 1400, 800, 0x023d3f, 1)
+    .setStrokeStyle(6, 0x00eaff) //0xff0000
     .setDepth(9999);
 
   // Title
-  const title = this.add.text(960, 480, "🔒 GAME OVER STATE DETECTED", {
-    font: "bold 40px Segoe UI",
+  const title = this.add.text(960, 400, "🔒 GAME OVER STATE DETECTED", {
+    font: "bold 64px Segoe UI",
     fill: "#ff0000",
     align: "center"
   }).setOrigin(0.5).setDepth(10000);
 
   // Main message (English)
-  const message = this.add.text(960, 600, 
+  const message = this.add.text(960, 580, 
     "Your last position was GAME OVER.\n\n" +
     "To continue playing, you need to persuade\n" +
     "Black Horse with his favorite menu.\n\n" +
     "🍎 Choose from: Water, Grass, Carrot, Apple, or Music\n" +
     "💰 Prices: $1-2 (+ 11% tax)", {
-    font: "bold 28px Segoe UI",
+    font: "bold 42px Segoe UI",
     fill: "#ffffff",
     align: "center",
-    wordWrap: { width: 800 }
+    wordWrap: { width: 1200 }
   }).setOrigin(0.5).setDepth(10000);
 
+  
+
   // Continue button (disabled until purchase)
-  const continueBtn = this.add.text(960, 720, "❌ LOCKED - BUY FAVORITE MENU FIRST", {
-    font: "bold 28px Segoe UI",
+  const continueBtn = this.add.text(960, 850, "❌ LOCKED - BUY FAVORITE MENU FIRST", {
+    font: "bold 40px Segoe UI",
     fill: "#666666",
     backgroundColor: "#333333",
-    padding: { left: 20, right: 20, top: 10, bottom: 10 }
+    padding: { left: 30, right: 30, top: 15, bottom: 15 }
   }).setOrigin(0.5).setDepth(10000);
 
    // ✅ ADD CLOSE BUTTON (X) - Top right corner
-  const closeBtn = this.add.text(1350, 480, "✕", {
-    font: "bold 40px Arial",
+  const closeBtn = this.add.text(1650, 250, "✕", {
+    font: "bold 60px Arial",
     fill: "#fff",
     backgroundColor: "#e00",
-    padding: { left: 10, right: 10, top: 5, bottom: 5 }
+    padding: { left: 15, right: 15, top: 5, bottom: 5 }
   }).setOrigin(0.5).setDepth(10000).setInteractive({ useHandCursor: true });
 
   // Close button handler - Allows access to favorite menu
@@ -1671,19 +1658,25 @@ showGameOverReturnMessage() {
     message.destroy();
     continueBtn.destroy();
     closeBtn.destroy();
+
     // ✅ SPECIAL STATE: Game Over closed but not cleared
     // Player can access favorite menu but puzzles remain locked
     this.isGameOverClosed = true;
     this.isGameOver = false; // Allow favorite menu access
+    
     // Blur/disable 10 puzzle button
     this.blur10PuzzleButton();
     
-  console.log('🔓 Game Over message closed - Favorite menu accessible, puzzles locked');
+    console.log('🔓 Game Over message closed - Favorite menu accessible, puzzles locked');
   });
+
+
   // Store references for cleanup
   this.gameOverReturnElements = [overlay, messagePanel, title, message, continueBtn];
-  // Tambahkan ini untuk memastikan status game over aktif:
+
+// Tambahkan ini untuk memastikan status game over aktif:
   this.isGameOver = true;
+
   // Lock all gameplay buttons immediately
   this.lockAllGameplayButtons();
 }
@@ -3793,8 +3786,7 @@ showHoldMessageAboveNotes() {
   !this.isPaid &&
   history.hasPlayedBefore &&
   (history.totalGamesPlayed || 0) >= 3 &&
-  score === 0 &&
-  this.isGameOver
+  score === 0
 ) { 
   // Kunci tombol Play & 10 Puzzle
   if (this.playBtn) {
