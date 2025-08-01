@@ -111,6 +111,20 @@ level1.on("pointerdown", async () => {
     return;
   }
 
+   // Ambil score terbaru dari localStorage
+  let score = parseInt(localStorage.getItem(`score_${email}`)) || 0;
+
+  // ✅ Update score ke backend sebelum cek status
+  try {
+    await axios.post(
+      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/score',
+      { email, score }
+    );
+  } catch (err) {
+    console.error('❌ Error saving score:', err);
+    // Tidak perlu return, lanjutkan proses
+  }
+
    // ✅ Cek status payment dan game over ke backend
   try {
     const response = await axios.post(
@@ -119,9 +133,11 @@ level1.on("pointerdown", async () => {
       { timeout: 8000 }
     );
     const data = response.data;
+    // Score backend selalu jadi patokan utama >> yang ini localstorage cadangan jika backend masalah jaringan
     const score = data.score || 0;
     localStorage.setItem(`score_${email}`, score);
-    updateGameScore(email, score);
+    // Update progress ke backend (jika ada field lain, misal totalPlays, dsb)
+    await this.updateUserProgress(email, { score });
     // Cek payment
     //if (!data.paymentVerified) {
       //alert("Payment belum selesai. Silakan selesaikan pembayaran untuk lanjut.");
@@ -155,7 +171,7 @@ level1.on("pointerdown", async () => {
       });
     } catch (error) {
     alert("Failed to check user status: " + error.message);
-  }
+    }
   });
 
     // Background music delayed
