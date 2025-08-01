@@ -114,7 +114,8 @@ class Level01Scene extends Phaser.Scene {
 });  
 }
 
-  create() {
+ // create() {
+ create(data = {}) {
     console.log("Level01 create, login:", localStorage.getItem("playerEmail"));
     if (!localStorage.getItem("playerEmail")) {
     console.log("Belum login, kembali ke SplashScene"); 
@@ -135,7 +136,15 @@ class Level01Scene extends Phaser.Scene {
   const masihGratis = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) < 3;
   const gameOverState = localStorage.getItem(`gameOver_${email}`);
 
-  
+  // ✅ GAME OVER STATE CHECK: PENGECEKAN FLAG DAN PANGGIL PESAN GAME OVER
+ // Cek flag dari SplashScene (hasil backend)
+  if (data && data.isGameOver) {
+    this.isGameOver = true;
+    this.score = data.score || 0;
+    this.showGameOverReturnMessage();
+    this.lockAllGameplayButtons();
+    return; // Stop setup board, hanya tampilkan pesan Game Over
+  }
 
 // PANGGIL 6 FUNGSI YANG ADA DI CLASS (BELUM SEMUA DI PANGGIL DI SINI)
 
@@ -149,16 +158,7 @@ class Level01Scene extends Phaser.Scene {
   this.score = score;
   this.registry.set('score', this.score);
  
- // ✅ GAME OVER STATE CHECK: PENGECEKAN FLAG DAN PANGGIL PESAN GAME OVER
- // Cek flag dari SplashScene (hasil backend)
-  if (data && data.isGameOver) {
-    this.isGameOver = true;
-    this.score = data.score || 0;
-    this.showGameOverReturnMessage();
-    this.lockAllGameplayButtons();
-    return; // Stop setup board, hanya tampilkan pesan Game Over
-  }
-
+ 
   // === GET USER PROGRESS ===
   console.log('Mulai request backend getUserProgress');
   this.getUserProgress(email).then(progress => {
