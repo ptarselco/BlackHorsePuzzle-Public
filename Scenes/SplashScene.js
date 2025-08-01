@@ -37,8 +37,21 @@ class SplashScene extends Phaser.Scene {
     });
   }
 
+  async saveScoreToBackend(email, score) {
+    try {
+      await axios.post(
+        'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/score',
+        { email, score },
+        { timeout: 8000 }
+      );
+      return true;
+    } catch (err) {
+      console.error('❌ Error saveScoreToBackend:', err);
+      return false;
+    }
+  }
 
-
+  
   create() {
    console.log('🎬 Creating cinematic splash scene...'); 
     // Cek apakah playerEmail sudah ada di localStorage
@@ -149,7 +162,7 @@ level1.on("pointerdown", async () => {
     alert("Failed to check user status: " + error.message);
     }
   });
-
+  
     // Background music delayed
     this.time.delayedCall(3000, () => {
       if (this.backgroundMusicLoaded) {
