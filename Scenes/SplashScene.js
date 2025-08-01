@@ -115,11 +115,13 @@ level1.on("pointerdown", async () => {
   try {
     const response = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/status',
-      { email, level: 'Level01' },
+      { email, level: 'Level01Scene' },
       { timeout: 8000 }
     );
     const data = response.data;
-
+    const score = data.score || 0;
+    localStorage.setItem(`score_${email}`, score);
+    updateGameScore(email, score);
     // Cek payment
     //if (!data.paymentVerified) {
       //alert("Payment belum selesai. Silakan selesaikan pembayaran untuk lanjut.");
@@ -128,10 +130,13 @@ level1.on("pointerdown", async () => {
 
     // Cek game over
     if (data.isGameOver) {
-      alert("Game Over! Silakan beli menu favorit untuk unlock dan main lagi.");
-      // Tetap izinkan masuk Level01 agar bisa beli favorit
-      // (Jangan return di sini)
+   // Kirim flag ke Level01Scene agar langsung tampil pesan Game Over
+      this.scene.start("Level01Scene", { isGameOver: true, score: score });
+      return; 
     }
+    
+    
+
       // Show loading indicator
       const loadingText = this.add.text(960, 850, '', {
         fontSize: '24px', fill: '#00eaff'
@@ -151,7 +156,7 @@ level1.on("pointerdown", async () => {
         this.scene.start("Level01Scene");
       });
     } catch (error) {
-    alert("Gagal cek status user: " + error.message);
+    alert("Failed to check user status: " + error.message);
   }
   });
 
