@@ -136,53 +136,6 @@ class Level01Scene extends Phaser.Scene {
   const masihGratis = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) < 3;
   const gameOverState = localStorage.getItem(`gameOver_${email}`);
 
-  // ✅ GAME OVER STATE CHECK: PENGECEKAN FLAG DAN PANGGIL PESAN GAME OVER
- // Cek flag dari SplashScene (hasil backend)
-  if (data && data.isGameOver) {
-    this.isGameOver = true;
-    this.score = data.score || 0;
-    this.showGameOverReturnMessage();
-    this.lockAllGameplayButtons();
-    return; // Stop setup board, hanya tampilkan pesan Game Over
-  }
-
-// PANGGIL 6 FUNGSI YANG ADA DI CLASS (BELUM SEMUA DI PANGGIL DI SINI)
-
- // ✅ SCORE CALCULATION FIRST (BEFORE Game Over check):
-  let score = 0;
-  if (email) {
-    score = parseInt(localStorage.getItem(`score_${email}`)) || 0;
-  } else {
-    score = this.registry.get('score') || 0;
-  }
-  this.score = score;
-  this.registry.set('score', this.score);
- 
- 
-  // === GET USER PROGRESS ===
-  console.log('Mulai request backend getUserProgress');
-  this.getUserProgress(email).then(progress => {
-    console.log('Selesai request backend getUserProgress', progress);
-  if (progress) {
-    this.score = progress.score || 0;
-    this.totalPlays = progress.totalPlays || 0;
-    // === CEK UPDATE PROGRESS ===
-    this.updateUserProgress(email, progress);
-    // === CEK STATUS USER AND GAME OVER 
-    //this.checkUserStatusAndGameOver(email); 
-      // === CEK GAME OVER STATUS DARI SERVER
-    if (progress.isGameOver) {
-      this.lockLevel(email, 'Level01');
-    }
-    //this.checkGameOverStatusFromServer(); // pindah afterpurchase
-   }
-});
-
-  // === CEK SCORE === // cek ulang penulisan
-  this.saveScoreToBackend (email, this.score);
-
-
-
   // ✅ SESSION-BASED WELCOME BACK FLAG:
   // Only check once per browser session, not per scene load
   if (!this.registry.get('welcomeBackShown')) { 
@@ -3944,6 +3897,10 @@ showExitPanelOnly() {
   this.exitPanelGroup.add(exitBtn);
 
   exitBtn.on('pointerdown', () => {
+  // Tambahkan update score ke backend sebelum keluar
+    const email = localStorage.getItem('playerEmail');
+    if (email) this.saveScoreToBackend(email, this.score);
+    // Hapus semua panel dan kembali ke SplashScene  
     this.exitPanelGroup.clear(true, true);
     this.exitPanelGroup = null;
     this.isExitPanelShown = false;

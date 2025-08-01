@@ -37,19 +37,7 @@ class SplashScene extends Phaser.Scene {
     });
   }
 
-async updateUserProgress(email, progress) {
-  try {
-    await axios.post(
-      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${email}/progress`,
-      progress,
-      { timeout: 8000 }
-    );
-    return true;
-  } catch (err) {
-    console.error('❌ Error updateUserProgress:', err);
-    return false;
-  }
-}
+
 
   create() {
    console.log('🎬 Creating cinematic splash scene...'); 
@@ -125,48 +113,19 @@ level1.on("pointerdown", async () => {
     return;
   }
 
-
-// ...existing code...
-
-   // Ambil score terbaru dari localStorage
-  let score = parseInt(localStorage.getItem(`score_${email}`)) || 0;
-
-  // ✅ Update score ke backend sebelum cek status
   try {
-    await axios.post(
-      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/score',
-      { email, score }
-    );
-  } catch (err) {
-    console.error('❌ Error saving score:', err);
-    // Tidak perlu return, lanjutkan proses
-  }
+    let score = parseInt(localStorage.getItem(`score_${email}`)) || 0;
+    await this.saveScoreToBackend(email, score);
+    const progress = await this.getUserProgress(email);
+    await this.updateUserProgress(email, progress);
+    const status = await this.checkUserStatusAndGameOver(email);
 
-   // ✅ Cek status payment dan game over ke backend
-  try {
-    const response = await axios.post(
-      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/status',
-      { email, level: 'Level01Scene' },
-      { timeout: 8000 }
-    );
-    const data = response.data;
-    // Score backend selalu jadi patokan utama >> yang ini localstorage cadangan jika backend masalah jaringan
-    const score = data.score || 0;
-    localStorage.setItem(`score_${email}`, score);
-    // Update progress ke backend (jika ada field lain, misal totalPlays, dsb)
-    await this.updateUserProgress(email, { score });
-    // Cek payment
-    //if (!data.paymentVerified) {
-      //alert("Payment belum selesai. Silakan selesaikan pembayaran untuk lanjut.");
-      //return;
-    //}
-
-    // Cek game over
-    if (data.isGameOver) {
-   // Kirim flag ke Level01Scene agar langsung tampil pesan Game Over
-      this.scene.start("Level01Scene", { isGameOver: true, score: score });
-      return; 
+    if (status && status.isGameOver) {
+      await this.lockLevel(email, 'Level01');
+      this.scene.start("Level01Scene", { isGameOver: true, score: status.score });
+      return;
     }
+  
     // Jika belum game over, lanjut ke Level01Scene
       // Show loading indicator
       const loadingText = this.add.text(960, 850, '', {
