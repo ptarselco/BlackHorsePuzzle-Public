@@ -37,6 +37,20 @@ class SplashScene extends Phaser.Scene {
     });
   }
 
+async updateUserProgress(email, progress) {
+  try {
+    await axios.post(
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${email}/progress`,
+      progress,
+      { timeout: 8000 }
+    );
+    return true;
+  } catch (err) {
+    console.error('❌ Error updateUserProgress:', err);
+    return false;
+  }
+}
+
   create() {
    console.log('🎬 Creating cinematic splash scene...'); 
     // Cek apakah playerEmail sudah ada di localStorage
@@ -110,6 +124,9 @@ level1.on("pointerdown", async () => {
     alert("Please Login with your email!");
     return;
   }
+
+
+// ...existing code...
 
    // Ambil score terbaru dari localStorage
   let score = parseInt(localStorage.getItem(`score_${email}`)) || 0;
