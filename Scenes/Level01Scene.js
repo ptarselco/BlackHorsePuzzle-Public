@@ -149,21 +149,15 @@ class Level01Scene extends Phaser.Scene {
   this.score = score;
   this.registry.set('score', this.score);
  
-  // ✅ GAME OVER STATE CHECK: PENGECEKAN FLAG DAN PANGGIL PESAN GAME OVER
- // this.isGameOver = data.isGameOver;
- // this.score = data.score;
-
- // if (this.isGameOver) {
-    // Loc level di backend
-   // (async () => {
-   //   await this.lockLevel(email, 'Level01Scene');
-      // Tampilkan pesan Game Over
-     // console.log('Game Over detected, showing message...');
-     // this.showGameOverReturnMessage();
-     // this.lockAllGameplayButtons();
-     // return; // Stop setup board, hanya tampilkan pesan Game Over
-    //})();
-  //}
+ // ✅ GAME OVER STATE CHECK: PENGECEKAN FLAG DAN PANGGIL PESAN GAME OVER
+ // Cek flag dari SplashScene (hasil backend)
+  if (data && data.isGameOver) {
+    this.isGameOver = true;
+    this.score = data.score || 0;
+    this.showGameOverReturnMessage();
+    this.lockAllGameplayButtons();
+    return; // Stop setup board, hanya tampilkan pesan Game Over
+  }
 
   // === GET USER PROGRESS ===
   console.log('Mulai request backend getUserProgress');

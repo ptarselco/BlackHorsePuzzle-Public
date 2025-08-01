@@ -134,9 +134,7 @@ level1.on("pointerdown", async () => {
       this.scene.start("Level01Scene", { isGameOver: true, score: score });
       return; 
     }
-    
-    
-
+    // Jika belum game over, lanjut ke Level01Scene
       // Show loading indicator
       const loadingText = this.add.text(960, 850, '', {
         fontSize: '24px', fill: '#00eaff'
