@@ -256,11 +256,11 @@ async getUserProgress(email) {
 }
 
 // 5. UPDATE FUNCTION FOR USER PROGRESS
-async updateUserProgress(email, progress) {
+async updateUserProgress(email, gameProgress) {
   try {
     const res = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
-      { email, progress },
+      { email, gameProgress },
       { timeout: 10000 }
     );
     return res.data.success === true;

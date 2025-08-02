@@ -830,6 +830,10 @@ window.addEventListener('DOMContentLoaded', async function() {
 
   // ✅ ENHANCED LOGOUT BUTTON:
   document.getElementById("logoutBtn").onclick = async function() {
+    // Hentikan autoSaveInterval jika scene masih aktif (autoSaveInterval ada di Level01Scene line 156)
+     const level01 = window.game?.scene?.getScene('Level01Scene');
+     if (level01 && level01.autoSaveInterval) clearInterval(level01.autoSaveInterval);
+
     console.log('🔄 Starting enhanced logout process...');
     
     const email = localStorage.getItem("playerEmail");
@@ -1743,9 +1747,30 @@ function hidePleaseWaitMessage() {
     message.remove();
   }
 }
+//============================ SENDBEACON =========================
+// SEANBEACON menyimpan score dan waktu ke backend saat sebelum halaman ditutup
+ window.addEventListener('beforeunload', () => {
+  const email = localStorage.getItem('playerEmail');
+  const score = window.Level01Scene?.instance?.score || 0; // pastikan ambil score terbaru
+  const time = window.Level01Scene?.instance?.timeElapsed || 0;
+  if (!email) return;
 
-// Around line 1200, ADD this function:
+  navigator.sendBeacon(
+    `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
+    JSON.stringify({
+      email,
+      level01Completed: false,
+      level01Score: this.score,
+      completionTime: this.timeElapsed,
+      isPerfectGame: false
+    })
+  );
+}); 
+//============================= BATAS SENDBEACON =========================
 
+
+// ✅ DONATION OVERLAY FUNCTION
+// This function creates a donation overlay with options to donate via PayPal or Ko-fi
 
  // ✅ DONATION OVERLAY FUNCTION:
 window.showDonation = function() {

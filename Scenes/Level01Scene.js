@@ -153,24 +153,24 @@ class Level01Scene extends Phaser.Scene {
 - Total Games Played: ${history?.totalGamesPlayed}
 - Final isGameOver: ${this.isGameOver}`);
  
-// menyimpan score dan waktu ke backend saat sebelum halaman ditutup
- window.addEventListener('beforeunload', () => {
-  const email = localStorage.getItem('playerEmail');
-  const score = window.Level01Scene?.instance?.score || 0; // pastikan ambil score terbaru
-  const time = window.Level01Scene?.instance?.timeElapsed || 0;
-  if (!email) return;
-
-  navigator.sendBeacon(
-    `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
-    JSON.stringify({
-      email,
-      level01Completed: false,
+// Auto-save progress ke backend setiap 10 detik
+  this.autoSaveInterval = setInterval(() => {
+    const email = localStorage.getItem('playerEmail');
+    if (!email) return;
+    this.updateUserProgress(email, {
+      level01Completed: true,
       level01Score: this.score,
       completionTime: this.timeElapsed,
+      level01Completed: false,
       isPerfectGame: false
-    })
-  );
-}); 
+    });
+  }, 10000);
+
+   // Event shutdown untuk clear interval
+  this.events.on('shutdown', () => {
+    if (this.autoSaveInterval) clearInterval(this.autoSaveInterval);
+  });
+
 
  //-------------------------------------------------------------
     // Background & board
@@ -1309,6 +1309,7 @@ this.donationBtn.on('pointerdown', () => { // ini 1
 });  
 }
 
+
 // -----------------------------------------------------------------------------
 startIntroSequence() {
   // Mainkan intro music
@@ -1476,11 +1477,11 @@ async getUserProgress(email) {
 }
 
 // Fungsi UPDATE user progress
-async updateUserProgress(email, progress) {
+async updateUserProgress(email, gameProgress) {
  try {
     const res = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
-      { email, progress },
+      { email, gameProgress },
       { timeout: 10000 }
     );
     return res.data.success === true;
@@ -3969,6 +3970,10 @@ showExitPanelOnly() {
   // Tambahkan update score ke backend sebelum keluar
     const email = localStorage.getItem('playerEmail');
     if (email) this.saveScoreToBackend(email, this.score);
+
+    // Hentikan autoSaveInterval jika aktif (autoSaveInterval ada di Level01Scene line 156)
+    if (this.autoSaveInterval) clearInterval(this.autoSaveInterval);
+
     // Hapus semua panel dan kembali ke SplashScene  
     this.exitPanelGroup.clear(true, true);
     this.exitPanelGroup = null;
