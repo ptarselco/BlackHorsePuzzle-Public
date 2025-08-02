@@ -40,14 +40,19 @@ class SplashScene extends Phaser.Scene {
 lockAllGameplayButtons() {
   // Implementasi logika mengunci semua tombol gameplay di splash scene
   // Contoh: nonaktifkan tombol, tambahkan efek blur, dsb
-  if (this.level1) {
-    this.level1.disableInteractive();
-    this.level1.setAlpha(0.5);
-  }
+  //if (this.level1) {
+    //this.level1.disableInteractive();
+    //this.level1.setAlpha(0.5);
+  //}
   // Kunci tombol lain jika ada (misal level2, playBtn, dsb)
   if (this.playBtn) {
     this.playBtn.disableInteractive();
     this.playBtn.setAlpha(0.5);
+  }
+  // Disable 10 puzzle button permanently until favorite menu purchase
+  if (this.lv01Puzzle10Btn) {
+    this.lv01Puzzle10Btn.disableInteractive();
+    this.lv01Puzzle10Btn.setAlpha(0.5); // Visual indication
   }
   // Tambahkan logika lain sesuai kebutuhan
   console.log('✅ Semua tombol gameplay dikunci');
