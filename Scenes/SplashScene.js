@@ -287,6 +287,18 @@ async saveScoreToBackend(email, score) {
 
 //7. SEND SCORE TO BACKEND (KIRIM SKOR KE BACKEND SETELAH USER SELESAI LEVEL)
 async updateScoreLevel01(email, score) {
+ // Ambil score dari localStorage jika ada
+  let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+  userData.gameProgress = userData.gameProgress || {};
+  // Jika score di localStorage ada, gunakan itu
+  let scoreToSend = score;
+  if (typeof userData.gameProgress.level01Score === 'number') {
+    scoreToSend = userData.gameProgress.level01Score;
+  }
+  // Simpan score terbaru ke localStorage
+  userData.gameProgress.level01Score = scoreToSend;
+  localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+
   try {
     const res = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/update-score',
@@ -397,6 +409,10 @@ async  unlockedLevels(email, level) {
   
 // Event klik Level 01
 level1.on("pointerdown", async () => {
+// Glow effect
+level1Glow.setVisible(true);
+btnBlue.setVisible(true);
+
   const email = localStorage.getItem("playerEmail");
   if (!email) {
     document.getElementById("loginBox").style.display = "block";
@@ -442,9 +458,6 @@ level1.on("pointerdown", async () => {
         fontSize: '24px', fill: '#00eaff'
       }).setOrigin(0.5);
 
-      // Glow effect
-      level1Glow.setVisible(true);
-      btnBlue.setVisible(true);
 
       // ========== LAZY LOAD LEVEL01 ASSETS ==========
       console.log('🎵 Lazy loading Level01 assets...');
