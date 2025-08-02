@@ -40,10 +40,7 @@ class SplashScene extends Phaser.Scene {
 lockAllGameplayButtons() {
   // Implementasi logika mengunci semua tombol gameplay di splash scene
   // Contoh: nonaktifkan tombol, tambahkan efek blur, dsb
-  //if (this.level1) {
-    //this.level1.disableInteractive();
-    //this.level1.setAlpha(0.5);
-  //}
+  
   // Kunci tombol lain jika ada (misal level2, playBtn, dsb)
   if (this.playBtn) {
     this.playBtn.disableInteractive();
@@ -75,6 +72,14 @@ unlockGameAfterPurchase() {
 
 showGameOverReturnMessage() {
 alert("Game Over! Please try again or unlock the level give the favorite menu to Black Horse.");
+}
+
+unblur10PuzzleButton() {
+  if (this.lv01Puzzle10Btn) {
+    this.lv01Puzzle10Btn.setInteractive();
+    this.lv01Puzzle10Btn.setAlpha(1);
+  }
+  console.log('✅ Tombol 10 Puzzle di-unblur');
 }
 
 // ==== 9 FUNCTIONS FOR SplashScene CONNECTED TO BACKEND ====
