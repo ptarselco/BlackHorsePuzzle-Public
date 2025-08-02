@@ -152,8 +152,26 @@ class Level01Scene extends Phaser.Scene {
 - isUserBaru: ${isUserBaru}
 - Total Games Played: ${history?.totalGamesPlayed}
 - Final isGameOver: ${this.isGameOver}`);
-   
-  
+ 
+// menyimpan score dan waktu ke backend saat sebelum halaman ditutup
+ window.addEventListener('beforeunload', () => {
+  const email = localStorage.getItem('playerEmail');
+  const score = window.Level01Scene?.instance?.score || 0; // pastikan ambil score terbaru
+  const time = window.Level01Scene?.instance?.timeElapsed || 0;
+  if (!email) return;
+
+  navigator.sendBeacon(
+    `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
+    JSON.stringify({
+      email,
+      level01Completed: false,
+      level01Score: this.score,
+      completionTime: this.timeElapsed,
+      isPerfectGame: false
+    })
+  );
+}); 
+
  //-------------------------------------------------------------
     // Background & board
     // Background load musik favorit setelah 3 detik
@@ -213,7 +231,7 @@ class Level01Scene extends Phaser.Scene {
 
     //Atur Ronde untuk Game Over (ATUR WAKTU DI TIMER)
     this.round = 1; // Mulai dari ronde 1
-    this.roundTimeLimits = [19, 11, 9]; // Detik untuk ronde 1=19, 2=11, 3=9 detik  
+    this.roundTimeLimits = [18, 10, 8]; // Detik untuk ronde 1=19, 2=11, 3=9 detik  
 
   //-----------------------------MULAI 10 PUZZLE-------------------------------------  
     // Tombol-tombol UI
@@ -2200,7 +2218,7 @@ async updateTaxInBackground(musicTitle, x, y) {
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
       // Mulai timer baru sesuai ronde (setelah win dari menu favorit)
-      let timeLimit = this.roundTimeLimits[this.round - 1] || 19; // pengaturan play setelah win repeat 18 detik hitung seperti ronde awal (3 ronde)
+      let timeLimit = this.roundTimeLimits[this.round - 1] || 18; // pengaturan play setelah win repeat 18 detik hitung seperti ronde awal (3 ronde)
       this.roundTimer = this.time.addEvent({
         delay: 1000,
         callback: () => {
@@ -2550,7 +2568,7 @@ async updateTaxInBackground(musicTitle, x, y) {
      this.updateUserProgress(email, {
       level01Completed: true,
       level01Score: this.score,
-      completionTime: completionTime,
+      completionTime: this.timeElapsed,
       isPerfectGame: false // atau true jika tidak ada salah
     }).then(() => {
       this.sound.play('horseNeigh');
@@ -2677,7 +2695,7 @@ async updateTaxInBackground(musicTitle, x, y) {
     this.updateUserProgress(email, {
       level01Completed: true,
       level01Score: this.score,
-      completionTime: completionTime,
+      completionTime:this.timeElapsed  ,
       isPerfectGame: false
     }).then(() => {
     // ⬇️ Tambahkan pengecekan ini setelah safeUpdateGameScore tambah 08/07/25

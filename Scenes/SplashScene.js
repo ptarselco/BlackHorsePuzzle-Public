@@ -290,11 +290,7 @@ async updateScoreLevel01(email, score) {
  // Ambil score dari localStorage jika ada
   let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
   userData.gameProgress = userData.gameProgress || {};
-  // Jika score di localStorage ada, gunakan itu
-  //let scoreToSend = score;
-  //if (typeof userData.gameProgress.level01Score === 'number') {
-   // scoreToSend = userData.gameProgress.level01Score;
-  //}
+  
   // Simpan score terbaru ke localStorage
   userData.gameProgress.level01Score = score;
   localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
