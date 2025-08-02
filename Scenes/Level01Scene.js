@@ -2525,6 +2525,14 @@ async updateTaxInBackground(musicTitle, x, y) {
       this.scoreText.setText(this.score.toString().padStart(5, '0')); // Tambahkan baris ini
       this.registry.set('score', this.score);
       const email = localStorage.getItem('playerEmail');
+
+      // Ambil score dari localStorage jika ada (backup)
+    let localScore = this.score;
+    let userData = JSON.parse(localStorage.getItem(`gameData-${email}`));
+    if (userData && userData.gameProgress && typeof userData.gameProgress.level01Score === 'number') {
+        localScore = userData.gameProgress.level01Score;
+    }
+
       if (email) this.saveScoreToBackend(email, this.score);
        const completionTime = this.timeElapsed; // atau waktu yang relevan
      this.updateUserProgress(email, {
@@ -2641,6 +2649,15 @@ async updateTaxInBackground(musicTitle, x, y) {
     this.registry.set('score', this.score);
     // Simpan score ke localStorage saat mongodb offline
     const email = localStorage.getItem('playerEmail');
+
+    
+    // Ambil score dari localStorage jika ada (backup)
+    let localScore = this.score;
+    let userData = JSON.parse(localStorage.getItem(`gameData-${email}`));
+    if (userData && userData.gameProgress && typeof userData.gameProgress.level01Score === 'number') {
+        localScore = userData.gameProgress.level01Score;
+    }
+
     if (email) this.saveScoreToBackend(email, this.score);
     const completionTime = this.timeElapsed;
 

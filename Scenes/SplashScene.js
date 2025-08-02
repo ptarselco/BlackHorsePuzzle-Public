@@ -328,7 +328,7 @@ async  unlockedLevels(email, level) {
       { email, level: 'level01, Level01Scene' },
       { timeout: 10000 }
     );
-    unblur10PuzzleButton(); // Hapus blur tombol 10 puzzle
+    this.unblur10PuzzleButton(); // Hapus blur tombol 10 puzzle
     // Response backend bisa { success: true, unlocked: true }
     return res.data.success || res.data.unlocked === true;
   } catch (err) {
