@@ -1493,7 +1493,7 @@ async updateScoreLevel01(email, score) {
   userData.gameProgress = userData.gameProgress || {};
   
   // Simpan score terbaru ke localStorage
-  userData.gameProgress.level01Score = score;
+  userData.gameProgress.level01Score = this.score;
   localStorage.setItem(`gameData-${email}`, JSON.stringify(userData)); 
   try {
     const res = await axios.post(
@@ -2542,7 +2542,7 @@ async updateTaxInBackground(musicTitle, x, y) {
       userData.gameProgress = userData.gameProgress || {};
      
      // Simpan score terbaru ke localStorage
-     userData.gameProgress.level01Score = score;
+     userData.gameProgress.level01Score = this.score;
      localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
 
       if (email) this.saveScoreToBackend(email, this.score);
@@ -2667,7 +2667,7 @@ async updateTaxInBackground(musicTitle, x, y) {
    userData.gameProgress = userData.gameProgress || {};
    
    // Simpan score terbaru ke localStorage
-   userData.gameProgress.level01Score = score;
+   userData.gameProgress.level01Score = this.score;
    localStorage.setItem(`gameData-${email}`, JSON.stringify(userData)); 
     
 

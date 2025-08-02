@@ -302,7 +302,7 @@ async updateScoreLevel01(email, score) {
   try {
     const res = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/update-score',
-      { email, score },
+      { email, score: this.score },
       { timeout: 10000 }
     );
     const data = res.data;
