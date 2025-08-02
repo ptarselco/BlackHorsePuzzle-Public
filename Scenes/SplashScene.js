@@ -37,6 +37,17 @@ class SplashScene extends Phaser.Scene {
     });
   }
 
+lockAllGameplayButtons() {
+  // Implementasi logika mengunci semua tombol gameplay di splash scene
+  // Contoh: nonaktifkan tombol, tambahkan efek blur, dsb
+  if (this.level1) {
+    this.level1.disableInteractive();
+    this.level1.setAlpha(0.5);
+  }
+  // Tambahkan logika lain sesuai kebutuhan
+  console.log('✅ Semua tombol gameplay dikunci');
+}
+
 // ==== 9 FUNCTIONS FOR SplashScene CONNECTED TO BACKEND ====
 
 // 1. CHECK STATUS USER FROM BACKEND
