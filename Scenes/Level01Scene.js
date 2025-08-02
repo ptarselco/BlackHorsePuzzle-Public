@@ -205,8 +205,11 @@ class Level01Scene extends Phaser.Scene {
     this.blankBhL1 = this.add.image(248, 250, 'blankBhL1').setScale(0.7).setDepth(9);
 
     this.scoreText = this.add.text(1716, 40, "00000", { font: "50px Segoe UI", fill: "#fff" }).setDepth(9999);
-    this.scoreText.setText(this.score.toString().padStart(5, '0')); // Tambahkan baris ini
+    //this.scoreText.setText(this.score.toString().padStart(5, '0')); // Tambahkan baris ini
     //this.scoreText.setText("00000"); 
+    this.scoreText.setText(
+  (this.score !== undefined && this.score !== null ? this.score : 0).toString().padStart(5, '0')
+  );
 
     //Atur Ronde untuk Game Over (ATUR WAKTU DI TIMER)
     this.round = 1; // Mulai dari ronde 1
