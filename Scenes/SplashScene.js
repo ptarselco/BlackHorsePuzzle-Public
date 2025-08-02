@@ -431,10 +431,10 @@ btnBlue.setVisible(true);
     // 5. Update progress user ke backend
     // Kirim field progress langsung, bukan object progress
     await this.updateUserProgress(email, {
-     level01Completed: progressData.progress.level01Completed,
-     level01Score: progressData.progress.level01Score,
-     level01HighScore: progressData.progress.level01HighScore,
-     completionTime: progressData.progress.bestTime, // atau progressData.progress.completionTime jika ada
+     level01Completed: progress.progress.level01Completed,
+     level01Score: progress.progress.level01Score,
+     level01HighScore: progress.progress.level01HighScore,
+     completionTime: progress.progress.bestTime, // atau progress.progress.completionTime jika ada
      isPerfectGame: false // atau sesuai status
      // Tambahkan field lain jika perlu
     });
