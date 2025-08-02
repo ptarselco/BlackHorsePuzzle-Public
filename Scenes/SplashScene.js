@@ -45,7 +45,7 @@ async getUserStatus(email, level = 'Level01, Level01Scene') {
     const response = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/status',
       { email, level: 'Level01, Level01Scene' },
-      { timeout: 5000 }
+      { timeout: 10000 }
     );
     return response.data;
   } catch (err) {
@@ -119,7 +119,8 @@ async setGameOver(email, isGameOver = true) {
   try {
     await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/set-gameover',
-      { email, isGameOver }
+      { email, isGameOver },
+      { timeout: 10000 }
     );
     return true;
   } catch (err) {
@@ -134,7 +135,10 @@ async checkGameOverStatusFromServer() {
   if (!email) return;
 
   try {
-    const response = await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/gameover', { email });
+    const response = await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/gameover', 
+      { email },
+      { timeout: 10000 }  
+    );
     const data = response.data;
     if (data.isGameOver) {
       this.isGameOver = true;
@@ -172,7 +176,7 @@ async getUserProgress(email) {
     `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
     //'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/progress', {
       {}, // body kosong, karena email sudah di URL param
-    { timeout: 5000 }
+    { timeout: 10000 }
     );
     // Response: { success, progress, user }  
     return res.data; // progress: { level01Score, level01HighScore, totalPlays, ... }
@@ -188,7 +192,7 @@ async updateUserProgress(email, progress) {
     const res = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
       { email, progress },
-      { timeout: 5000 }
+      { timeout: 10000 }
     );
     return res.data.success === true;
   } catch (err) {
@@ -202,7 +206,8 @@ async saveScoreToBackend(email, score) {
   try {
     await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/score',
-      { email, score }
+      { email, score },
+      { timeout: 10000 }
     );
     return true;
   } catch (err) {
@@ -216,7 +221,8 @@ async updateScoreLevel01(email, score) {
   try {
     const res = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/update-score',
-      { email, score }
+      { email, score },
+      { timeout: 10000 }
     );
     const data = res.data;
     if (data.success) {
@@ -234,7 +240,7 @@ async lockLevel(email, level) {
     const res = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/lock',
       { email, level },
-      { timeout: 5000 }
+      { timeout: 10000 }
     );
     // Tambahkan blur tombol di sini
     this.blur10PuzzleButton();
@@ -251,6 +257,7 @@ async  unlockedLevels(email, level) {
     const res = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/unlock',
       { email, level: 'level01, Level01Scene' },
+      { timeout: 10000 }
     );
     unblur10PuzzleButton(); // Hapus blur tombol 10 puzzle
     // Response backend bisa { success: true, unlocked: true }
