@@ -256,11 +256,11 @@ async getUserProgress(email) {
 }
 
 // 5. UPDATE FUNCTION FOR USER PROGRESS
-async updateUserProgress(email, gameProgress) {
+async updateUserProgress(email, progress) {
   try {
     const res = await axios.post(
-      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
-      { email, gameProgress },
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
+      { ...progress },
       { timeout: 10000 }
     );
     return res.data.success === true;
@@ -429,7 +429,15 @@ btnBlue.setVisible(true);
     const progress = await this.getUserProgress(email);
 
     // 5. Update progress user ke backend
-    await this.updateUserProgress(email, progress);
+    // Kirim field progress langsung, bukan object progress
+    await this.updateUserProgress(email, {
+     level01Completed: progressData.progress.level01Completed,
+     level01Score: progressData.progress.level01Score,
+     level01HighScore: progressData.progress.level01HighScore,
+     completionTime: progressData.progress.bestTime, // atau progressData.progress.completionTime jika ada
+     isPerfectGame: false // atau sesuai status
+     // Tambahkan field lain jika perlu
+    });
 
     // 6. Simpan score ke backend
     let score = parseInt(localStorage.getItem(`score_${email}`)) || 0;

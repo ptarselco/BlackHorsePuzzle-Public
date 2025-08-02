@@ -1756,16 +1756,16 @@ function hidePleaseWaitMessage() {
   if (!email) return;
 
   navigator.sendBeacon(
-    `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
-    JSON.stringify({
-      email,
-      level01Completed: false,
-      level01Score: this.score,
-      completionTime: this.timeElapsed,
-      isPerfectGame: false
-    })
-  );
-}); 
+  `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
+  new Blob([JSON.stringify({
+    level01Completed: false,
+    level01Score: score,    // ✅ gunakan score dari instance
+    completionTime: time,        // ✅ gunakan time dari instance
+    isPerfectGame: false
+  })], { type: 'text/plain' })
+ );
+ });
+ 
 //============================= BATAS SENDBEACON =========================
 
 

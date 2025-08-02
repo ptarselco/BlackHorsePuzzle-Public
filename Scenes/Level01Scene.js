@@ -1477,11 +1477,11 @@ async getUserProgress(email) {
 }
 
 // Fungsi UPDATE user progress
-async updateUserProgress(email, gameProgress) {
+async updateUserProgress(email, progress) {
  try {
     const res = await axios.post(
-      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
-      { email, gameProgress },
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
+      { ...progress },
       { timeout: 10000 }
     );
     return res.data.success === true;
@@ -2532,7 +2532,7 @@ async updateTaxInBackground(musicTitle, x, y) {
       .setAlpha(0).setDepth(101);
   }
 
-  // === Cek puzzle, dsb ===
+  // ====== CEK PUZZLE ======
   checkPuzzle() {
     console.log('rightBoardSlots:', this.rightBoardSlots); // Tambahkan di sini
     let benar = true;
