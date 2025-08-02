@@ -53,6 +53,25 @@ lockAllGameplayButtons() {
   console.log('✅ Semua tombol gameplay dikunci');
 }
 
+unlockGameAfterPurchase() {
+  // Logika unlock game setelah pembayaran atau proses unlock
+  // Contoh: aktifkan tombol Level 01 dan tombol puzzle
+  if (this.level1) {
+    this.level1.setInteractive();
+    this.level1.setAlpha(1);
+  }
+  if (this.playBtn) {
+    this.playBtn.setInteractive();
+    this.playBtn.setAlpha(1);
+  }
+  this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+  console.log('✅ Game unlocked after purchase');
+}
+
+showGameOverReturnMessage() {
+alert("Game Over! Please try again or unlock the level give the favorite menu to Black Horse.");
+}
+
 // ==== 9 FUNCTIONS FOR SplashScene CONNECTED TO BACKEND ====
 
 // 1. CHECK STATUS USER FROM BACKEND
