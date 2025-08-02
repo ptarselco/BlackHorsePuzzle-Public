@@ -1459,6 +1459,19 @@ async getUserProgress(email) {
 
 // Fungsi UPDATE user progress
 async updateUserProgress(email, progress) {
+ // Ambil score dari localStorage jika ada
+  let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+  userData.gameProgress = userData.gameProgress || {};
+  // Jika score di localStorage ada, gunakan itu
+  let scoreToSend = score;
+  if (typeof userData.gameProgress.level01Score === 'number') {
+    scoreToSend = userData.gameProgress.level01Score;
+  }
+  // Simpan score terbaru ke localStorage
+  userData.gameProgress.level01Score = scoreToSend;
+  localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+
+
   try {
     const res = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
@@ -2529,12 +2542,17 @@ async updateTaxInBackground(musicTitle, x, y) {
       this.registry.set('score', this.score);
       const email = localStorage.getItem('playerEmail');
 
-      // Ambil score dari localStorage jika ada (backup)
-    let localScore = this.score;
-    let userData = JSON.parse(localStorage.getItem(`gameData-${email}`));
-    if (userData && userData.gameProgress && typeof userData.gameProgress.level01Score === 'number') {
-        localScore = userData.gameProgress.level01Score;
-    }
+       // Ambil score dari localStorage jika ada
+      let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+      userData.gameProgress = userData.gameProgress || {};
+      // Jika score di localStorage ada, gunakan itu
+      let scoreToSend = score;
+     if (typeof userData.gameProgress.level01Score === 'number') {
+      scoreToSend = userData.gameProgress.level01Score;
+     }
+     // Simpan score terbaru ke localStorage
+     userData.gameProgress.level01Score = scoreToSend;
+     localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
 
       if (email) this.saveScoreToBackend(email, this.score);
        const completionTime = this.timeElapsed; // atau waktu yang relevan
@@ -2653,13 +2671,18 @@ async updateTaxInBackground(musicTitle, x, y) {
     // Simpan score ke localStorage saat mongodb offline
     const email = localStorage.getItem('playerEmail');
 
+    // Ambil score dari localStorage jika ada
+   let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+   userData.gameProgress = userData.gameProgress || {};
+   // Jika score di localStorage ada, gunakan itu
+   let scoreToSend = score;
+   if (typeof userData.gameProgress.level01Score === 'number') {
+    scoreToSend = userData.gameProgress.level01Score;
+   }
+   // Simpan score terbaru ke localStorage
+   userData.gameProgress.level01Score = scoreToSend;
+   localStorage.setItem(`gameData-${email}`, JSON.stringify(userData)); 
     
-    // Ambil score dari localStorage jika ada (backup)
-    let localScore = this.score;
-    let userData = JSON.parse(localStorage.getItem(`gameData-${email}`));
-    if (userData && userData.gameProgress && typeof userData.gameProgress.level01Score === 'number') {
-        localScore = userData.gameProgress.level01Score;
-    }
 
     if (email) this.saveScoreToBackend(email, this.score);
     const completionTime = this.timeElapsed;
