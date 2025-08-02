@@ -44,6 +44,11 @@ lockAllGameplayButtons() {
     this.level1.disableInteractive();
     this.level1.setAlpha(0.5);
   }
+  // Kunci tombol lain jika ada (misal level2, playBtn, dsb)
+  if (this.playBtn) {
+    this.playBtn.disableInteractive();
+    this.playBtn.setAlpha(0.5);
+  }
   // Tambahkan logika lain sesuai kebutuhan
   console.log('✅ Semua tombol gameplay dikunci');
 }
