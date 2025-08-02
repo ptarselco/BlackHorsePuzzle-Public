@@ -291,18 +291,18 @@ async updateScoreLevel01(email, score) {
   let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
   userData.gameProgress = userData.gameProgress || {};
   // Jika score di localStorage ada, gunakan itu
-  let scoreToSend = score;
-  if (typeof userData.gameProgress.level01Score === 'number') {
-    scoreToSend = userData.gameProgress.level01Score;
-  }
+  //let scoreToSend = score;
+  //if (typeof userData.gameProgress.level01Score === 'number') {
+   // scoreToSend = userData.gameProgress.level01Score;
+  //}
   // Simpan score terbaru ke localStorage
-  userData.gameProgress.level01Score = scoreToSend;
+  userData.gameProgress.level01Score = score;
   localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
 
   try {
     const res = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/update-score',
-      { email, score: scoreToSend },
+      { email, score },
       { timeout: 10000 }
     );
     const data = res.data;

@@ -1459,20 +1459,7 @@ async getUserProgress(email) {
 
 // Fungsi UPDATE user progress
 async updateUserProgress(email, progress) {
- // Ambil score dari localStorage jika ada
-  let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
-  userData.gameProgress = userData.gameProgress || {};
-  // Jika score di localStorage ada, gunakan itu
-  let scoreToSend = score;
-  if (typeof userData.gameProgress.level01Score === 'number') {
-    scoreToSend = userData.gameProgress.level01Score;
-  }
-  // Simpan score terbaru ke localStorage
-  userData.gameProgress.level01Score = scoreToSend;
-  localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
-
-
-  try {
+ try {
     const res = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
       { email, progress },
@@ -1485,6 +1472,7 @@ async updateUserProgress(email, progress) {
   }
 }
 
+// Fungsi SAVE SCORE KE BACKEND
 async saveScoreToBackend(email, score) {
   try {
     await axios.post(
@@ -1500,6 +1488,13 @@ async saveScoreToBackend(email, score) {
 
 // SEND SCORE TO BACKEND (KIRIM SKOR KE BACKEND SETELAH USER SELESAI LEVEL)
 async updateScoreLevel01(email, score) {
+ // Ambil score dari localStorage jika ada
+  let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+  userData.gameProgress = userData.gameProgress || {};
+  
+  // Simpan score terbaru ke localStorage
+  userData.gameProgress.level01Score = score;
+  localStorage.setItem(`gameData-${email}`, JSON.stringify(userData)); 
   try {
     const res = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/update-score',
@@ -2545,13 +2540,9 @@ async updateTaxInBackground(musicTitle, x, y) {
        // Ambil score dari localStorage jika ada
       let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
       userData.gameProgress = userData.gameProgress || {};
-      // Jika score di localStorage ada, gunakan itu
-      let scoreToSend = score;
-     if (typeof userData.gameProgress.level01Score === 'number') {
-      scoreToSend = userData.gameProgress.level01Score;
-     }
+     
      // Simpan score terbaru ke localStorage
-     userData.gameProgress.level01Score = scoreToSend;
+     userData.gameProgress.level01Score = score;
      localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
 
       if (email) this.saveScoreToBackend(email, this.score);
@@ -2674,13 +2665,9 @@ async updateTaxInBackground(musicTitle, x, y) {
     // Ambil score dari localStorage jika ada
    let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
    userData.gameProgress = userData.gameProgress || {};
-   // Jika score di localStorage ada, gunakan itu
-   let scoreToSend = score;
-   if (typeof userData.gameProgress.level01Score === 'number') {
-    scoreToSend = userData.gameProgress.level01Score;
-   }
+   
    // Simpan score terbaru ke localStorage
-   userData.gameProgress.level01Score = scoreToSend;
+   userData.gameProgress.level01Score = score;
    localStorage.setItem(`gameData-${email}`, JSON.stringify(userData)); 
     
 
