@@ -82,6 +82,27 @@ unblur10PuzzleButton() {
   console.log('✅ Tombol 10 Puzzle di-unblur');
 }
 
+//Fungsi di kosongkan dulu dengan TODO ini
+setupBoard(data) {
+  // Contoh: playBtn selalu burem dan nonaktif di awal
+  if (this.playBtn) {
+    this.playBtn.setAlpha(0.5);
+    this.playBtn.disableInteractive();
+    this.playBtn.setVisible(true);
+  }
+
+  // Jika ingin aktifkan playBtn setelah kondisi tertentu (misal: data.unlocked)
+  if (data && data.unlocked) {
+    if (this.playBtn) {
+      this.playBtn.setAlpha(1);
+      this.playBtn.setInteractive({ useHandCursor: true });
+      this.playBtn.setVisible(true);
+    }
+  }
+  console.log('setupBoard dipanggil dengan:', data);
+  // Atau, panggil logika reset/init board yang sudah ada
+}
+
 // ==== 9 FUNCTIONS FOR SplashScene CONNECTED TO BACKEND ====
 
 // 1. CHECK STATUS USER FROM BACKEND
@@ -208,8 +229,11 @@ async checkGameOverStatusFromServer() {
     this.unlockGameAfterPurchase();
     // Jika tidak game over, lanjutkan setup board (jika belum di-setup)
     if (!this.isGameOver && !this.boardIsSetup) {
+     // if (typeof this.setupBoard === 'function') {
       this.setupBoard({});
       this.boardIsSetup = true;
+     } else {
+        console.warn('setupBoard is not a function'); 
     }
   }
 }
