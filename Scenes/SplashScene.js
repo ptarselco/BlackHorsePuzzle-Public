@@ -39,7 +39,7 @@ class SplashScene extends Phaser.Scene {
 
 // ==== 9 FUNCTIONS FOR SplashScene CONNECTED TO BACKEND ====
 
-// CHECK STATUS USER FROM BACKEND
+// 1. CHECK STATUS USER FROM BACKEND
 async getUserStatus(email, level = 'Level01, Level01Scene') {
   try {
     const response = await axios.post(
@@ -54,7 +54,7 @@ async getUserStatus(email, level = 'Level01, Level01Scene') {
   }
 }
 
-// GABUNGKAN CHECK USER STATUS DAN GAME OVER
+// 2. GABUNGKAN CHECK USER STATUS DAN GAME OVER
 async checkUserStatusAndGameOver(email) {
   // Ambil status user dari backend (POST)
   const status = await this.getUserStatus(email, 'Level01, Level01Scene');
@@ -128,7 +128,7 @@ async setGameOver(email, isGameOver = true) {
   }
 }
 
-// CHECK GAME OVER STATUS DARI SERVER
+// 3. CHECK GAME OVER STATUS DARI SERVER
 async checkGameOverStatusFromServer() {
   const email = localStorage.getItem('playerEmail');
   if (!email) return;
@@ -165,7 +165,7 @@ async checkGameOverStatusFromServer() {
   }
 }
 
-// GET FUNCTION FOR USER PROGRESS
+// 4. GET FUNCTION FOR USER PROGRESS
 async getUserProgress(email) {
   try {
     const res = await axios.post(
@@ -182,7 +182,7 @@ async getUserProgress(email) {
   }
 }
 
-// UPDATE FUNCTION FOR USER PROGRESS
+// 5. UPDATE FUNCTION FOR USER PROGRESS
 async updateUserProgress(email, progress) {
   try {
     const res = await axios.post(
@@ -197,6 +197,7 @@ async updateUserProgress(email, progress) {
   }
 }
 
+// 6. GET USER SCORE
 async saveScoreToBackend(email, score) {
   try {
     await axios.post(
@@ -210,7 +211,7 @@ async saveScoreToBackend(email, score) {
   }
 }
 
-// SEND SCORE TO BACKEND (KIRIM SKOR KE BACKEND SETELAH USER SELESAI LEVEL)
+//7. SEND SCORE TO BACKEND (KIRIM SKOR KE BACKEND SETELAH USER SELESAI LEVEL)
 async updateScoreLevel01(email, score) {
   try {
     const res = await axios.post(
@@ -227,7 +228,7 @@ async updateScoreLevel01(email, score) {
 }
 
 
-// LOCK LEVEL (mengunci akses level untuk user)
+// 8. LOCK LEVEL (mengunci akses level untuk user)
 async lockLevel(email, level) {
   try {
     const res = await axios.post(
@@ -244,12 +245,12 @@ async lockLevel(email, level) {
   }
 }
 
-// UNLOCK LEVEL
+// 9. UNLOCK LEVEL
 async  unlockedLevels(email, level) {
   try {
     const res = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/unlock',
-      { email, level: 'Level01Scene' },
+      { email, level: 'level01, Level01Scene' },
     );
     unblur10PuzzleButton(); // Hapus blur tombol 10 puzzle
     // Response backend bisa { success: true, unlocked: true }
@@ -317,14 +318,6 @@ async  unlockedLevels(email, level) {
       this.lazyLoadBackgroundAssets();
     });
 
-  // Event klik Level 01
-  //level1.on("pointerdown", () => {
-      // Cek login
-      //if (!localStorage.getItem("playerEmail")) {
-        //document.getElementById("loginBox").style.display = "block";
-        //alert("Please Login with your email!");
-        //return;
-      //}
   
 // Event klik Level 01
 level1.on("pointerdown", async () => {
@@ -336,18 +329,37 @@ level1.on("pointerdown", async () => {
   }
 
   try {
-    let score = parseInt(localStorage.getItem(`score_${email}`)) || 0;
-    await this.saveScoreToBackend(email, score);
-    const progress = await this.getUserProgress(email);
-    await this.updateUserProgress(email, progress);
+    // 1. Ambil status user dari backend
+    const userStatus = await this.getUserStatus(email, 'Level01, Level01Scene');
+     // 2. Cek dan update status game over (jika perlu set-gameover)
     const status = await this.checkUserStatusAndGameOver(email);
 
+    // 3. Cek status game over dari server (opsional, validasi ulang)
+    await this.checkGameOverStatusFromServer();
+
+    // 4. Ambil progress user dari backend
+    const progress = await this.getUserProgress(email);
+
+    // 5. Update progress user ke backend
+    await this.updateUserProgress(email, progress);
+
+    // 6. Simpan score ke backend
+    let score = parseInt(localStorage.getItem(`score_${email}`)) || 0;
+    await this.saveScoreToBackend(email, score);
+
+    // 7. Update score & high score Level01 ke backend
+    await this.updateScoreLevel01(email, score);
+
+    // 8. Lock level jika game over
     if (status && status.isGameOver) {
       await this.lockLevel(email, 'Level01');
       this.scene.start("Level01Scene", { isGameOver: true, score: status.score });
       return;
     }
-  
+    
+    // 9. Unlock level (opsional, misal setelah pembayaran)
+    // await this.unlockedLevels(email, 'Level01');
+
     // Jika belum game over, lanjut ke Level01Scene
       // Show loading indicator
       const loadingText = this.add.text(960, 850, '', {
@@ -365,8 +377,13 @@ level1.on("pointerdown", async () => {
         loadingText.destroy();
         level1Glow.setVisible(false);
         btnBlue.setVisible(false);
-        this.scene.start("Level01Scene");
+        this.scene.start("Level01Scene", {
+         email,
+         score: status.score,
+         totalPlays: status.totalPlays,
+         isGameOver: status.isGameOver
       });
+    });
     } catch (error) {
     alert("Failed to check user status: " + error.message);
     }
