@@ -936,7 +936,7 @@ this.donationBtn.on('pointerdown', () => { // ini 1
         this.gameOverImg.destroy();
         this.gameOverImg = null;
       }
-      this.showFavoritPayPanel('Water', 31, 1, this.airBtn);
+      this.showFavoritPayPanel('Water', 30, 1, this.airBtn);
     });
 
     // RUMPUT: goyang
@@ -975,7 +975,7 @@ this.donationBtn.on('pointerdown', () => { // ini 1
         this.gameOverImg.destroy();
         this.gameOverImg = null;
       }
-      this.showFavoritPayPanel('Grass', 31, 1, this.grassContainer);
+      this.showFavoritPayPanel('Grass', 30, 1, this.grassContainer);
     });
 
     // WORTEL: pakai gambar utuh saja
@@ -1007,7 +1007,7 @@ this.donationBtn.on('pointerdown', () => { // ini 1
         this.gameOverImg.destroy();
         this.gameOverImg = null;
       }
-      this.showFavoritPayPanel('Carrot', 61, 2, this.carrotBtn);
+      this.showFavoritPayPanel('Carrot', 60, 2, this.carrotBtn);
     });
 
     // APPEL: ganti warna (frame)
@@ -1036,7 +1036,7 @@ this.donationBtn.on('pointerdown', () => { // ini 1
         this.gameOverImg.destroy();
         this.gameOverImg = null;
       }
-      this.showFavoritPayPanel('Appel', 61, 2, this.appleBtn);
+      this.showFavoritPayPanel('Appel', 60, 2, this.appleBtn);
     });
 
     this.musicNotes = [
