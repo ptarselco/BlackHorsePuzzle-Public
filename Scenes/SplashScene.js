@@ -358,7 +358,7 @@ level1.on("pointerdown", async () => {
     }
     
     // 9. Unlock level (opsional, misal setelah pembayaran)
-    // await this.unlockedLevels(email, 'Level01');
+  await this.unlockedLevels(email, 'Level01Scene');
 
     // Jika belum game over, lanjut ke Level01Scene
       // Show loading indicator
