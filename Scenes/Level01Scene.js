@@ -1,3 +1,5 @@
+import { updateUserProgress } from '../userService';
+
 class Level01Scene extends Phaser.Scene {
   constructor() {
     super('Level01Scene');
@@ -9,7 +11,9 @@ class Level01Scene extends Phaser.Scene {
     this.hasWonOnce = false; // atau this.sudahMenang = false;
     this.backendUrl = 'https://backend-paypalblackhorsepuzzle.onrender.com'; 
     this.userCountry = 'ID'; // FIXED :Default
+    
 
+// ...existing code...
     // Inisialisasi properti favorit
     this.airBtn = null;
     this.grassBtn = null;
@@ -166,11 +170,10 @@ class Level01Scene extends Phaser.Scene {
   this.autoSaveInterval = setInterval(() => {
     const email = localStorage.getItem('playerEmail');
     if (!email) return;
-    this.updateUserProgress(email, {
+    updateUserProgress(email, {
       level01Completed: true,
       level01Score: this.score,
       completionTime: this.timeElapsed,
-      level01Completed: false,
       isPerfectGame: false
     });
   }, 10000);
@@ -2348,7 +2351,7 @@ async updateTaxInBackground(musicTitle, x, y) {
   const newCompletionRate = 100; // Atau hitung sesuai logic kamu
   const isPerfectGame = true; // Atau false jika ada salah
 
-  await this.updateUserProgress(email, {
+  await updateUserProgress(email, {
    level01Completed: true,
    level01Score: this.score,
    level01HighScore: Math.max(this.score, progress.progress.level01HighScore || 0),
@@ -2423,7 +2426,7 @@ async updateTaxInBackground(musicTitle, x, y) {
   const newCompletionRate = 100; // Atau hitung sesuai logic kamu
   const isPerfectGame = true; // Atau false jika ada salah
 
-  await this.updateUserProgress(email, {
+  await updateUserProgress(email, {
    level01Completed: true,
    level01Score: this.score,
    level01HighScore: Math.max(this.score, progress.progress.level01HighScore || 0),
@@ -3770,7 +3773,7 @@ showExitPanelOnly() {
     //if (email) this.saveScoreToBackend(email, this.score);
     const email = localStorage.getItem('playerEmail');
   if (email) {
-    await this.updateUserProgress(email, {
+    await updateUserProgress(email, {
       level01Completed: true,
       level01Score: this.score,
       // Tambahkan field lain jika perlu
