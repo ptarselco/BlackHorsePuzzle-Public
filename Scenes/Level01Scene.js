@@ -125,11 +125,20 @@ class Level01Scene extends Phaser.Scene {
 
   // Deklarasi variabel utama
   const email = localStorage.getItem("playerEmail");
-  let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {
+  let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+   userData.gameProgress = userData.gameProgress || {
+    level01Completed: false,
+    level01Score: 0,
+    level01HighScore: 0,
     totalPlays: 0,
-    isGameOver: false,
-    score: 0
+    bestTime: 0,
+    averageTime: 0,
+    completionRate: 0,
+    perfectGames: 0,
+    totalAttempts: 0
   };
+  localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+
   const history = window.getPlayerGameHistory ? window.getPlayerGameHistory(email) : null;
   const sudahMain3x = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) >= 3;
   const isUserBaru = !history || !history.hasPlayedBefore;
@@ -142,7 +151,7 @@ class Level01Scene extends Phaser.Scene {
     this.hasShownWelcomeBack = false; 
   } else { 
     this.hasShownWelcomeBack = true; 
- } 
+  } 
 
   // ✅ ADD CONSOLE LOG HERE (after all Game Over logic):
   console.log(`🔍 Game state check:
@@ -1646,7 +1655,7 @@ showGameOverReturnMessage() {
   }).setOrigin(0.5).setDepth(10000);
 
   // Continue button (disabled until purchase)
-  const continueBtn = this.add.text(960, 800, "❌ LOCKED - BUY FAVORITE MENU FIRST", {
+  const continueBtn = this.add.text(960, 785, "❌ LOCKED - BUY FAVORITE MENU FIRST", {
     font: "bold 28px Segoe UI",
     fill: "#666666",
     backgroundColor: "#333333",
