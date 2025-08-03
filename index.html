@@ -1675,7 +1675,8 @@ document.getElementById('emailInput').addEventListener('keypress', (e) => {
 
 // ✅ ERROR HANDLING & MONITORING:
 window.addEventListener('error', (e) => {
-  console.error('🚨 Global error caught:', e.error);
+  //console.error('🚨 Global error caught:', e.error);
+  console.error('🔥 Global error caught:', e.message || e.error || 'Unknown error', e);
 });
 
 window.addEventListener('unhandledrejection', (e) => {

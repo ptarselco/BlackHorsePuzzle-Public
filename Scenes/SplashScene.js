@@ -116,22 +116,9 @@ setupBoard(data) {
 
 // ==== 7 FUNCTIONS FOR SplashScene CONNECTED TO BACKEND ====
 
-// 1. CHECK STATUS USER FROM BACKEND
-async getUserStatus(email, level = 'Level01, Level01Scene') {
-  try {
-    const response = await axios.post(
-      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/status',
-      { email, level: 'Level01, Level01Scene' },
-      { timeout: 20000 }
-    );
-    return response.data;
-  } catch (err) {
-    console.error('❌ Error checkUserStatusAndGameOver:', err);
-    return null;
-  }
-}
 
-// 2. GET FUNCTION FOR USER PROGRESS
+
+// 1. GET FUNCTION FOR USER PROGRESS
 async getUserProgress(email) {
   try {
     const res = await axios.post(
@@ -148,7 +135,7 @@ async getUserProgress(email) {
   }
 }
 
-// 3. UPDATE FUNCTION FOR USER PROGRESS
+// 2. UPDATE FUNCTION FOR USER PROGRESS
 async updateUserProgress(email, progress) {
   try {
     const res = await axios.post(
@@ -163,7 +150,22 @@ async updateUserProgress(email, progress) {
   }
 }
 
-// 4. GABUNGKAN CHECK USER STATUS DAN GAME OVER
+// 3. CHECK STATUS USER FROM BACKEND
+async getUserStatus(email, level = 'Level01, Level01Scene') {
+  try {
+    const response = await axios.post(
+      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/status',
+      { email, level: 'Level01, Level01Scene' },
+      { timeout: 20000 }
+    );
+    return response.data;
+  } catch (err) {
+    console.error('❌ Error checkUserStatusAndGameOver:', err);
+    return null;
+  }
+}
+
+// GABUNGKAN CHECK USER STATUS DAN GAME OVER
 async checkUserStatusAndGameOver(email) {
   // Ambil status user dari backend (POST)
   const status = await this.getUserStatus(email, 'Level01, Level01Scene');
@@ -223,7 +225,7 @@ async checkUserStatusAndGameOver(email) {
   return status;
 }
 
-// Fungsi SET GAME OVER (async)
+// 4. Fungsi SET GAME OVER (async)
 async setGameOver(email, isGameOver = true) {
   try {
     await axios.post(
