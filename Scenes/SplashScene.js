@@ -38,6 +38,26 @@ class SplashScene extends Phaser.Scene {
   }
 
 
+//Fungsi di kosongkan dulu dengan TODO ini
+setupBoard(data) {
+  // Contoh: playBtn selalu burem dan nonaktif di awal
+  if (this.playBtn) {
+    this.playBtn.setAlpha(0.5);
+    this.playBtn.disableInteractive();
+    this.playBtn.setVisible(true);
+  }
+
+  // Jika ingin aktifkan playBtn setelah kondisi tertentu (misal: data.unlocked)
+  if (data && data.unlocked) {
+    if (this.playBtn) {
+      this.playBtn.setAlpha(1);
+      this.playBtn.setInteractive({ useHandCursor: true });
+      this.playBtn.setVisible(true);
+    }
+  }
+  console.log('setupBoard dipanggil dengan:', data);
+  // Atau, panggil logika reset/init board yang sudah ada
+}
 
 lockAllGameplayButtons() {
   // Implementasi logika mengunci semua tombol gameplay di splash scene
@@ -81,8 +101,11 @@ blur10PuzzleButton() {
     this.lv01Puzzle10Btn.disableInteractive();
     this.lv01Puzzle10Btn.setAlpha(0.5);
   }
-}
-
+  if (this.playBtn) {
+    this.playBtn.disableInteractive();
+    this.playBtn.setAlpha(0.5);
+  }
+ }
 unblur10PuzzleButton() {
   if (this.lv01Puzzle10Btn) {
     this.lv01Puzzle10Btn.setInteractive();
@@ -90,29 +113,6 @@ unblur10PuzzleButton() {
   }
   console.log('✅ Tombol 10 Puzzle di-unblur');
 }
-
-//Fungsi di kosongkan dulu dengan TODO ini
-setupBoard(data) {
-  // Contoh: playBtn selalu burem dan nonaktif di awal
-  if (this.playBtn) {
-    this.playBtn.setAlpha(0.5);
-    this.playBtn.disableInteractive();
-    this.playBtn.setVisible(true);
-  }
-
-  // Jika ingin aktifkan playBtn setelah kondisi tertentu (misal: data.unlocked)
-  if (data && data.unlocked) {
-    if (this.playBtn) {
-      this.playBtn.setAlpha(1);
-      this.playBtn.setInteractive({ useHandCursor: true });
-      this.playBtn.setVisible(true);
-    }
-  }
-  console.log('setupBoard dipanggil dengan:', data);
-  // Atau, panggil logika reset/init board yang sudah ada
-}
-
-
 
 // ==== 7 FUNCTIONS FOR SplashScene CONNECTED TO BACKEND ====
 // 1. GET FUNCTION FOR USER PROGRESS
@@ -147,12 +147,12 @@ async updateUserProgress(email, progress) {
   }
 }
 
-// 3. CHECK STATUS USER FROM BACKEND
+// 3. GET USER STATUS DARI BACKEND (POST)
 async getUserStatus(email, level = 'Level01, Level01Scene') {
   try {
     const response = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/status',
-      { email, level: 'Level01, Level01Scene' },
+      { email: email.toLowerCase().trim(), level },
       { timeout: 20000 }
     );
     return response.data;
@@ -188,6 +188,8 @@ async checkUserStatusAndGameOver(email) {
       status.isGameOver = false;
       localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
       this.isGameOver = false;
+      this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+      console.log('✅ Game over status di-reset - tombol Play & Puzzle diaktifkan');
       // Lanjutkan main
       return status;
     } else {
@@ -251,33 +253,21 @@ async checkGameOverStatusFromServer() {
     if (data.isGameOver) {
       this.isGameOver = true;
       this.showGameOverReturnMessage();
-      this.lockAllGameplayButtons();
+      await this.lockLevel(email, 'Level01');
+      //this.lockAllGameplayButtons();
       return;
     }
-    this.unlockGameAfterPurchase();
-    // Jika tidak game over, lanjutkan setup board (jika belum di-setup)
-    if (!this.isGameOver && !this.boardIsSetup) {
-      this.setupBoard(data);
-      this.boardIsSetup = true;
-    }
-  } catch (err) {
+    } catch (err) {
     // Fallback ke localStorage jika backend gagal
     const isLocked = localStorage.getItem(`gameOver_${email}`) === 'true';
     if (isLocked) {
-      this.lockAllGameplayButtons();
       this.showGameOverReturnMessage();
+      this.lockAllGameplayButtons();
+      await this.lockLevel(email, 'Level01');
       return;
     }
-    this.unlockGameAfterPurchase();
-    // Jika tidak game over, lanjutkan setup board (jika belum di-setup)
-    if (!this.isGameOver && !this.boardIsSetup) {
-     // if (typeof this.setupBoard === 'function') {
-      this.setupBoard({});
-      this.boardIsSetup = true;
-     } else {
-        console.warn('setupBoard is not a function'); 
+    console.error('Error checking game over status:', err);
     }
-  }
 }
 
 
@@ -290,25 +280,51 @@ async lockLevel(email, level) {
       { timeout: 20000 }
     );
     // Tambahkan blur tombol di sini
+    if (this.isGameOver) {
     this.blur10PuzzleButton();
+    }
     return res.data.success === true;
   } catch (err) {
-    console.error('Lock level error:', err);
-    return false;
+    // Fallback ke localStorage jika backend gagal
+  const isLocked = localStorage.getItem(`gameOver_${email}`) === 'true';
+  if (isLocked) {
+    this.isGameOver = true;
+    this.showGameOverReturnMessage();
+    await this.lockLevel(email, 'level01'); // Lock backend & frontend jika game over
+    return;
+  }
+  // Jika tidak game over, tidak perlu lock
+  console.error('Error checking game over status:', err);
+  return false;
   }
 }
+
 
 // 7. UNLOCK LEVEL
 async  unlockedLevels(email, level) {
   try {
-    const res = await axios.post(
+   // Cek status pembayaran user
+    const statusRes = await axios.get(
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/payment-status/${email}`,
+      { timeout: 20000 }
+    );
+    const hasPaid = statusRes.data.isPaid === true;
+
+    if (!hasPaid) {
+      console.warn('User belum melakukan pembayaran.');
+      return false;
+    } 
+
+    // Jika sudah bayar, lanjut unlock level
+    const unlockRes = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/unlock',
-      { email, level: 'level01, Level01Scene' },
+      { email, level },
       { timeout: 20000 }
     );
     this.unblur10PuzzleButton(); // Hapus blur tombol 10 puzzle
+    return unlockRes.data.success || unlockRes.data.unlocked === true;
     // Response backend bisa { success: true, unlocked: true }
-    return res.data.success || res.data.unlocked === true;
+    //return res.data.success || res.data.unlocked === true;
   } catch (err) {
     console.error('Unlock level error:', err);
     return false;
@@ -420,13 +436,13 @@ async  unlockedLevels(email, level) {
 
     // 6. Lock level jika game over
     if (status && status.isGameOver) {
-      await this.lockLevel(email, 'Level01');
+      await this.lockLevel(email, 'level01');
       this.scene.start("Level01Scene", { isGameOver: true, score: status.score });
       return;
     }
     
     // 7. Unlock level (opsional, misal setelah pembayaran)
-  await this.unlockedLevels(email, 'Level01Scene');
+    await this.unlockedLevels(email, 'level01');
 
     // Jika belum game over, lanjut ke Level01Scene
       // Show loading indicator
