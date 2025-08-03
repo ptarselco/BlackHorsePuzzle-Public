@@ -1492,42 +1492,42 @@ async updateUserProgress(email, progress) {
 }
 
 // Fungsi SAVE SCORE KE BACKEND
-async saveScoreToBackend(email, score) {
-  try {
-    await axios.post(
-      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/score',
-      { email, score }
-    );
-    return true;
-  } catch (err) {
-    console.error('❌ Error saveScoreToBackend:', err);
-    return false;
-  }
-}
+//async saveScoreToBackend(email, score) {
+  //try {
+    //await axios.post(
+      //'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/score',
+      //{ email, score }
+    //);
+    //return true;
+  //} catch (err) {
+    //console.error('❌ Error saveScoreToBackend:', err);
+    //return false;
+  //}
+//}
 
 // SEND SCORE TO BACKEND (KIRIM SKOR KE BACKEND SETELAH USER SELESAI LEVEL)
-async updateScoreLevel01(email, score) {
+//async updateScoreLevel01(email, score) {
  // Ambil score dari localStorage jika ada
-  let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
-  userData.gameProgress = userData.gameProgress || {};
+  //let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+  //userData.gameProgress = userData.gameProgress || {};
   
   // Simpan score terbaru ke localStorage
-  userData.gameProgress.level01Score = this.score;
-  localStorage.setItem(`gameData-${email}`, JSON.stringify(userData)); 
-  try {
-    const res = await axios.post(
-      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/update-score',
-      { email, score },
-      { timeout: 20000 }
-    );
-    const data = res.data;
-    if (data.success) {
-      console.log('Score updated:', data.level01Score, 'High Score:', data.level01HighScore);
-    }
-  } catch (err) {
-    console.error('Failed to save score:', err);
-  }
-}
+  //userData.gameProgress.level01Score = this.score;
+  //localStorage.setItem(`gameData-${email}`, JSON.stringify(userData)); 
+  //try {
+    //const res = await axios.post(
+      //'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/update-score',
+      //{ email, score },
+      //{ timeout: 20000 }
+    //);
+    //const data = res.data;
+    //if (data.success) {
+      //console.log('Score updated:', data.level01Score, 'High Score:', data.level01HighScore);
+    //}
+  //} catch (err) {
+    //console.error('Failed to save score:', err);
+  //}
+//}
 
 
 // LOCK LEVEL (mengunci akses level untuk user)
@@ -1633,7 +1633,7 @@ showGameOverReturnMessage() {
   }).setOrigin(0.5).setDepth(10000);
 
   // Main message (English)
-  const message = this.add.text(960, 600, 
+  const message = this.add.text(960, 620, 
     "Your last position was GAME OVER.\n\n" +
     "To continue playing, you need to persuade\n" +
     "Black Horse with his favorite menu.\n\n" +
@@ -1642,11 +1642,11 @@ showGameOverReturnMessage() {
     font: "bold 28px Segoe UI",
     fill: "#ffffff",
     align: "center",
-    wordWrap: { width: 800 }
+    wordWrap: { width: 760 }
   }).setOrigin(0.5).setDepth(10000);
 
   // Continue button (disabled until purchase)
-  const continueBtn = this.add.text(960, 720, "❌ LOCKED - BUY FAVORITE MENU FIRST", {
+  const continueBtn = this.add.text(960, 800, "❌ LOCKED - BUY FAVORITE MENU FIRST", {
     font: "bold 28px Segoe UI",
     fill: "#666666",
     backgroundColor: "#333333",
@@ -2533,7 +2533,7 @@ async updateTaxInBackground(musicTitle, x, y) {
   }
 
   // ====== CEK PUZZLE ======
-  checkPuzzle() {
+  async checkPuzzle() {
     console.log('rightBoardSlots:', this.rightBoardSlots); // Tambahkan di sini
     let benar = true;
     for (let i = 0; i < 10; i++) {
@@ -2564,14 +2564,25 @@ async updateTaxInBackground(musicTitle, x, y) {
      userData.gameProgress.level01Score = this.score;
      localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
 
-      if (email) this.saveScoreToBackend(email, this.score);
-       const completionTime = this.timeElapsed; // atau waktu yang relevan
-     this.updateUserProgress(email, {
-      level01Completed: true,
-      level01Score: this.score,
-      completionTime: this.timeElapsed,
-      isPerfectGame: false // atau true jika tidak ada salah
-    }).then(() => {
+     // if (email) this.saveScoreToBackend(email, this.score);
+      // const completionTime = this.timeElapsed; // atau waktu yang relevan
+  const progress = await this.getUserProgress(email);
+  // Pastikan semua variabel sudah ada nilainya
+  const newAverageTime = typeof this.timeElapsed === 'number' ? this.timeElapsed : 0;
+  const newCompletionRate = 100; // Atau hitung sesuai logic kamu
+  const isPerfectGame = true; // Atau false jika ada salah
+
+  await this.updateUserProgress(email, {
+   level01Completed: true,
+   level01Score: this.score,
+   level01HighScore: Math.max(this.score, progress.progress.level01HighScore || 0),
+   totalPlays: (progress.progress.totalPlays || 0) + 1,
+   bestTime: this.timeElapsed,
+   averageTime: newAverageTime,
+   completionRate: newCompletionRate,
+   perfectGames: isPerfectGame,
+   totalAttempts: (progress.progress.totalAttempts || 0) + 1
+  }).then(() => {
       this.sound.play('horseNeigh');
       // Tampilkan black horse utuh hanya jika score >= 1000 --> tidak tampil dulu di score 1000
       //if (this.score >= 1000 && !this.blackHorseSprite) {
@@ -2671,7 +2682,7 @@ async updateTaxInBackground(musicTitle, x, y) {
 
 
   // filepath: [Level01Scene.js](https://_vscodecontentref_/2)
-  onTimeUp() {
+  async onTimeUp() {
     this.sound.play('horseSnort');
 
     // Kurangi score jika gagal, minimal 0 --> saat kalah, saat menang di checkpuzzle
@@ -2689,15 +2700,26 @@ async updateTaxInBackground(musicTitle, x, y) {
    userData.gameProgress.level01Score = this.score;
    localStorage.setItem(`gameData-${email}`, JSON.stringify(userData)); 
     
+    //if (email) this.saveScoreToBackend(email, this.score);
+    //const completionTime = this.timeElapsed;
 
-    if (email) this.saveScoreToBackend(email, this.score);
-    const completionTime = this.timeElapsed;
 
-    this.updateUserProgress(email, {
-      level01Completed: true,
-      level01Score: this.score,
-      completionTime:this.timeElapsed  ,
-      isPerfectGame: false
+    const progress = await this.getUserProgress(email);
+    // Pastikan semua variabel sudah ada nilainya
+  const newAverageTime = typeof this.timeElapsed === 'number' ? this.timeElapsed : 0;
+  const newCompletionRate = 100; // Atau hitung sesuai logic kamu
+  const isPerfectGame = true; // Atau false jika ada salah
+
+  await this.updateUserProgress(email, {
+   level01Completed: true,
+   level01Score: this.score,
+   level01HighScore: Math.max(this.score, progress.progress.level01HighScore || 0),
+   totalPlays: (progress.progress.totalPlays || 0) + 1,
+   bestTime: this.timeElapsed,
+   averageTime: newAverageTime,
+   completionRate: newCompletionRate,
+   perfectGames: isPerfectGame,
+   totalAttempts: (progress.progress.totalAttempts || 0) + 1
     }).then(() => {
     // ⬇️ Tambahkan pengecekan ini setelah safeUpdateGameScore tambah 08/07/25
     // Cek apakah sudah 3x main extra setelah beli menu favorit dan score sudah 0
@@ -3966,11 +3988,20 @@ showExitPanelOnly() {
   }).setOrigin(0.5).setDepth(6001).setInteractive({ useHandCursor: true });
   this.exitPanelGroup.add(exitBtn);
 
-  exitBtn.on('pointerdown', () => {
+  exitBtn.on('pointerdown', async() => {
   // Tambahkan update score ke backend sebelum keluar
+    //const email = localStorage.getItem('playerEmail');
+    //if (email) this.saveScoreToBackend(email, this.score);
     const email = localStorage.getItem('playerEmail');
-    if (email) this.saveScoreToBackend(email, this.score);
-
+  if (email) {
+    await this.updateUserProgress(email, {
+      level01Completed: true,
+      level01Score: this.score,
+      // Tambahkan field lain jika perlu
+      completionTime: this.timeElapsed,
+      isPerfectGame: false
+    });
+  } 
     // Hentikan autoSaveInterval jika aktif (autoSaveInterval ada di Level01Scene line 156)
     if (this.autoSaveInterval) clearInterval(this.autoSaveInterval);
 

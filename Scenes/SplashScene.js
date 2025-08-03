@@ -71,7 +71,14 @@ unlockGameAfterPurchase() {
 }
 
 showGameOverReturnMessage() {
-alert("Game Over! Please try again or unlock the level give the favorite menu to Black Horse.");
+alert("Game Over! Please give Black Horse the favorite menu to unlock the level.");
+}
+
+blur10PuzzleButton() {
+  if (this.lv01Puzzle10Btn) {
+    this.lv01Puzzle10Btn.disableInteractive();
+    this.lv01Puzzle10Btn.setAlpha(0.5);
+  }
 }
 
 unblur10PuzzleButton() {
@@ -271,44 +278,44 @@ async updateUserProgress(email, progress) {
 }
 
 // 6. GET USER SCORE
-async saveScoreToBackend(email, score) {
-  try {
-    await axios.post(
-      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/score',
-      { email, score },
-      { timeout: 20000 }
-    );
-    return true;
-  } catch (err) {
-    console.error('❌ Error saveScoreToBackend:', err);
-    return false;
-  }
-}
+//async saveScoreToBackend(email, score) {
+  //try {
+    //await axios.post(
+      //'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/score',
+      //{ email, score },
+      //{ timeout: 20000 }
+    //);
+    //return true;
+  //} catch (err) {
+    //console.error('❌ Error saveScoreToBackend:', err);
+    //return false;
+ // }
+//}
 
 //7. SEND SCORE TO BACKEND (KIRIM SKOR KE BACKEND SETELAH USER SELESAI LEVEL)
-async updateScoreLevel01(email, score) {
+//async updateScoreLevel01(email, score) {
  // Ambil score dari localStorage jika ada
-  let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
-  userData.gameProgress = userData.gameProgress || {};
+  //let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+  //userData.gameProgress = userData.gameProgress || {};
   
   // Simpan score terbaru ke localStorage
-  userData.gameProgress.level01Score = score;
-  localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
-
-  try {
-    const res = await axios.post(
-      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/update-score',
-      { email, score: this.score },
-      { timeout: 20000 }
-    );
-    const data = res.data;
-    if (data.success) {
-      console.log('Score updated:', data.level01Score, 'High Score:', data.level01HighScore);
-    }
-  } catch (err) {
-    console.error('Failed to save score:', err);
-  }
-}
+  //userData.gameProgress.level01Score = score;
+  //localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+  
+  //try {
+    //const res = await axios.post(
+      //'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/update-score',
+      //{ email, score },
+      //{ timeout: 20000 }
+    //);
+    //const data = res.data;
+    //if (data.success) {
+      //console.log('Score updated:', data.level01Score, 'High Score:', data.level01HighScore);
+    //}
+  //} catch (err) {
+    //console.error('Failed to save score:', err);
+  //}
+//}
 
 
 // 8. LOCK LEVEL (mengunci akses level untuk user)
@@ -431,20 +438,23 @@ btnBlue.setVisible(true);
     // 5. Update progress user ke backend
     // Kirim field progress langsung, bukan object progress
     await this.updateUserProgress(email, {
-     level01Completed: progress.progress.level01Completed,
-     level01Score: progress.progress.level01Score,
-     level01HighScore: progress.progress.level01HighScore,
-     completionTime: progress.progress.bestTime, // atau progress.progress.completionTime jika ada
-     isPerfectGame: false // atau sesuai status
-     // Tambahkan field lain jika perlu
-    });
+     level01Completed: true,
+     level01Score: this.score,
+     level01HighScore: Math.max(this.score, this.highScore),
+     totalPlays: (progress.progress.totalPlays || 0) + 1,
+     bestTime: this.timeElapsed,
+     averageTime: newAverageTime,
+     completionRate: newCompletionRate,
+     perfectGames: isPerfectGame,
+     totalAttempts: (progress.progress.totalAttempts || 0) + 1
+   });
 
     // 6. Simpan score ke backend
-    let score = parseInt(localStorage.getItem(`score_${email}`)) || 0;
-    await this.saveScoreToBackend(email, score);
+    //let score = parseInt(localStorage.getItem(`score_${email}`)) || 0;
+    //await this.saveScoreToBackend(email, score);
 
     // 7. Update score & high score Level01 ke backend
-    await this.updateScoreLevel01(email, score);
+    //await this.updateScoreLevel01(email, score);
 
     // 8. Lock level jika game over
     if (status && status.isGameOver) {
