@@ -557,9 +557,9 @@ btnBlue.setVisible(true);
     this.load.audio('herdGallop', './Puzzle-Assets/Sfx/sound/herd-gallop.mp3');
     
     // Music Level01
-    this.load.audio('introMusic', './Puzzle-Assets/Sfx/scenes/level01-1-herdhorses-guitar-intro-ident.mp3');
-    this.load.audio('mainMusic', './Puzzle-Assets/Sfx/scenes/level01-2 music-favorite-sunset-dreams.mp3');
-    this.load.audio('winMusic', './Puzzle-Assets/Sfx/scenes/win-in-the-video-game.mp3');
+    //this.load.audio('introMusic', './Puzzle-Assets/Sfx/scenes/level01-1-herdhorses-guitar-intro-ident.mp3');
+    //this.load.audio('mainMusic', './Puzzle-Assets/Sfx/scenes/level01-2 music-favorite-sunset-dreams.mp3');
+    //this.load.audio('winMusic', './Puzzle-Assets/Sfx/scenes/win-in-the-video-game.mp3');
     
     // Essential Level01 images
     //this.load.image('horse', './Puzzle-Assets/UI/GM. Black Horse Run Behind.webp');

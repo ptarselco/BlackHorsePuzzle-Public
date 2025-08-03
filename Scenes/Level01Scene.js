@@ -91,11 +91,11 @@ class Level01Scene extends Phaser.Scene {
     this.load.image('soundOnL', './Puzzle-Assets/UI/GM. Sound On Light.webp');
     this.load.image('soundOff', './Puzzle-Assets/UI/GM. Sound Off.webp');
     this.load.image('soundOffL', './Puzzle-Assets/UI/GM. Sound Off Light.webp');
-   //this.load.audio('introMusic', './Puzzle-Assets/Sfx/scenes/level01-1-herdhorses-guitar-intro-ident.mp3');
-   //this.load.audio('mainMusic', './Puzzle-Assets/Sfx/scenes/level01-2 music-favorite-sunset-dreams.mp3');
-   //this.load.audio('winMusic', './Puzzle-Assets/Sfx/scenes/win-in-the-video-game.mp3');
-   //this.load.audio('horseNeigh', './Puzzle-Assets/Sfx/sound/horse-neigh.mp3');
-   //this.load.audio('horseSnort', './Puzzle-Assets/Sfx/sound/horse-snort.mp3');
+    this.load.audio('introMusic', './Puzzle-Assets/Sfx/scenes/level01-1-herdhorses-guitar-intro-ident.mp3');
+    this.load.audio('mainMusic', './Puzzle-Assets/Sfx/scenes/level01-2 music-favorite-sunset-dreams.mp3');
+    this.load.audio('winMusic', './Puzzle-Assets/Sfx/scenes/win-in-the-video-game.mp3');
+  //  this.load.audio('horseNeigh', './Puzzle-Assets/Sfx/sound/horse-neigh.mp3');
+  //  this.load.audio('horseSnort', './Puzzle-Assets/Sfx/sound/horse-snort.mp3');
   //  this.load.audio('horseHoof', './Puzzle-Assets/Sfx/sound/hoof-run.mp3');
   //  this.load.audio('horsehoofstep', './Puzzle-Assets/Sfx/sound/hoof-step.mp3');
   //  this.load.audio('horseGallop', './Puzzle-Assets/Sfx/sound/blackhorse-gallop.mp3');
