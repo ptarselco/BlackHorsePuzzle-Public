@@ -1238,7 +1238,12 @@ async function startPaymentMonitoring(email) {
 
 async function performSecureLogout() {
   const email = localStorage.getItem('playerEmail');
-  
+  let sudahMenang = false;
+ if (email && localStorage.getItem(`gameData-${email}`)) {
+    const gameData = JSON.parse(localStorage.getItem(`gameData-${email}`));
+    sudahMenang = gameData.gameProgress?.level01Completed === true;
+  }
+
   try {
     console.log('🔄 Starting secure logout...');
     
@@ -1253,12 +1258,11 @@ async function performSecureLogout() {
       localStorage.removeItem(`welcomeBackShown`);
       localStorage.removeItem(`hasClaimedHat`);
     }
-
-    
     // Reset global scores
+    if (!sudahMenang) {
     if (window.score !== undefined) window.score = 0;
     window.playerScore = 0;
-    
+    }
     // Clear form
     document.getElementById("emailInput").value = "";
     

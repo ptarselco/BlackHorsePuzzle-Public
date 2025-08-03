@@ -330,7 +330,7 @@ class Level01Scene extends Phaser.Scene {
       // Mulai game 10 puzzle
       // Misal: reset ronde, score, timer, dan tampilkan puzzle
       this.round = 1;
-      this.score = 0;
+      //this.score = 0; // menimbulakan 10 puzzle reset score
       this.scoreText.setText(this.score.toString().padStart(5, '0'));
 
       // Tambahkan pengecekan login sebelum mengaktifkan tombol Play saat logout
