@@ -711,10 +711,23 @@ function checkPlayerScoreStatus(email) {
 
 // ✅ ENHANCED SAFETY CHECK in updateGameScore function:
 function updateGameScore(email, newScore) { //versi co 4.1 
-  newScore = parseInt(newScore) || 0;
+  //newScore = parseInt(newScore) || 0;
   localStorage.setItem(`score_${email}`, newScore.toString());
   window.score = newScore;
   window.playerScore = newScore;
+
+  // Simpan ke backend setiap kali score berubah
+  axios.post(
+    `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
+    {
+      level01Score: newScore
+      // Tambahkan data lain jika perlu
+    }
+  ).then(() => {
+    console.log('✅ Score saved to backend');
+  }).catch((err) => {
+    console.error('❌ Failed to save score to backend:', err);
+  });
 
   const history = getPlayerGameHistory(email);
   updatePlayerGameHistory(email, {
