@@ -1753,11 +1753,12 @@ function hidePleaseWaitMessage() {
     message.remove();
   }
 }
-//============================ SENDBEACON =========================
+//============================  =========================
 // SEANBEACON menyimpan score dan waktu ke backend saat sebelum halaman ditutup
  window.addEventListener('beforeunload', () => {
   const email = localStorage.getItem('playerEmail');
-  const score = window.Level01Scene?.instance?.score || 0; // pastikan ambil score terbaru
+  //const score = window.Level01Scene?.instance?.score || 0; // pastikan ambil score terbaru
+  const score = localStorage.getItem(`score_${email}`) || 0;
   const time = window.Level01Scene?.instance?.timeElapsed || 0;
   if (!email) return;
 
