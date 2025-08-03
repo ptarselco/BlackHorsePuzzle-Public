@@ -37,6 +37,8 @@ class SplashScene extends Phaser.Scene {
     });
   }
 
+
+
 lockAllGameplayButtons() {
   // Implementasi logika mengunci semua tombol gameplay di splash scene
   // Contoh: nonaktifkan tombol, tambahkan efek blur, dsb
@@ -109,6 +111,8 @@ setupBoard(data) {
   console.log('setupBoard dipanggil dengan:', data);
   // Atau, panggil logika reset/init board yang sudah ada
 }
+
+
 
 // ==== 9 FUNCTIONS FOR SplashScene CONNECTED TO BACKEND ====
 
@@ -437,6 +441,7 @@ btnBlue.setVisible(true);
 
     // 5. Update progress user ke backend
     // Kirim field progress langsung, bukan object progress
+    const newAverageTime = typeof this.timeElapsed === 'number' ? this.timeElapsed : 0;
     await this.updateUserProgress(email, {
      level01Completed: true,
      level01Score: this.score,
