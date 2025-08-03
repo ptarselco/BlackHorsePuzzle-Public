@@ -1259,10 +1259,11 @@ async function performSecureLogout() {
       localStorage.removeItem(`hasClaimedHat`);
     }
     // Reset global scores
-    if (!sudahMenang) {
-    if (window.score !== undefined) window.score = 0;
-    window.playerScore = 0;
-    }
+    //if (!sudahMenang) {
+    //if (window.score !== undefined) window.score = 0;
+    //window.playerScore = 0;
+    //}
+    
     // Clear form
     document.getElementById("emailInput").value = "";
     
