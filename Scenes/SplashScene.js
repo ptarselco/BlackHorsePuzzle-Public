@@ -505,17 +505,17 @@ btnBlue.setVisible(true);
   // ========== LAZY LOAD LEVEL01 ASSETS ==========
   lazyLoadLevel01Assets(callback) {
     // Load semua assets yang dibutuhkan Level01
-    this.load.audio('horseNeigh', './Puzzle-Assets/Sfx/sound/horse-neigh.mp3');
-    this.load.audio('horseSnort', './Puzzle-Assets/Sfx/sound/horse-snort.mp3');
-    this.load.audio('horseHoof', './Puzzle-Assets/Sfx/sound/hoof-run.mp3');
-    this.load.audio('horsehoofstep', './Puzzle-Assets/Sfx/sound/hoof-step.mp3');
-    this.load.audio('horseGallop', './Puzzle-Assets/Sfx/sound/blackhorse-gallop.mp3');
-    this.load.audio('herdGallop', './Puzzle-Assets/Sfx/sound/herd-gallop.mp3');
+    //this.load.audio('horseNeigh', './Puzzle-Assets/Sfx/sound/horse-neigh.mp3');
+    //this.load.audio('horseSnort', './Puzzle-Assets/Sfx/sound/horse-snort.mp3');
+    //this.load.audio('horseHoof', './Puzzle-Assets/Sfx/sound/hoof-run.mp3');
+    //this.load.audio('horsehoofstep', './Puzzle-Assets/Sfx/sound/hoof-step.mp3');
+    //this.load.audio('horseGallop', './Puzzle-Assets/Sfx/sound/blackhorse-gallop.mp3');
+    //this.load.audio('herdGallop', './Puzzle-Assets/Sfx/sound/herd-gallop.mp3');
     
     // Music Level01
-    this.load.audio('introMusic', './Puzzle-Assets/Sfx/scenes/level01-1-herdhorses-guitar-intro-ident.mp3');
-    this.load.audio('mainMusic', './Puzzle-Assets/Sfx/scenes/level01-2 music-favorite-sunset-dreams.mp3');
-    this.load.audio('winMusic', './Puzzle-Assets/Sfx/scenes/win-in-the-video-game.mp3');
+    //this.load.audio('introMusic', './Puzzle-Assets/Sfx/scenes/level01-1-herdhorses-guitar-intro-ident.mp3');
+    //this.load.audio('mainMusic', './Puzzle-Assets/Sfx/scenes/level01-2 music-favorite-sunset-dreams.mp3');
+    //this.load.audio('winMusic', './Puzzle-Assets/Sfx/scenes/win-in-the-video-game.mp3');
     
     // Essential Level01 images
     //this.load.image('horse', './Puzzle-Assets/UI/GM. Black Horse Run Behind.webp');
@@ -525,7 +525,7 @@ btnBlue.setVisible(true);
     console.log('✅ Level01 assets loaded!');
     if (typeof callback === 'function') callback();
     // ⬇️ Tambahkan di sini untuk memastikan asset sudah di-cache sebelum scene dimulai
-    this.scene.start("Level01Scene", {/* data jika perlu */});
+    //this.scene.start("Level01Scene", {/* data jika perlu */});
   }); 
    
     this.load.start();
