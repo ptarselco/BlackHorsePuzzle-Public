@@ -1,5 +1,3 @@
-import { updateUserProgress } from '../userService';
-
 class Level01Scene extends Phaser.Scene {
   constructor() {
     super('Level01Scene');
@@ -170,7 +168,7 @@ class Level01Scene extends Phaser.Scene {
   this.autoSaveInterval = setInterval(() => {
     const email = localStorage.getItem('playerEmail');
     if (!email) return;
-    updateUserProgress(email, {
+    this.updateUserProgress(email, {
       level01Completed: true,
       level01Score: this.score,
       completionTime: this.timeElapsed,
@@ -2351,7 +2349,7 @@ async updateTaxInBackground(musicTitle, x, y) {
   const newCompletionRate = 100; // Atau hitung sesuai logic kamu
   const isPerfectGame = true; // Atau false jika ada salah
 
-  await updateUserProgress(email, {
+  this.updateUserProgress(email, {
    level01Completed: true,
    level01Score: this.score,
    level01HighScore: Math.max(this.score, progress.progress.level01HighScore || 0),
@@ -2426,7 +2424,7 @@ async updateTaxInBackground(musicTitle, x, y) {
   const newCompletionRate = 100; // Atau hitung sesuai logic kamu
   const isPerfectGame = true; // Atau false jika ada salah
 
-  await updateUserProgress(email, {
+  this.updateUserProgress(email, {
    level01Completed: true,
    level01Score: this.score,
    level01HighScore: Math.max(this.score, progress.progress.level01HighScore || 0),
@@ -2671,7 +2669,223 @@ if (window.game && window.game.scene) {
     }
   }
 // ========== GAME OVER RETURN MESSAGE ==========
-//Versi Co 4.1 >>>> pindah ke file userService.js 7 Fungsi Backend
+//Versi Co 4.1 
+// ==== 7 FUNCTIONS FOR SplashScene CONNECTED TO BACKEND ====
+// 1. GET FUNCTION FOR USER PROGRESS
+async getUserProgress(email) {
+  try {
+    const res = await axios.post(
+    `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
+    //'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/progress', {
+      {}, // body kosong, karena email sudah di URL param
+    { timeout: 20000 }
+    );
+    // Response: { success, progress, user }  
+    return res.data; // progress: { level01Score, level01HighScore, totalPlays, ... }
+  } catch (err) {
+    console.error('❌ Get user progress error:', err);
+    return null;
+  }
+}
+
+// 2. UPDATE FUNCTION FOR USER PROGRESS
+async updateUserProgress(email, progress) {
+  try {
+    const res = await axios.post(
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
+      { ...progress },
+      { timeout: 20000 }
+    );
+    return res.data.success === true;
+  } catch (err) {
+    console.error('❌ Update user progress error:', err);
+    return false;
+  }
+}
+
+// 3. GET USER STATUS DARI BACKEND (POST)
+async getUserStatus(email, level = 'Level01, Level01Scene') {
+  try {
+    const response = await axios.post(
+      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/status',
+      { email: email.toLowerCase().trim(), level },
+      { timeout: 20000 }
+    );
+    return response.data;
+  } catch (err) {
+    console.error('❌ Error checkUserStatusAndGameOver:', err);
+    return null;
+  }
+}
+
+// GABUNGKAN CHECK USER STATUS DAN GAME OVER
+async checkUserStatusAndGameOver(email) {
+  // Ambil status user dari backend (POST)
+  const status = await this.getUserStatus(email, 'Level01, Level01Scene');
+  if (!status) {
+    console.error('Gagal ambil status user');
+    return null;
+  }
+
+  // Cek status user lama/baru
+  const isUserBaru = !status.totalPlays || status.totalPlays === 0;
+
+  // Jika user baru, aktifkan tombol Play & Puzzle
+  if (isUserBaru) {
+    this.isGameOver = false;
+    this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+    console.log('✅ User baru - tombol Play & Puzzle diaktifkan');
+    return status;
+  }
+
+  // Cek status game over untuk user lama
+  if (status.isGameOver) {
+    if (status.score > 0) {
+      status.isGameOver = false;
+      localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
+      this.isGameOver = false;
+      this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+      console.log('✅ Game over status di-reset - tombol Play & Puzzle diaktifkan');
+      // Lanjutkan main
+      return status;
+    } else {
+      this.isGameOver = true;
+      this.showGameOverReturnMessage();
+      this.lockAllGameplayButtons();
+      return status;
+    }
+  }
+
+  // Tambah totalPlays setiap kali fungsi ini dipanggil (untuk user lama)
+  status.totalPlays = (status.totalPlays || 0) + 1;
+
+  // Jika totalPlays >= 3 dan score masih 0, set game over
+  if (status.totalPlays >= 3 && (status.score || 0) === 0) {
+    //await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/set-gameover', { email, isGameOver: true });
+    await this.setGameOver(email, true); // gunakan fungsi async
+    status.isGameOver = true;
+    localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
+    this.isGameOver = true;
+    this.showGameOverReturnMessage();
+    this.lockAllGameplayButtons();
+    return status;
+  }
+
+  // Simpan totalPlays terbaru ke localStorage
+  localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
+
+  // Jika lolos semua, aktifkan tombol Play & Puzzle
+  this.isGameOver = false;
+  this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+  return status;
+}
+
+// 4. Fungsi SET GAME OVER (async)
+async setGameOver(email, isGameOver = true) {
+  try {
+    await axios.post(
+      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/set-gameover',
+      { email, isGameOver },
+      { timeout: 20000 }
+    );
+    return true;
+  } catch (err) {
+    console.error('Set game over error:', err);
+    return false;
+  }
+}
+
+// 5. CHECK GAME OVER STATUS DARI SERVER
+async checkGameOverStatusFromServer() {
+  const email = localStorage.getItem('playerEmail');
+  if (!email) return;
+
+  try {
+    const response = await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/gameover', 
+      { email },
+      { timeout: 20000 }  
+    );
+    const data = response.data;
+    if (data.isGameOver) {
+      this.isGameOver = true;
+      this.showGameOverReturnMessage();
+      await this.lockLevel(email, 'Level01');
+      //this.lockAllGameplayButtons();
+      return;
+    }
+    } catch (err) {
+    // Fallback ke localStorage jika backend gagal
+    const isLocked = localStorage.getItem(`gameOver_${email}`) === 'true';
+    if (isLocked) {
+      this.showGameOverReturnMessage();
+      this.lockAllGameplayButtons();
+      await this.lockLevel(email, 'Level01');
+      return;
+    }
+    console.error('Error checking game over status:', err);
+    }
+}
+
+
+// 6. LOCK LEVEL (mengunci akses level untuk user)
+async lockLevel(email, level) {
+  try {
+    const res = await axios.post(
+      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/lock',
+      { email, level },
+      { timeout: 20000 }
+    );
+    // Tambahkan blur tombol di sini
+    if (this.isGameOver) {
+    this.blur10PuzzleButton();
+    }
+    return res.data.success === true;
+  } catch (err) {
+    // Fallback ke localStorage jika backend gagal
+  const isLocked = localStorage.getItem(`gameOver_${email}`) === 'true';
+  if (isLocked) {
+    this.isGameOver = true;
+    this.showGameOverReturnMessage();
+    await this.lockLevel(email, 'level01'); // Lock backend & frontend jika game over
+    return;
+  }
+  // Jika tidak game over, tidak perlu lock
+  console.error('Error checking game over status:', err);
+  return false;
+  }
+}
+
+
+// 7. UNLOCK LEVEL
+async  unlockedLevels(email, level) {
+  try {
+   // Cek status pembayaran user
+    const statusRes = await axios.get(
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/payment-status/${email}`,
+      { timeout: 20000 }
+    );
+    const hasPaid = statusRes.data.isPaid === true;
+
+    if (!hasPaid) {
+      console.warn('User belum melakukan pembayaran.');
+      return false;
+    } 
+
+    // Jika sudah bayar, lanjut unlock level
+    const unlockRes = await axios.post(
+      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/unlock',
+      { email, level },
+      { timeout: 20000 }
+    );
+    this.unblur10PuzzleButton(); // Hapus blur tombol 10 puzzle
+    return unlockRes.data.success || unlockRes.data.unlocked === true;
+    // Response backend bisa { success: true, unlocked: true }
+    //return res.data.success || res.data.unlocked === true;
+  } catch (err) {
+    console.error('Unlock level error:', err);
+    return false;
+  }
+}
 //=================================================================================================
 
   // filepath: [Level01Scene.js](http://_vscodecontentref_/2)
@@ -3773,7 +3987,7 @@ showExitPanelOnly() {
     //if (email) this.saveScoreToBackend(email, this.score);
     const email = localStorage.getItem('playerEmail');
   if (email) {
-    await updateUserProgress(email, {
+    this.updateUserProgress(email, {
       level01Completed: true,
       level01Score: this.score,
       // Tambahkan field lain jika perlu
