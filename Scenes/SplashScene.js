@@ -73,7 +73,7 @@ unlockGameAfterPurchase() {
 }
 
 showGameOverReturnMessage() {
-alert("Game Over! Unlock with Black Horse's favorite menu");
+  // alert("Game Over! Unlock with Black Horse's favorite menu");
 }
 
 blur10PuzzleButton() {
@@ -115,9 +115,6 @@ setupBoard(data) {
 
 
 // ==== 7 FUNCTIONS FOR SplashScene CONNECTED TO BACKEND ====
-
-
-
 // 1. GET FUNCTION FOR USER PROGRESS
 async getUserProgress(email) {
   try {
@@ -376,11 +373,11 @@ async  unlockedLevels(email, level) {
     });
 
   
-// Event klik Level 01
-level1.on("pointerdown", async () => {
-// Glow effect
-level1Glow.setVisible(true);
-btnBlue.setVisible(true);
+  // Event klik Level 01
+  level1.on("pointerdown", async () => {
+  // Glow effect
+  level1Glow.setVisible(true);
+  btnBlue.setVisible(true);
 
   const email = localStorage.getItem("playerEmail");
   if (!email) {
@@ -390,13 +387,10 @@ btnBlue.setVisible(true);
   }
 
   try {
-    // 1. Ambil status user dari backend
-    const userStatus = await this.getUserStatus(email, 'Level01, Level01Scene');
-
-    // 2. Ambil progress user dari backend
+     // 1. Ambil progress user dari backend
     const progress = await this.getUserProgress(email);
 
-    // 3. Update progress user ke backend
+    // 2. Update progress user ke backend
     // Kirim field progress langsung, bukan object progress
     const newAverageTime = typeof this.timeElapsed === 'number' ? this.timeElapsed : 0;
     const newCompletionRate = 100; // Atau hitung sesuai logic, default 100%
@@ -415,7 +409,10 @@ btnBlue.setVisible(true);
      totalAttempts: (progress.progress.totalAttempts || 0) + 1
    });
 
-     // 4. Cek dan update status game over (jika perlu set-gameover)
+    // 3. Ambil status user dari backend
+    const userStatus = await this.getUserStatus(email, 'Level01, Level01Scene');
+
+    // 4. Cek dan update status game over (jika perlu set-gameover)
     const status = await this.checkUserStatusAndGameOver(email);
 
     // 5. Cek status game over dari server (opsional, validasi ulang)
@@ -504,7 +501,7 @@ btnBlue.setVisible(true);
 
   // ========== LAZY LOAD LEVEL01 ASSETS ==========
   lazyLoadLevel01Assets(callback) {
-    // Load semua assets yang dibutuhkan Level01
+    // Load semua assets yang dibutuhkan Level01 (Aktif yang di Level01)
     //this.load.audio('horseNeigh', './Puzzle-Assets/Sfx/sound/horse-neigh.mp3');
     //this.load.audio('horseSnort', './Puzzle-Assets/Sfx/sound/horse-snort.mp3');
     //this.load.audio('horseHoof', './Puzzle-Assets/Sfx/sound/hoof-run.mp3');
