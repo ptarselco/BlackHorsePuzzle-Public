@@ -574,6 +574,31 @@ try {
       console.error('❌ Failed to fetch score from backend:', err);
     }
   }
+
+  async function syncProgressFromBackend(email) {
+  try {
+    const res = await axios.post(
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`
+    );
+    const progress = res.data?.progress || {};
+    // Sync score
+    localStorage.setItem(`score_${email}`, progress.level01Score || 0);
+    window.score = progress.level01Score || 0;
+    window.playerScore = progress.level01Score || 0;
+    // Sync history (if you store it in backend)
+    localStorage.setItem(`gameHistory_${email}`, JSON.stringify({
+      hasPlayedBefore: true,
+      totalGamesPlayed: progress.totalPlays || 1,
+      highestScore: progress.level01HighScore || progress.level01Score || 0,
+      gameOvers: progress.gameOvers || 0,
+      lastPlayedDate: new Date().toISOString(),
+      favoriteGiven: progress.favoriteGiven || false
+    }));
+    console.log('✅ Synced progress from backend:', progress);
+  } catch (err) {
+    console.error('❌ Failed to sync progress from backend:', err);
+  }
+}
 //--------------Batas login handler-------------------
 
 // ✅ ENHANCED VERIFICATION HANDLER:

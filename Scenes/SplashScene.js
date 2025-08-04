@@ -450,6 +450,32 @@ async  unlockedLevels(email, level) {
         fontSize: '24px', fill: '#00eaff'
       }).setOrigin(0.5);
 
+    // FUNGSI UNTUK SYNC DATA DARI BACKEND KE LOCAL STORAGE DAN WINDOW SETIAP KALI LOGIN ATAU RELOAD
+    async function syncProgressFromBackend(email) {
+    try {
+    const res = await axios.post(
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`
+    );
+    const progress = res.data?.progress || {};
+    // Sync score
+    localStorage.setItem(`score_${email}`, progress.level01Score || 0);
+    window.score = progress.level01Score || 0;
+    window.playerScore = progress.level01Score || 0;
+    // Sync history (if you store it in backend)
+    localStorage.setItem(`gameHistory_${email}`, JSON.stringify({
+      hasPlayedBefore: true,
+      totalGamesPlayed: progress.totalPlays || 1,
+      highestScore: progress.level01HighScore || progress.level01Score || 0,
+      gameOvers: progress.gameOvers || 0,
+      lastPlayedDate: new Date().toISOString(),
+      favoriteGiven: progress.favoriteGiven || false
+    }));
+    console.log('✅ Synced progress from backend:', progress);
+  } catch (err) {
+    console.error('❌ Failed to sync progress from backend:', err);
+  }
+}
+
 
       // ========== LAZY LOAD LEVEL01 ASSETS ==========
       console.log('🎵 Lazy loading Level01 assets...');
@@ -515,7 +541,7 @@ async  unlockedLevels(email, level) {
     this.load.start();
   }
 
-  // ========== LAZY LOAD LEVEL01 ASSETS ==========
+  // ========== LAZY LOAD LEVEL01 ASSETS ========== // LAZY LOAD LEVEL01 ASSETS LEBIH CEPAT TAMPIL
   lazyLoadLevel01Assets(callback) {
     // Load semua assets yang dibutuhkan Level01 (Aktif yang di Level01)
     //this.load.audio('horseNeigh', './Puzzle-Assets/Sfx/sound/horse-neigh.mp3');
