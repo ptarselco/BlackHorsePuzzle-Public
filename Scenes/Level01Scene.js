@@ -2378,6 +2378,8 @@ async updateTaxInBackground(musicTitle, x, y) {
       //this.transformPuzzleToHorse();
       //}
       this.showClaimHat(() => {
+       });
+      this.showClaimHat(() => {  
       if (this.playBtn) {
           this.playBtn.setInteractive();
           this.playBtn.setAlpha(1);
