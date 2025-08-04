@@ -393,6 +393,64 @@ if (payment === "cancelled") {
      }
     } 
 
+// SEANBEACON menyimpan score dan waktu ke backend saat sebelum halaman ditutup
+ window.addEventListener('beforeunload', () => {
+  const email = localStorage.getItem('playerEmail');
+  //const score = window.Level01Scene?.instance?.score || 0; // pastikan ambil score terbaru
+  const score = localStorage.getItem(`score_${email}`) || 0;
+  const time = window.Level01Scene?.instance?.timeElapsed || 0;
+  if (!email) return;
+
+  console.log('📤 Sending score via sendBeacon:', score, time);
+
+
+  navigator.sendBeacon(
+  `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
+  new Blob([JSON.stringify({
+    email,
+    level01Completed: false,
+    level01Score: score,    // ✅ gunakan score dari instance
+    completionTime: time,        // ✅ gunakan time dari instance
+    isPerfectGame: false
+  })], { type: 'text/plain' })
+ );
+ });
+ 
+//=================================== BATAS SENDBEACON ====================================
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    const email = localStorage.getItem('playerEmail');
+    const score = localStorage.getItem(`score_${email}`) || 0;
+    // Jika ada timeElapsed yang valid, ambil dari scene, jika tidak, pakai 0
+    let time = 0;
+    if (window.game && window.game.scene && window.game.scene.getScene) {
+      const level01 = window.game.scene.getScene('Level01Scene');
+      if (level01 && typeof level01.timeElapsed !== 'undefined') {
+        time = level01.timeElapsed;
+      }
+    }
+
+    console.log('📤 Visibility hidden - backup score:', score, time);
+
+    if (email) {
+      const data = JSON.stringify({
+        email,
+        level01Completed: false,
+        level01Score: score,
+        completionTime: time,
+        isPerfectGame: false
+      });
+
+      navigator.sendBeacon(
+        'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/' + encodeURIComponent(email) + '/update-progress',
+        new Blob([data], { type: 'text/plain' })
+      );
+    }
+  }
+});
+//================================= BATAS VISIBILITY CHANGE =================================
+
 // ========== ENHANCED SECURE LOGIN & PAYMENT SYSTEM ==========
 // ✅ GLOBAL VARIABLES:
 let loginInProgress = false;
@@ -1767,63 +1825,7 @@ function hidePleaseWaitMessage() {
   }
 }
 //============================  =========================
-// SEANBEACON menyimpan score dan waktu ke backend saat sebelum halaman ditutup
- window.addEventListener('beforeunload', () => {
-  const email = localStorage.getItem('playerEmail');
-  //const score = window.Level01Scene?.instance?.score || 0; // pastikan ambil score terbaru
-  const score = localStorage.getItem(`score_${email}`) || 0;
-  const time = window.Level01Scene?.instance?.timeElapsed || 0;
-  if (!email) return;
 
-  console.log('📤 Sending score via sendBeacon:', score, time);
-
-
-  navigator.sendBeacon(
-  `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
-  new Blob([JSON.stringify({
-    email,
-    level01Completed: false,
-    level01Score: score,    // ✅ gunakan score dari instance
-    completionTime: time,        // ✅ gunakan time dari instance
-    isPerfectGame: false
-  })], { type: 'text/plain' })
- );
- });
- 
-//=================================== BATAS SENDBEACON ====================================
-
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden') {
-    const email = localStorage.getItem('playerEmail');
-    const score = localStorage.getItem(`score_${email}`) || 0;
-    // Jika ada timeElapsed yang valid, ambil dari scene, jika tidak, pakai 0
-    let time = 0;
-    if (window.game && window.game.scene && window.game.scene.getScene) {
-      const level01 = window.game.scene.getScene('Level01Scene');
-      if (level01 && typeof level01.timeElapsed !== 'undefined') {
-        time = level01.timeElapsed;
-      }
-    }
-
-    console.log('📤 Visibility hidden - backup score:', score, time);
-
-    if (email) {
-      const data = JSON.stringify({
-        email,
-        level01Completed: false,
-        level01Score: score,
-        completionTime: time,
-        isPerfectGame: false
-      });
-
-      navigator.sendBeacon(
-        'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/' + encodeURIComponent(email) + '/update-progress',
-        new Blob([data], { type: 'text/plain' })
-      );
-    }
-  }
-});
-//================================= BATAS VISIBILITY CHANGE =================================
 
 // ✅ DONATION OVERLAY FUNCTION
 // This function creates a donation overlay with options to donate via PayPal or Ko-fi
