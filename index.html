@@ -822,6 +822,19 @@ window.addEventListener('DOMContentLoaded', async function() {
   console.log('📄 Enhanced Black Horse Puzzle - Initializing secure system');
   
    if (playerEmail) {
+     try {
+      const res = await axios.post(
+        `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(playerEmail)}/progress`
+      );
+      const backendScore = res.data?.progress?.level01Score || 0;
+      localStorage.setItem(`score_${playerEmail}`, backendScore.toString());
+      window.score = backendScore;
+      window.playerScore = backendScore;
+      console.log('✅ Synced score from backend:', backendScore);
+    } catch (err) {
+      console.error('❌ Failed to fetch score from backend:', err);
+    }
+
     const isValidEmail = verifyEmailFormat(playerEmail);
     if (isValidEmail) {
       const scoreStatus = checkPlayerScoreStatus(playerEmail);
