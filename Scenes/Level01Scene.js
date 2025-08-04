@@ -2333,49 +2333,59 @@ async updateTaxInBackground(musicTitle, x, y) {
       this.registry.set('score', this.score);
       const email = localStorage.getItem('playerEmail');
 
-       // Ambil score dari localStorage jika ada
+       // Ambil score dari localStorage jika ada (data lama)
       let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
       userData.gameProgress = userData.gameProgress || {};
      
      // Simpan score terbaru ke localStorage
      userData.gameProgress.level01Score = this.score;
-     localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+   
+     // Update localStorage dengan semua progress terbaru
+    userData.gameProgress.level01Score = this.score;
+    userData.gameProgress.level01HighScore = Math.max(userData.gameProgress.level01HighScore || 0, this.score);
+    userData.gameProgress.totalPlays = (userData.gameProgress.totalPlays || 0) + 1;
+    userData.gameProgress.bestTime = this.timeElapsed;
+    userData.gameProgress.averageTime = typeof this.timeElapsed === 'number' ? this.timeElapsed : 0;
+    userData.gameProgress.completionRate = 100; // Atur sesuai logic kamu
+    userData.gameProgress.perfectGames = true; // Atur sesuai logic kamu
+    userData.gameProgress.totalAttempts = (userData.gameProgress.totalAttempts || 0)  
 
-     // if (email) this.saveScoreToBackend(email, this.score);
-      // const completionTime = this.timeElapsed; // atau waktu yang relevan
-  const progress = await this.getUserProgress(email);
-  // Pastikan semua variabel sudah ada nilainya
-  const newAverageTime = typeof this.timeElapsed === 'number' ? this.timeElapsed : 0;
-  const newCompletionRate = 100; // Atau hitung sesuai logic kamu
-  const isPerfectGame = true; // Atau false jika ada salah
+    
+    localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+  
+    // Setelah update localStorage
+    const newAverageTime = typeof this.timeElapsed === 'number' ? this.timeElapsed : 0;
+    const newCompletionRate = 100; // Atau hitung sesuai logic kamu
+    const isPerfectGame = true; // Atur sesuai logic kamu
 
-  this.updateUserProgress(email, {
-   level01Completed: true,
-   level01Score: this.score,
-   level01HighScore: Math.max(this.score, progress.progress.level01HighScore || 0),
-   totalPlays: (progress.progress.totalPlays || 0) + 1,
-   bestTime: this.timeElapsed,
-   averageTime: newAverageTime,
-   completionRate: newCompletionRate,
-   perfectGames: isPerfectGame,
-   totalAttempts: (progress.progress.totalAttempts || 0) + 1
-  }).then(() => {
+
+    // Update ke backend juga
+    const progress = await this.getUserProgress(email);    
+    this.updateUserProgress(email, {
+      level01Completed: true,
+      level01Score: this.score,
+      level01HighScore: Math.max(this.score, progress.progress.level01HighScore || 0),
+      totalPlays: (progress.progress.totalPlays || 0) + 1,
+      bestTime: this.timeElapsed,
+      averageTime: newAverageTime,
+      completionRate: newCompletionRate,
+      perfectGames: isPerfectGame,
+      totalAttempts: (progress.progress.totalAttempts || 0) + 1
+     }).then(() => {
       this.sound.play('horseNeigh');
       // Tampilkan black horse utuh hanya jika score >= 1000 --> tidak tampil dulu di score 1000
       //if (this.score >= 1000 && !this.blackHorseSprite) {
       //this.transformPuzzleToHorse();
       //}
       this.showClaimHat(() => {
-      });
-
-      this.showClaimHat(() => {
-        if (this.playBtn) {
+      if (this.playBtn) {
           this.playBtn.setInteractive();
           this.playBtn.setAlpha(1);
           this.playBtn.setVisible(true);
         }
       });
     });
+  
     
       // ✅ DESTROY AIR saat menang:
     if (this.currentAboveHorse) {
@@ -2404,21 +2414,28 @@ async updateTaxInBackground(musicTitle, x, y) {
     this.scoreText.setText(this.score.toString().padStart(5, '0'));
     this.registry.set('score', this.score);
     // Simpan score ke localStorage saat mongodb offline
+    
     const email = localStorage.getItem('playerEmail');
-
-    // Ambil score dari localStorage jika ada
-   let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
-   userData.gameProgress = userData.gameProgress || {};
+    let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+    userData.gameProgress = userData.gameProgress || {};
    
    // Simpan score terbaru ke localStorage
-   userData.gameProgress.level01Score = this.score;
+    userData.gameProgress.level01Score = this.score;
+    userData.gameProgress.level01HighScore = Math.max(userData.gameProgress.level01HighScore || 0, this.score);
+    userData.gameProgress.totalPlays = (userData.gameProgress.totalPlays || 0) + 1;
+    userData.gameProgress.bestTime = this.timeElapsed;
+    userData.gameProgress.averageTime = typeof this.timeElapsed === 'number' ? this.timeElapsed : 0;
+    userData.gameProgress.completionRate = 100; // Atur sesuai logic kamu
+    userData.gameProgress.perfectGames = false; // Atur sesuai logic kamu
+    userData.gameProgress.totalAttempts = (userData.gameProgress.totalAttempts || 0) + 1;
+
    localStorage.setItem(`gameData-${email}`, JSON.stringify(userData)); 
     
     //if (email) this.saveScoreToBackend(email, this.score);
     //const completionTime = this.timeElapsed;
 
 
-    const progress = await this.getUserProgress(email);
+  const progress = await this.getUserProgress(email);
     // Pastikan semua variabel sudah ada nilainya
   const newAverageTime = typeof this.timeElapsed === 'number' ? this.timeElapsed : 0;
   const newCompletionRate = 100; // Atau hitung sesuai logic kamu

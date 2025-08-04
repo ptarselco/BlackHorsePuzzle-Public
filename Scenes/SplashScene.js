@@ -479,18 +479,27 @@ async  unlockedLevels(email, level) {
 
       // ========== LAZY LOAD LEVEL01 ASSETS ==========
       console.log('🎵 Lazy loading Level01 assets...');
-      this.lazyLoadLevel01Assets(() => {
+      this.lazyLoadLevel01Assets(async () => {
         // Setelah loading selesai, pindah ke Level01
         loadingText.destroy();
         level1Glow.setVisible(false);
         btnBlue.setVisible(false);
-        this.scene.start("Level01Scene", {
-         email,
-         score: status.score,
-         totalPlays: status.totalPlays,
-         isGameOver: status.isGameOver
+
+        // Contoh: update progress ke backend sebelum pindah scene
+        await this.updateUserProgress(email, {
+        // ...progress data...
+        level01Score: status.score,
+        totalPlays: status.totalPlays,
+        isGameOver: status.isGameOver
+        });
+
+        this.scene.start("Level01Scene", { //pindah ke Level01Scene
+        email,
+        score: status.score,
+        totalPlays: status.totalPlays,
+        isGameOver: status.isGameOver
+        });
       });
-    });
     } catch (error) {
     alert("Failed to check user status: " + error.message);
     }
