@@ -442,10 +442,10 @@ document.addEventListener('visibilitychange', () => {
         isPerfectGame: false
       });
 
-      navigator.sendBeacon(
-        'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/' + encodeURIComponent(email) + '/update-progress',
-        new Blob([data], { type: 'text/plain' })
-      );
+      //navigator.sendBeacon(
+        //'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/' + encodeURIComponent(email) + '/update-progress',
+        //new Blob([data], { type: 'text/plain' })
+      //);
     }
   }
 });
