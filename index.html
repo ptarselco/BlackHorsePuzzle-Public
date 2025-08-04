@@ -288,7 +288,7 @@ if (payment === "success" && txnId && email) {
       if (data.isPaid) {
         localStorage.setItem(`paymentVerified_${email}`, "true");
         localStorage.removeItem(`gameOver_${email}`);
-        localStorage.setItem(`score_${email}`, "0");
+        //localStorage.setItem(`score_${email}`, "0");
         console.log("✅ Payment verified.");
       }
     });
@@ -958,8 +958,8 @@ window.addEventListener('DOMContentLoaded', async function() {
     document.getElementById("loginBtn").style.display = "inline-block";
     document.getElementById("logoutBtn").style.display = "none";
     
-    if (window.score !== undefined) window.score = 0;
-    window.playerScore = 0;
+    //if (window.score !== undefined) window.score = 0;
+    //window.playerScore = 0;
     
     // Remove any warning dialogs
     const warning = document.getElementById('game-over-warning');
@@ -1183,7 +1183,7 @@ async function capturePayPalOrder(paypalOrderId, email) {
       // Tandai payment verified di localStorage
       localStorage.setItem(`paymentVerified_${email}`, 'true');
       localStorage.removeItem(`gameOver_${email}`);
-      localStorage.setItem(`score_${email}`, "0");
+      //localStorage.setItem(`score_${email}`, "0");
       // Unlock fitur game jika scene aktif
       if (window.Level01Scene && typeof window.Level01Scene.prototype.unlockGameAfterPurchase === 'function') {
         const scene = window.game && window.game.scene && window.game.scene.getScene('Level01Scene');
