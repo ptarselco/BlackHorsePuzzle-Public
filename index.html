@@ -560,6 +560,7 @@ try {
     }, 800);
   }
   }
+  async function syncScoreFromBackend(playerEmail) {
   try {
       const res = await axios.post(
         `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(playerEmail)}/progress`
@@ -572,6 +573,7 @@ try {
     } catch (err) {
       console.error('❌ Failed to fetch score from backend:', err);
     }
+  }
 //--------------Batas login handler-------------------
 
 // ✅ ENHANCED VERIFICATION HANDLER:
