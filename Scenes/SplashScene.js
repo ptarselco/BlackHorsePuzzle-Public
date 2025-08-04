@@ -122,7 +122,7 @@ async getUserProgress(email) {
     `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
     //'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/progress', {
       {}, // body kosong, karena email sudah di URL param
-    { timeout: 20000 }
+    { timeout: 90000 }
     );
     // Response: { success, progress, user }  
     return res.data; // progress: { level01Score, level01HighScore, totalPlays, ... }
@@ -138,7 +138,7 @@ async updateUserProgress(email, progress) {
     const res = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
       { ...progress },
-      { timeout: 20000 }
+      { timeout: 90000 }
     );
     return res.data.success === true;
   } catch (err) {
@@ -153,7 +153,7 @@ async getUserStatus(email, level = 'Level01, Level01Scene') {
     const response = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/status',
       { email: email.toLowerCase().trim(), level },
-      { timeout: 20000 }
+      { timeout: 90000 }
     );
     return response.data;
   } catch (err) {
@@ -230,7 +230,7 @@ async setGameOver(email, isGameOver = true) {
     await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/set-gameover',
       { email, isGameOver },
-      { timeout: 20000 }
+      { timeout: 90000 }
     );
     return true;
   } catch (err) {
@@ -247,7 +247,7 @@ async checkGameOverStatusFromServer() {
   try {
     const response = await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/gameover', 
       { email },
-      { timeout: 20000 }  
+      { timeout: 90000 }  
     );
     const data = response.data;
     if (data.isGameOver) {
@@ -277,7 +277,7 @@ async lockLevel(email, level) {
     const res = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/lock',
       { email, level },
-      { timeout: 20000 }
+      { timeout: 90000 }
     );
     // Tambahkan blur tombol di sini
     if (this.isGameOver) {
@@ -306,7 +306,7 @@ async  unlockedLevels(email, level) {
    // Cek status pembayaran user
     const statusRes = await axios.get(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/payment-status/${email}`,
-      { timeout: 20000 }
+      { timeout: 90000 }
     );
     const hasPaid = statusRes.data.isPaid === true;
 
@@ -319,7 +319,7 @@ async  unlockedLevels(email, level) {
     const unlockRes = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/unlock',
       { email, level },
-      { timeout: 20000 }
+      { timeout: 90000 }
     );
     this.unblur10PuzzleButton(); // Hapus blur tombol 10 puzzle
     return unlockRes.data.success || unlockRes.data.unlocked === true;
@@ -444,12 +444,7 @@ async  unlockedLevels(email, level) {
     // 7. Unlock level (opsional, misal setelah pembayaran)
     await this.unlockedLevels(email, 'level01');
 
-    // Jika belum game over, lanjut ke Level01Scene
-      // Show loading indicator
-      const loadingText = this.add.text(960, 850, '', {
-        fontSize: '24px', fill: '#00eaff'
-      }).setOrigin(0.5);
-
+    
     // FUNGSI UNTUK SYNC DATA DARI BACKEND KE LOCAL STORAGE DAN WINDOW SETIAP KALI LOGIN ATAU RELOAD
     async function syncProgressFromBackend(email) {
     try {
@@ -476,8 +471,13 @@ async  unlockedLevels(email, level) {
   }
 }
 
+    // Jika belum game over, lanjut ke Level01Scene
+    // Show loading indicator
+    const loadingText = this.add.text(960, 850, '', {
+      fontSize: '24px', fill: '#00eaff'
+    }).setOrigin(0.5);
 
-      // ========== LAZY LOAD LEVEL01 ASSETS ==========
+    // ========== LAZY LOAD LEVEL01 ASSETS ==========
       console.log('🎵 Lazy loading Level01 assets...');
       this.lazyLoadLevel01Assets(async () => {
         // Setelah loading selesai, pindah ke Level01
@@ -511,8 +511,9 @@ async  unlockedLevels(email, level) {
         this.sound.play("music", { loop: true });
       }
     });
-  }
+    }
 
+    
   // ========== LAZY LOAD BACKGROUND ASSETS (Non-blocking) ==========
   lazyLoadBackgroundAssets() {
     // Load decorative assets di background
@@ -553,17 +554,17 @@ async  unlockedLevels(email, level) {
   // ========== LAZY LOAD LEVEL01 ASSETS ========== // LAZY LOAD LEVEL01 ASSETS LEBIH CEPAT TAMPIL
   lazyLoadLevel01Assets(callback) {
     // Load semua assets yang dibutuhkan Level01 (Aktif yang di Level01)
-    //this.load.audio('horseNeigh', './Puzzle-Assets/Sfx/sound/horse-neigh.mp3');
-    //this.load.audio('horseSnort', './Puzzle-Assets/Sfx/sound/horse-snort.mp3');
-    //this.load.audio('horseHoof', './Puzzle-Assets/Sfx/sound/hoof-run.mp3');
-    //this.load.audio('horsehoofstep', './Puzzle-Assets/Sfx/sound/hoof-step.mp3');
-    //this.load.audio('horseGallop', './Puzzle-Assets/Sfx/sound/blackhorse-gallop.mp3');
-    //this.load.audio('herdGallop', './Puzzle-Assets/Sfx/sound/herd-gallop.mp3');
+    this.load.audio('horseNeigh', './Puzzle-Assets/Sfx/sound/horse-neigh.mp3');
+    this.load.audio('horseSnort', './Puzzle-Assets/Sfx/sound/horse-snort.mp3');
+    this.load.audio('horseHoof', './Puzzle-Assets/Sfx/sound/hoof-run.mp3');
+    this.load.audio('horsehoofstep', './Puzzle-Assets/Sfx/sound/hoof-step.mp3');
+    this.load.audio('horseGallop', './Puzzle-Assets/Sfx/sound/blackhorse-gallop.mp3');
+    this.load.audio('herdGallop', './Puzzle-Assets/Sfx/sound/herd-gallop.mp3');
     
     // Music Level01
-    //this.load.audio('introMusic', './Puzzle-Assets/Sfx/scenes/level01-1-herdhorses-guitar-intro-ident.mp3');
-    //this.load.audio('mainMusic', './Puzzle-Assets/Sfx/scenes/level01-2 music-favorite-sunset-dreams.mp3');
-    //this.load.audio('winMusic', './Puzzle-Assets/Sfx/scenes/win-in-the-video-game.mp3');
+    this.load.audio('introMusic', './Puzzle-Assets/Sfx/scenes/level01-1-herdhorses-guitar-intro-ident.mp3');
+    this.load.audio('mainMusic', './Puzzle-Assets/Sfx/scenes/level01-2 music-favorite-sunset-dreams.mp3');
+    this.load.audio('winMusic', './Puzzle-Assets/Sfx/scenes/win-in-the-video-game.mp3');
     
     // Essential Level01 images
     //this.load.image('horse', './Puzzle-Assets/UI/GM. Black Horse Run Behind.webp');
@@ -578,7 +579,8 @@ async  unlockedLevels(email, level) {
    
     this.load.start();
   }
-
+  
+  
   // ========== CREATE BACKGROUND ELEMENTS SETELAH LAZY LOAD ==========
   createBackgroundElements() {
 
