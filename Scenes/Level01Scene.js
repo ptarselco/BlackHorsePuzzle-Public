@@ -1471,12 +1471,12 @@ showScoreBasedContinueMessage() {
   console.log(`✅ Score-based continue shown: Score ${this.score}`);
 
   // Background overlay (lighter)
-  const overlay = this.add.rectangle(960, 640, 1920, 1280, 0x000000, 0.6)
+  const overlay = this.add.rectangle(960, 640, 1920, 1280, 0x000000, 0.1)
     .setDepth(9998);
 
   // Main message panel
   const messagePanel = this.add.rectangle(960, 640, 1000, 600, 0x181c24, 0.95)
-    .setStrokeStyle(6, 0x00ff00)
+    .setStrokeStyle(4, 0x00ff00)
     .setDepth(9999);
 
   // Title
@@ -1487,7 +1487,7 @@ showScoreBasedContinueMessage() {
   }).setOrigin(0.5).setDepth(10000);
 
   // Score display
-  const scoreDisplay = this.add.text(960, 580, 
+  const scoreDisplay = this.add.text(960, 570, 
     `Current Score: ${this.score}\n\n` +
     "Game Over cleared automatically!\n" +
     "You can continue playing with your balance.\n\n" +
@@ -1547,8 +1547,8 @@ showScoreBasedContinueMessage() {
     console.log('✅ Score-based continue message closed');
   });
 
-  // ✅ AUTO-HIDE AFTER 3 SECONDS (faster auto-clear)
-  this.time.delayedCall(3000, () => {
+  // ✅ AUTO-HIDE AFTER 4 SECONDS (faster auto-clear)
+  this.time.delayedCall(4000, () => {
     if (overlay && overlay.active) {
       overlay.destroy();
       messagePanel.destroy();
