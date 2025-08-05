@@ -435,7 +435,7 @@ async  unlockedLevels(email, level) {
     const newAverageTime = typeof this.timeElapsed === 'number' ? this.timeElapsed : 0;
     const newCompletionRate = 100; // Atau hitung sesuai logic, default 100%
     const isPerfectGame = true;    // Atau false jika ada salah, default true
-    const totalAttempts = (progress.progress.totalAttempts || 0) + 1; // Default tambah 1
+    const totalAttempts = (progress.totalAttempts || 0) + 1; // Default tambah 1
     
     await this.updateUserProgress(email, {
      level01Completed: true,
