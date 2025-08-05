@@ -393,15 +393,15 @@ if (payment === "cancelled") {
      }
     } 
 
-// SEANBEACON menyimpan score dan waktu ke backend saat sebelum halaman ditutup
+// SEANBEACON menyimpan level01Score dan waktu ke backend saat sebelum halaman ditutup
  window.addEventListener('beforeunload', () => {
   const email = localStorage.getItem('playerEmail');
-  //const score = window.Level01Scene?.instance?.score || 0; // pastikan ambil score terbaru
-  const score = localStorage.getItem(`score_${email}`) || 0;
+  //const level01Score = window.Level01Scene?.instance?.level01Score || 0; // pastikan ambil level01Score terbaru
+  const level01Score = localStorage.getItem(`score_${email}`) || 0;
   const time = window.Level01Scene?.instance?.timeElapsed || 0;
   if (!email) return;
 
-  console.log('📤 Sending score via sendBeacon:', score, time);
+  console.log('📤 Sending level01Score via sendBeacon:', level01Score, time);
 
 
   navigator.sendBeacon(
@@ -409,7 +409,7 @@ if (payment === "cancelled") {
   new Blob([JSON.stringify({
     email,
     level01Completed: false,
-    level01Score: score,    // ✅ gunakan score dari instance
+    level01Score: level01Score,    // ✅ gunakan level01Score dari instance
     completionTime: time,        // ✅ gunakan time dari instance
     isPerfectGame: false
   })], { type: 'text/plain' })
@@ -421,7 +421,7 @@ if (payment === "cancelled") {
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
     const email = localStorage.getItem('playerEmail');
-    const score = localStorage.getItem(`score_${email}`) || 0;
+    const level01Score = localStorage.getItem(`score_${email}`) || 0;
     // Jika ada timeElapsed yang valid, ambil dari scene, jika tidak, pakai 0
     let time = 0;
     if (window.game && window.game.scene && window.game.scene.getScene) {
@@ -431,13 +431,13 @@ document.addEventListener('visibilitychange', () => {
       }
     }
 
-    console.log('📤 Visibility hidden - backup score:', score, time);
+    console.log('📤 Visibility hidden - backup level01Score:', level01Score, time);
 
     if (email) {
       const data = JSON.stringify({
         email,
         level01Completed: false,
-        level01Score: score,
+        level01Score: level01Score,
         completionTime: time,
         isPerfectGame: false
       });
@@ -459,7 +459,7 @@ let paymentCheckInterval = null;
 // Add scroll functionality to canvas
   window.addScrollToCanvas();
 
-  // ✅ ENHANCED LOGIN BUTTON WITH SCORE MANAGEMENT: WITH LAZY LOAD 
+  // ✅ ENHANCED LOGIN BUTTON WITH level01Score MANAGEMENT: WITH LAZY LOAD 
 // ✅ ENHANCED LOGIN HANDLER: ------ Mulai login handler ------------------- 
   document.getElementById("loginBtn").onclick = async function(event) {
   event.preventDefault();
@@ -567,11 +567,11 @@ try {
       );
       const backendScore = res.data?.progress?.level01Score || 0;
       localStorage.setItem(`score_${playerEmail}`, backendScore.toString());
-      window.score = backendScore;
+      window.level01Score = backendScore;
       window.playerScore = backendScore;
-      console.log('✅ Synced score from backend:', backendScore);
+      console.log('✅ Synced level01Score from backend:', backendScore);
     } catch (err) {
-      console.error('❌ Failed to fetch score from backend:', err);
+      console.error('❌ Failed to fetch level01Score from backend:', err);
     }
   }
 
@@ -581,9 +581,9 @@ try {
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`
     );
     const progress = res.data?.progress || {};
-    // Sync score
+    // Sync level01Score
     localStorage.setItem(`score_${email}`, progress.level01Score || 0);
-    window.score = progress.level01Score || 0;
+    window.level01Score = progress.level01Score || 0;
     window.playerScore = progress.level01Score || 0;
     // Sync history (if you store it in backend)
     localStorage.setItem(`gameHistory_${email}`, JSON.stringify({
@@ -760,8 +760,8 @@ console.log('✅ REAL BACKEND VERIFICATION READY - CONNECT TO RENDER.COM');
   
   // INSERT THIS ENHANCED VERSION starting from line 508:
 
-// ✅ ENHANCED SCORE MANAGEMENT FUNCTIONS (ADD FIRST):
-// ✅ ENHANCED GET PLAYER GAME SCORE AND HISTORY
+// ✅ ENHANCED level01Score MANAGEMENT FUNCTIONS (ADD FIRST):
+// ✅ ENHANCED GET PLAYER GAME level01Score AND HISTORY
 function getPlayerGameHistory(email) {
   const history = localStorage.getItem(`gameHistory_${email}`);
   return history ? JSON.parse(history) : {
@@ -774,7 +774,7 @@ function getPlayerGameHistory(email) {
   };
 }
 
-// ✅ ENHANCED UPDATE PLAYER GAME SCORE HISTORY
+// ✅ ENHANCED UPDATE PLAYER GAME level01Score HISTORY
 function updatePlayerGameHistory(email, updates) {
   const history = getPlayerGameHistory(email);
   const updatedHistory = { ...history, ...updates };
@@ -783,22 +783,22 @@ function updatePlayerGameHistory(email, updates) {
   return updatedHistory;
 }
 
-// ✅ ENHANCED CHECK PLAYER SCORE STATUS 
+// ✅ ENHANCED CHECK PLAYER level01Score STATUS 
 function checkPlayerScoreStatus(email) {
   const currentScore = parseInt(localStorage.getItem(`score_${email}`) || 0);
   //localStorage.setItem(`score_${email}`, '0');
   //const currentScore = 0; // Selalu 0, tidak ada angka 3
   const history = getPlayerGameHistory(email);
   
-  console.log('🔍 Checking score status for:', email);
-  console.log('Current score:', currentScore);
+  console.log('🔍 Checking level01Score status for:', email);
+  console.log('Current level01Score:', currentScore);
   console.log('Game history:', history);
   
   return {
     currentScore: currentScore,
     hasPlayedBefore: history.hasPlayedBefore,
     //canPlay: currentScore > 0 || !history.hasPlayedBefore,
-    canPlay: !history.hasPlayedBefore || currentScore > 0, // User baru atau user lama dengan score > 0
+    canPlay: !history.hasPlayedBefore || currentScore > 0, // User baru atau user lama dengan level01Score > 0
     needsFavorite: currentScore === 0 && history.hasPlayedBefore && !history.favoriteGiven,
     isGameOver: currentScore === 0 && history.hasPlayedBefore,
     lockPlay: currentScore === 0 && history.hasPlayedBefore,
@@ -810,10 +810,10 @@ function checkPlayerScoreStatus(email) {
 function updateGameScore(email, newScore) { //versi co 4.1 
   //newScore = parseInt(newScore) || 0;
   localStorage.setItem(`score_${email}`, newScore.toString());
-  window.score = newScore;
+  window.level01Score = newScore;
   window.playerScore = newScore;
 
-  // Simpan ke backend setiap kali score berubah
+  // Simpan ke backend setiap kali level01Score berubah
   axios.post(
     `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
     {
@@ -821,9 +821,9 @@ function updateGameScore(email, newScore) { //versi co 4.1
       // Tambahkan data lain jika perlu
     }
   ).then(() => {
-    console.log('✅ Score saved to backend');
+    console.log('✅ level01Score saved to backend');
   }).catch((err) => {
-    console.error('❌ Failed to save score to backend:', err);
+    console.error('❌ Failed to save level01Score to backend:', err);
   });
 
   const history = getPlayerGameHistory(email);
@@ -855,7 +855,7 @@ function showLoginForm() {
 }
 
 //-------------------------------------------------------------------------------------------
-// ✅ ENHANCED DOMCONTENTLOADED WITH SCORE MANAGEMENT:
+// ✅ ENHANCED DOMCONTENTLOADED WITH level01Score MANAGEMENT:
 window.addEventListener('DOMContentLoaded', async function() {
   let playerEmail = localStorage.getItem("playerEmail"); 
   console.log('📄 Enhanced Black Horse Puzzle - Initializing secure system');
@@ -867,13 +867,13 @@ window.addEventListener('DOMContentLoaded', async function() {
       const emailVerified = await checkEmailVerifiedFromBackend(playerEmail);
 
       // ...lanjutkan logika sesuai status emailVerified dan scoreStatus...
-      console.log('🔍 Score status check:', scoreStatus);
+      console.log('🔍 level01Score status check:', scoreStatus);
 
       if (scoreStatus.needsFavorite) {
         console.log('⚠️ User needs to give favorite to continue');
         showGameOverWarning(playerEmail);
       } else if (scoreStatus.canPlay) {
-        console.log('✅ User can continue playing with score:', scoreStatus.currentScore);
+        console.log('✅ User can continue playing with level01Score:', scoreStatus.currentScore);
         const userScore = parseInt(localStorage.getItem(`score_${playerEmail}`) || 0);
         updateGameScore(playerEmail, userScore);
 
@@ -899,13 +899,13 @@ window.addEventListener('DOMContentLoaded', async function() {
  
  async function ScoreStatus(inputEmail, scoreStatus) {
     if (scoreStatus.needsFavorite) {
-        //console.log('⚠️ Returning user with no score - showing game over warning');
+        //console.log('⚠️ Returning user with no level01Score - showing game over warning');
         //showGameOverWarning(inputEmail);
       } else if (scoreStatus.hasPlayedBefore && scoreStatus.currentScore > 0) {
-        console.log('✅ Returning user with score:', scoreStatus.currentScore);
+        console.log('✅ Returning user with level01Score:', scoreStatus.currentScore);
         updateGameScore(inputEmail, scoreStatus.currentScore);
       }else if (!scoreStatus.hasPlayedBefore) {
-        console.log('🆕 New user - setting initial score');
+        console.log('🆕 New user - setting initial level01Score');
         localStorage.setItem(`score_${inputEmail}`, '0');
         updatePlayerGameHistory(inputEmail, {
           hasPlayedBefore: true,
@@ -925,7 +925,7 @@ window.addEventListener('DOMContentLoaded', async function() {
       } 
         if (window.Phaser && window.game && window.game.scene) {
           window.game.scene.start('SplashScene'); //dari Level01Scene ganti ke SplashScene 
-         // Tambahkan kode ini untuk menyembunyikan score:
+         // Tambahkan kode ini untuk menyembunyikan level01Score:
       setTimeout(() => {
       const level01 = window.game?.scene?.getScene('Level01Scene');
       if (level01 && level01.scoreText && typeof level01.scoreText.setVisible === 'function') {
@@ -958,7 +958,7 @@ window.addEventListener('DOMContentLoaded', async function() {
     document.getElementById("loginBtn").style.display = "inline-block";
     document.getElementById("logoutBtn").style.display = "none";
     
-    //if (window.score !== undefined) window.score = 0;
+    //if (window.level01Score !== undefined) window.level01Score = 0;
     //window.playerScore = 0;
     
     // Remove any warning dialogs
@@ -980,11 +980,10 @@ window.addEventListener('DOMContentLoaded', async function() {
         level01.playBtn.setAlpha(0.5);
 
         const history = getPlayerGameHistory(email);
-        const isUserBaru = history && !history.hasPlayedBefore;
-        const masihGratis = history && (history.totalGamesPlayed || 0) < 3;
-        //console.log('INDEX: PlayBtn diaktifkan di sini', { isPaid, isUserBaru, masihGratis });
+        const newUser = !history || !history.hasPlayedBefore || (history.totalGamesPlayed || 0) < 3;
+        //console.log('INDEX: PlayBtn diaktifkan di sini', { isPaid, newUser });
         const paymentResult = await checkPaymentStatus(email);
-        console.log('INDEX: PlayBtn diaktifkan di sini', { isPaid: paymentResult.paid, isUserBaru, masihGratis });
+        console.log('INDEX: PlayBtn diaktifkan di sini', { isPaid: paymentResult.paid, newUser, });
       }
       
       setTimeout(() => {
@@ -1019,11 +1018,11 @@ window.addEventListener('DOMContentLoaded', async function() {
   }
 
 
-// ✅ ENHANCED SCORE UPDATE FUNCTION:
+// ✅ ENHANCED level01Score UPDATE FUNCTION:
 function updateGameScore(email, newScore) {
   localStorage.setItem(`score_${email}`, newScore.toString());
   
-  window.score = newScore;
+  window.level01Score = newScore;
   window.playerScore = newScore;
   
   const history = getPlayerGameHistory(email);
@@ -1048,7 +1047,7 @@ function updateGameScore(email, newScore) {
         if (level01.playBtn) {
           level01.playBtn.disableInteractive();
           level01.playBtn.setAlpha(0.5);
-          console.log('INDEX: PlayBtn diaktifkan di sini', { isPaid, isUserBaru, masihGratis });
+          console.log('INDEX: PlayBtn diaktifkan di sini', { isPaid, newUser });
          }
         // Kunci tombol 10 Puzzle
         if (level01.lv01Puzzle10Btn) {
@@ -1064,7 +1063,7 @@ function updateGameScore(email, newScore) {
       }
     }, 1000);
   }
- console.log('📊 Score updated:', email, newScore);
+ console.log('📊 level01Score updated:', email, newScore);
  }
 //});
 
@@ -1348,10 +1347,10 @@ async function startPaymentMonitoring(email) {
 
 async function performSecureLogout() {
   const email = localStorage.getItem('playerEmail');
-  let sudahMenang = false;
+  let winUser = false;
  if (email && localStorage.getItem(`gameData-${email}`)) {
     const gameData = JSON.parse(localStorage.getItem(`gameData-${email}`));
-    sudahMenang = gameData.gameProgress?.level01Completed === true;
+    winUser = gameData.gameProgress?.level01Completed === true;
   }
 
   try {
@@ -1369,8 +1368,8 @@ async function performSecureLogout() {
       localStorage.removeItem(`hasClaimedHat`);
     }
     // Reset global scores
-    //if (!sudahMenang) {
-    //if (window.score !== undefined) window.score = 0;
+    //if (!winUser) {
+    //if (window.level01Score !== undefined) window.level01Score = 0;
     //window.playerScore = 0;
     //}
     
@@ -1396,7 +1395,7 @@ async function performSecureLogout() {
       if (level01 && level01.playBtn) {
         level01.playBtn.disableInteractive();
         level01.playBtn.setAlpha(0.5);
-        console.log('INDEX: PlayBtn diaktifkan di sini', { isPaid, isUserBaru, masihGratis });
+        console.log('INDEX: PlayBtn diaktifkan di sini', { isPaid, newUser });
       }
       
       // Disable login button temporarily
@@ -1444,14 +1443,14 @@ function stopPaymentMonitoring() {
   if (window.Phaser && window.game && window.game.scene && window.game.scene.getScene) {
     const level01 = window.game.scene.getScene('Level01Scene');
     if (level01 && level01.scene && level01.scene.isActive && level01.scene.isActive()) {
-      if (typeof level01.score !== 'undefined') {
-        level01.score = newScore;
+      if (typeof level01.level01Score !== 'undefined') {
+        level01.level01Score = newScore;
       }
       if (level01.scoreText && typeof level01.scoreText.setText === 'function') {
         level01.scoreText.setText(newScore.toString().padStart(5, '0'));
       }
     }
-      // Kunci tombol & tampilkan image game over jika score 0 dan pemain lama
+      // Kunci tombol & tampilkan image game over jika level01Score 0 dan pemain lama
      // if (newScore === 0 && history.hasPlayedBefore) {
       if (newScore === 0 &&history.hasPlayedBefore && (history.totalGamesPlayed || 0) >= 3) { // <-- hanya game over jika sudah main 3x
       updatePlayerGameHistory(email, {
@@ -1465,7 +1464,7 @@ function stopPaymentMonitoring() {
         if (level01.playBtn) {
           level01.playBtn.disableInteractive();
           level01.playBtn.setAlpha(0.5);
-          console.log('INDEX: PlayBtn diaktifkan di sini', { isPaid, isUserBaru, masihGratis });
+          console.log('INDEX: PlayBtn diaktifkan di sini', { isPaid, newUser });
         }
         // non aktif 10 puzzle munculkan pesan warning Game Over (sonnet)
         if (level01.lv01Puzzle10Btn) {
@@ -1483,7 +1482,7 @@ function stopPaymentMonitoring() {
     if (window.lockPlayButton) window.lockPlayButton(); 
     });
   }
-  console.log('📊 Score updated for', email, newScore);
+  console.log('📊 level01Score updated for', email, newScore);
 }
          
 
@@ -1495,7 +1494,7 @@ window.lockPlayAndShowGameOver = function() {
       if (level01.playBtn) {
         level01.playBtn.disableInteractive();
         level01.playBtn.setAlpha(0.5);
-        console.log('INDEX: PlayBtn dinonaktifkan di sini', { isPaid, isUserBaru, masihGratis });
+        console.log('INDEX: PlayBtn dinonaktifkan di sini', { isPaid, newUser });
       }
       if (level01.lv01Puzzle10Btn) {
         level01.lv01Puzzle10Btn.disableInteractive();
@@ -1602,11 +1601,11 @@ function updateGamePaymentStatus(isPaid, method = null) {
             level01.playBtn.disableInteractive) {
  
           if (isPaid) {
-           console.log('INDEX: PlayBtn diaktifkan di sini', { isPaid, isUserBaru, masihGratis }); 
+           console.log('INDEX: PlayBtn diaktifkan di sini', { isPaid, newUser }); 
            // === UNLOCK PLAY & MUSIC FAVORIT === 
             level01.playBtn.setInteractive();
             level01.playBtn.setAlpha(1); //ganti sebelumnya 0.5
-            console.log('INDEX: PlayBtn diaktifkan di sini', { isPaid, isUserBaru, masihGratis });
+            console.log('INDEX: PlayBtn diaktifkan di sini', { isPaid, newUser });
             console.log(`✅ Game unlocked in Level01Scene - Payment method: ${method}`);
             // Putar musik favorit di sini jika belum diputar
             if (level01.musicToPlayAfterPaid && !level01.currentFavMusic?.isPlaying) {
@@ -1634,10 +1633,9 @@ function updateGamePaymentStatus(isPaid, method = null) {
             // Tambahan: CEGAH LOCK UNTUK USER BARU ATAU MASIH GRATIS
             const playerEmail = localStorage.getItem("playerEmail");
             const history = playerEmail ? getPlayerGameHistory(playerEmail) : null;
-            const isUserBaru = history && !history.hasPlayedBefore;
-            const masihGratis = history && (history.totalGamesPlayed || 0) < 3;
+            const newUser = !history || !history.hasPlayedBefore || (history.totalGamesPlayed || 0) < 3;
 
-            if (isUserBaru || masihGratis) {
+            if (newUser) {
               // User baru atau masih gratis, jangan lock Play & 10Puzzle
               //if (level01.playBtn) {
                 //level01.playBtn.setInteractive();
@@ -1766,9 +1764,9 @@ function waitForGameReady(callback, maxAttempts = 10) {
 }
 
 // ✅ SAFE GAME UPDATE FUNCTIONS:
-function safeUpdateGameScore(email, score) {
+function safeUpdateGameScore(email, level01Score) {
   waitForGameReady(() => {
-    updateGameScore(email, score);
+    updateGameScore(email, level01Score);
   });
 }
 

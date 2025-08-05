@@ -38,7 +38,7 @@ const SERI1_ASSETS = [
   // UI elements
   '/assets/images/ui/play-button.png',
   '/assets/images/ui/timer-bg.png',
-  '/assets/images/ui/score-bg.png',
+  '/assets/images/ui/level01Score-bg.png',
   
   // Audio (optional - hanya jika file ada)
   '/assets/audio/background-music.mp3',

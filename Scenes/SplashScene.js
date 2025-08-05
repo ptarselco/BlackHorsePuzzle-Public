@@ -124,11 +124,16 @@ async getUserProgress(email) {
       {}, // body kosong, karena email sudah di URL param
     { timeout: 90000 }
     );
+    const progress = res.data.progress;
+    // Deteksi status user
+    const newUser = !progress || progress.totalPlays === 0;
+    const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
+    const winUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) > 0;
     // Response: { success, progress, user }  
     return res.data; // progress: { level01Score, level01HighScore, totalPlays, ... }
   } catch (err) {
     console.error('❌ Get user progress error:', err);
-    return null;
+    return { newUser: true, lossUser: false, winUser: false, progress: null };
   }
 }
 
@@ -161,7 +166,6 @@ async getUserStatus(email, level = 'Level01, Level01Scene') {
     return null;
   }
 }
-
 // GABUNGKAN CHECK USER STATUS DAN GAME OVER
 async checkUserStatusAndGameOver(email) {
   // Ambil status user dari backend (POST)
@@ -171,20 +175,32 @@ async checkUserStatusAndGameOver(email) {
     return null;
   }
 
-  // Cek status user lama/baru
-  const isUserBaru = !status.totalPlays || status.totalPlays === 0;
+// Cek status user lama/baru
+  //const newUser = !status.totalPlays || status.totalPlays === 0;
+const history = window.getPlayerGameHistory ? window.getPlayerGameHistory(email) : null;
+const level01Score = (this.level01Score || 0);
 
-  // Jika user baru, aktifkan tombol Play & Puzzle
-  if (isUserBaru) {
+// 1. New User: belum pernah main atau main < 3x
+const newUser = !history || !history.hasPlayedBefore || (history.totalGamesPlayed || 0) < 3;
+
+// 2. Loss User: sudah main >= 3x dan score = 0
+const lossUser = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) >= 3 && level01Score === 0;
+
+// 3. Win User: sudah main >= 3x dan score > 0
+const winUser = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) >= 3 && level01Score > 0;
+  
+// Jika newUser, aktifkan tombol Play & Puzzle
+  if (newUser) {
     this.isGameOver = false;
     this.unblur10PuzzleButton && this.unblur10PuzzleButton();
     console.log('✅ User baru - tombol Play & Puzzle diaktifkan');
     return status;
   }
 
-  // Cek status game over untuk user lama
+  // Cek status game over untuk lossUser or winUser
   if (status.isGameOver) {
-    if (status.score > 0) {
+    if (status.level01Score > 0) {
+      // WIN USER: Sudah main >= 3x, score > 0
       status.isGameOver = false;
       localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
       this.isGameOver = false;
@@ -193,6 +209,7 @@ async checkUserStatusAndGameOver(email) {
       // Lanjutkan main
       return status;
     } else {
+      // LOSS USER: Sudah main >= 3x, score = 0
       this.isGameOver = true;
       this.showGameOverReturnMessage();
       this.lockAllGameplayButtons();
@@ -203,8 +220,8 @@ async checkUserStatusAndGameOver(email) {
   // Tambah totalPlays setiap kali fungsi ini dipanggil (untuk user lama)
   status.totalPlays = (status.totalPlays || 0) + 1;
 
-  // Jika totalPlays >= 3 dan score masih 0, set game over
-  if (status.totalPlays >= 3 && (status.score || 0) === 0) {
+  // Jika totalPlays >= 3 dan level01Score masih 0, set game over
+  if (status.totalPlays >= 3 && (status.level01Score || 0) === 0) {
     //await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/set-gameover', { email, isGameOver: true });
     await this.setGameOver(email, true); // gunakan fungsi async
     status.isGameOver = true;
@@ -404,9 +421,16 @@ async  unlockedLevels(email, level) {
 
   try {
      // 1. Ambil progress user dari backend
-    const progress = await this.getUserProgress(email);
+    //const progress = await this.getUserProgress(email);
+    const progressRes = await this.getUserProgress(email);
+    const progress = progressRes.progress || {};
 
-    // 2. Update progress user ke backend
+    // 2. Tentukan status user
+    const newUser = !progress.totalPlays || progress.totalPlays === 0;
+    const lossUser = progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
+    const winUser = progress.totalPlays >= 3 && (progress.level01Score || 0) > 0;
+
+    // 3. Update progress user ke backend
     // Kirim field progress langsung, bukan object progress
     const newAverageTime = typeof this.timeElapsed === 'number' ? this.timeElapsed : 0;
     const newCompletionRate = 100; // Atau hitung sesuai logic, default 100%
@@ -415,32 +439,48 @@ async  unlockedLevels(email, level) {
     
     await this.updateUserProgress(email, {
      level01Completed: true,
-     level01Score: this.score,
-     level01HighScore: Math.max(this.score, this.highScore),
+     level01Score: this.level01Score,
+     level01HighScore: Math.max(this.level01Score, this.highScore),
      totalPlays: (progress.progress.totalPlays || 0) + 1,
      bestTime: this.timeElapsed,
      averageTime: newAverageTime,
      completionRate: newCompletionRate,
      perfectGames: isPerfectGame,
-     totalAttempts: (progress.progress.totalAttempts || 0) + 1
+     totalAttempts: totalAttempts
    });
 
-    // 3. Ambil status user dari backend
+    // 4. Ambil status user dari backend
     const userStatus = await this.getUserStatus(email, 'Level01, Level01Scene');
-
-    // 4. Cek dan update status game over (jika perlu set-gameover)
+    // Cek dan update status game over (jika perlu set-gameover)
     const status = await this.checkUserStatusAndGameOver(email);
 
     // 5. Cek status game over dari server (opsional, validasi ulang)
     await this.checkGameOverStatusFromServer();
 
-    // 6. Lock level jika game over
-    if (status && status.isGameOver) {
-      await this.lockLevel(email, 'level01');
-      this.scene.start("Level01Scene", { isGameOver: true, score: status.score });
+    // 6. Lock level jika game over logika 3 user
+    if (newUser) {
+      this.isGameOver = false;
+      this.unblur10PuzzleButton();
+      // Tampilkan pesan selamat datang jika perlu
+      this.scene.start("Level01Scene", { isGameOver: false, level01Score: 0 });
       return;
     }
-    
+    if (lossUser || (status && status.isGameOver && (status.level01Score || 0) === 0)) {
+      await this.lockLevel(email, 'level01');
+      this.isGameOver = true;
+      this.showGameOverReturnMessage();
+      this.lockAllGameplayButtons();
+      this.scene.start("Level01Scene", { isGameOver: true, level01Score: 0 });
+      return;
+    }
+    if (winUser || (status && status.level01Score > 0)) {
+      this.isGameOver = false;
+      this.unblur10PuzzleButton();
+      // Tampilkan pesan kemenangan jika perlu
+      this.scene.start("Level01Scene", { isGameOver: false, level01Score: status.level01Score });
+      return;
+    }
+
     // 7. Unlock level (opsional, misal setelah pembayaran)
     await this.unlockedLevels(email, 'level01');
 
@@ -452,9 +492,9 @@ async  unlockedLevels(email, level) {
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`
     );
     const progress = res.data?.progress || {};
-    // Sync score
+    // Sync level01Score
     localStorage.setItem(`score_${email}`, progress.level01Score || 0);
-    window.score = progress.level01Score || 0;
+    window.level01Score = progress.level01Score || 0;
     window.playerScore = progress.level01Score || 0;
     // Sync history (if you store it in backend)
     localStorage.setItem(`gameHistory_${email}`, JSON.stringify({
@@ -488,14 +528,14 @@ async  unlockedLevels(email, level) {
         // Contoh: update progress ke backend sebelum pindah scene
         await this.updateUserProgress(email, {
         // ...progress data...
-        level01Score: status.score,
+        level01Score: status.level01Score,
         totalPlays: status.totalPlays,
         isGameOver: status.isGameOver
         });
 
         this.scene.start("Level01Scene", { //pindah ke Level01Scene
         email,
-        score: status.score,
+        level01Score: status.level01Score,
         totalPlays: status.totalPlays,
         isGameOver: status.isGameOver
         });

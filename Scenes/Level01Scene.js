@@ -6,7 +6,7 @@ class Level01Scene extends Phaser.Scene {
     this.favMusicTimeLeft = 0; // total detik favorit aktif
     this.favMusicTimer = null;
     this.hasClaimedHat = false; // untuk menyimpan status klaim topi
-    this.hasWonOnce = false; // atau this.sudahMenang = false;
+    this.hasWonOnce = false; // atau this.winUser = false;
     this.backendUrl = 'https://backend-paypalblackhorsepuzzle.onrender.com'; 
     this.userCountry = 'ID'; // FIXED :Default
     
@@ -142,11 +142,10 @@ class Level01Scene extends Phaser.Scene {
   localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
 
   const history = window.getPlayerGameHistory ? window.getPlayerGameHistory(email) : null;
-  const sudahMain3x = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) >= 3;
-  const isUserBaru = !history || !history.hasPlayedBefore;
-  const masihGratis = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) < 3;
-  const gameOverState = localStorage.getItem(`gameOver_${email}`);
-
+  const newUser = !history || !history.hasPlayedBefore || (history.totalGamesPlayed || 0) < 3;
+  const lossUser = localStorage.getItem(`gameOver_${email}`);
+  const winUser = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) >= 3 && (this.level01Score || 0) > 0;
+  
   // ✅ SESSION-BASED WELCOME BACK FLAG:
   // Only check once per browser session, not per scene load
   if (!this.registry.get('welcomeBackShown')) { 
@@ -158,9 +157,9 @@ class Level01Scene extends Phaser.Scene {
   // ✅ ADD CONSOLE LOG HERE (after all Game Over logic):
   console.log(`🔍 Game state check:
 - Email: ${email}
-- Score: ${this.score}  
-- Game Over State: ${gameOverState}
-- isUserBaru: ${isUserBaru}
+- level01Score: ${this.level01Score}  
+- Game Over State: ${lossUser}
+- newUser: ${newUser}
 - Total Games Played: ${history?.totalGamesPlayed}
 - Final isGameOver: ${this.isGameOver}`);
  
@@ -170,7 +169,7 @@ class Level01Scene extends Phaser.Scene {
     if (!email) return;
     this.updateUserProgress(email, {
       level01Completed: true,
-      level01Score: this.score,
+      level01Score: this.level01Score,
       completionTime: this.timeElapsed,
       isPerfectGame: false
     });
@@ -233,10 +232,10 @@ class Level01Scene extends Phaser.Scene {
     this.blankBhL1 = this.add.image(248, 250, 'blankBhL1').setScale(0.7).setDepth(9);
 
     this.scoreText = this.add.text(1716, 40, "00000", { font: "50px Segoe UI", fill: "#fff" }).setDepth(9999);
-    //this.scoreText.setText(this.score.toString().padStart(5, '0')); // Tambahkan baris ini
+    //this.scoreText.setText(this.level01Score.toString().padStart(5, '0')); // Tambahkan baris ini
     //this.scoreText.setText("00000"); 
     this.scoreText.setText(
-  (this.score !== undefined && this.score !== null ? this.score : 0).toString().padStart(5, '0')
+  (this.level01Score !== undefined && this.level01Score !== null ? this.level01Score : 0).toString().padStart(5, '0')
   );
 
     //Atur Ronde untuk Game Over (ATUR WAKTU DI TIMER)
@@ -254,21 +253,21 @@ class Level01Scene extends Phaser.Scene {
     
      lv01Puzzle10Btn.on('pointerdown', () => {
   // ✅ ENHANCED GAME OVER PROTECTION WITH SPECIFIC MESSAGE:
-    if (this.isGameOver && (this.score || 0) <= 0) { 
+    if (this.isGameOver && (this.level01Score || 0) <= 0) { 
     // Show specific Game Over message for 10 puzzle button
     this.showGameOverPuzzleMessage();
     return;
   }
 
-   // ✅ SPECIAL CHECK: If Game Over was closed but not cleared (score = 0)
-  if (this.isGameOverClosed && (this.score || 0) <= 0) {
+   // ✅ SPECIAL CHECK: If Game Over was closed but not cleared (level01Score = 0)
+  if (this.isGameOverClosed && (this.level01Score || 0) <= 0) {
     this.showGameOverPuzzleMessage();
     return;
   }
   
-  // ✅ If player has score > 0, allow playing even after Game Over
-  if ((this.score || 0) > 0) {
-    console.log(`✅ Player has score ${this.score} - allowing 10 puzzle access`);
+  // ✅ If player has level01Score > 0, allow playing even after Game Over
+  if ((this.level01Score || 0) > 0) {
+    console.log(`✅ Player has level01Score ${this.level01Score} - allowing 10 puzzle access`);
   }
 
   // Toggle pesan: jika sudah ada, hilangkan; jika belum, tampilkan
@@ -328,14 +327,14 @@ class Level01Scene extends Phaser.Scene {
 
 
       // Mulai game 10 puzzle
-      // Misal: reset ronde, score, timer, dan tampilkan puzzle
+      // Misal: reset ronde, level01Score, timer, dan tampilkan puzzle
       this.round = 1;
-      this.scoreText.setText(this.score.toString().padStart(5, '0'));
+      this.scoreText.setText(this.level01Score.toString().padStart(5, '0'));
 
       // Tambahkan pengecekan login sebelum mengaktifkan tombol Play saat logout
       if (localStorage.getItem("playerEmail")) {
       // Panggil fungsi mulai game, misal:
-      if (this.isPaid || isUserBaru || masihGratis) {
+      if (this.isPaid || newUser ) {
       if (this.playBtn) {
         this.playBtn.setTexture('playSheriffL');
         this.playBtn.setInteractive({ useHandCursor: true });
@@ -802,8 +801,8 @@ class Level01Scene extends Phaser.Scene {
       .setDepth(1000);
 
     this.claimHatBottomBtn.on('pointerdown', () => {
-      //if (!this.hasClaimedHat && (this.score || 0) >= 100) { // yang ini sekali download
-      if ((this.score || 0) >= 100) {
+      //if (!this.hasClaimedHat && (this.level01Score || 0) >= 100) { // yang ini sekali download
+      if ((this.level01Score || 0) >= 100) {
         // Selalu download topi coklat
         this.hasClaimedHat = true;
         this.registry.set('hasClaimedHat', true);
@@ -828,10 +827,10 @@ class Level01Scene extends Phaser.Scene {
         this.time.delayedCall(1500, () => {
           if (this.claimHatMsg) this.claimHatMsg.destroy();
         });
-      } else if ((this.score || 0) < 100) {
+      } else if ((this.level01Score || 0) < 100) {
         // Pesan gagal
         if (this.claimHatMsg) this.claimHatMsg.destroy();
-        this.claimHatMsg = this.add.text(1750, 1000, "Score must be at least 100!", {
+        this.claimHatMsg = this.add.text(1750, 1000, "level01Score must be at least 100!", {
           font: "bold 24px Segoe UI",
           fill: "#fff",
           backgroundColor: "#e00",
@@ -1364,33 +1363,33 @@ setupBoard(data) {
 }
 
 showGameOverReturnMessage() {
-  // ✅ CHECK SCORE FIRST - If score > 0, allow playing
-  if ((this.score || 0) > 0) {
-    console.log(`✅ Player has score ${this.score} - allowing gameplay`);
+  // ✅ CHECK level01Score FIRST - If level01Score > 0, allow playing
+  if ((this.level01Score || 0) > 0) {
+    console.log(`✅ Player has level01Score ${this.level01Score} - allowing gameplay`);
     
-    // Clear Game Over state since player has score
+    // Clear Game Over state since player has level01Score
     const email = localStorage.getItem('playerEmail');
     if (email) {
       localStorage.removeItem(`gameOver_${email}`);
-      console.log('✅ Game Over cleared - Player has score to continue');
+      console.log('✅ Game Over cleared - Player has level01Score to continue');
     }
     
-    // ✅ ADD CONSOLE LOG HERE (when score = 0):
-    console.log(`🔒 Game Over protection active: Score ${this.score}`);
+    // ✅ ADD CONSOLE LOG HERE (when level01Score = 0):
+    console.log(`🔒 Game Over protection active: level01Score ${this.level01Score}`);
 
-   // // ✅ IF SCORE = 0, SHOW FULL GAME OVER PROTECTION WITH CLOSE BUTTON:
-  //  console.log('🔒 Score is 0 - Full Game Over protection active');
+   // // ✅ IF level01Score = 0, SHOW FULL GAME OVER PROTECTION WITH CLOSE BUTTON:
+  //  console.log('🔒 level01Score is 0 - Full Game Over protection active');
 
     // Reset isGameOver flag
     this.isGameOver = false;
     
-    // Show score-based continue message with CLOSE button
+    // Show level01Score-based continue message with CLOSE button
     this.showScoreBasedContinueMessage();
     return;
   }
 
-  // ✅ IF SCORE = 0, SHOW FULL GAME OVER PROTECTION WITH CLOSE BUTTON:
-  console.log('🔒 Score is 0 - Full Game Over protection active');
+  // ✅ IF level01Score = 0, SHOW FULL GAME OVER PROTECTION WITH CLOSE BUTTON:
+  console.log('🔒 level01Score is 0 - Full Game Over protection active');
 
   // Background overlay
   const overlay = this.add.rectangle(960, 640, 1200, 600, 0x000000, 0.01)
@@ -1464,10 +1463,10 @@ showGameOverReturnMessage() {
 }
 
 
-// ========== SCORE-BASED CONTINUE MESSAGE ==========
+// ========== level01Score-BASED CONTINUE MESSAGE ==========
 showScoreBasedContinueMessage() {
    // ✅ ADD CONSOLE LOG HERE (at the very beginning):
-  console.log(`✅ Score-based continue shown: Score ${this.score}`);
+  console.log(`✅ level01Score-based continue shown: level01Score ${this.level01Score}`);
 
   // Background overlay (lighter)
   const overlay = this.add.rectangle(960, 640, 1920, 1280, 0x000000, 0.1)
@@ -1485,9 +1484,9 @@ showScoreBasedContinueMessage() {
     align: "center"
   }).setOrigin(0.5).setDepth(10000);
 
-  // Score display
+  // level01Score display
   const scoreDisplay = this.add.text(960, 570, 
-    `Current Score: ${this.score}\n\n` +
+    `Current level01Score: ${this.level01Score}\n\n` +
     "Game Over cleared automatically!\n" +
     "You can continue playing with your balance.\n\n" +
     "⏰ This message will stay for 3 seconds\n" +
@@ -1528,7 +1527,7 @@ showScoreBasedContinueMessage() {
     this.isGameOver = false;
     this.isGameOverClosed = false;
     
-    console.log('✅ Player chose to continue with available score');
+    console.log('✅ Player chose to continue with available level01Score');
   });
 
   // Close button handler - Same as Continue
@@ -1543,7 +1542,7 @@ showScoreBasedContinueMessage() {
     this.isGameOver = false;
     this.isGameOverClosed = false;
     
-    console.log('✅ Score-based continue message closed');
+    console.log('✅ level01Score-based continue message closed');
   });
 
   // ✅ AUTO-HIDE AFTER 4 SECONDS (faster auto-clear)
@@ -1558,7 +1557,7 @@ showScoreBasedContinueMessage() {
       this.isGameOver = false;
       this.isGameOverClosed = false;
       
-      console.log('✅ Auto-cleared: Player can continue with score');
+      console.log('✅ Auto-cleared: Player can continue with level01Score');
     }
   });
 }
@@ -1566,7 +1565,7 @@ showScoreBasedContinueMessage() {
 // Around line 1450, ADD this function:
 // Around line 1500, ADD this missing function:
 
-// ========== LOW SCORE WARNING ==========
+// ========== LOW level01Score WARNING ==========
 showLowScoreWarning() {
   // Remove existing warning
   if (this.lowScoreWarning) {
@@ -1581,8 +1580,8 @@ showLowScoreWarning() {
 
   // Warning message
   this.lowScoreWarning = this.add.text(960, 350,
-    `⚠️ LOW SCORE WARNING!\n\n` +
-    `Current Score: ${this.score}\n` +
+    `⚠️ LOW level01Score WARNING!\n\n` +
+    `Current level01Score: ${this.level01Score}\n` +
     `Game continues, but consider buying\n` +
     `favorite menu for better performance!`, {
     font: "bold 32px Segoe UI",
@@ -2319,7 +2318,7 @@ async updateTaxInBackground(musicTitle, x, y) {
       }
     }
 
-    // Jika benar, tampilkan pesan sukses dan tambahkan score-->saat kalah di ontime
+    // Jika benar, tampilkan pesan sukses dan tambahkan level01Score-->saat kalah di ontime
     if (benar) {
       // Hentikan timer supaya onTimeUp tidak terpanggil lagi
       if (this.roundTimer) {
@@ -2327,21 +2326,21 @@ async updateTaxInBackground(musicTitle, x, y) {
         this.roundTimer = null;
       }
 
-      this.score = (this.score || 0) + 100;
-      this.scoreText.setText(this.score.toString().padStart(5, '0')); // Tambahkan baris ini
-      this.registry.set('score', this.score);
+      this.level01Score = (this.level01Score || 0) + 100;
+      this.scoreText.setText(this.level01Score.toString().padStart(5, '0')); // Tambahkan baris ini
+      this.registry.set('level01Score', this.level01Score);
       const email = localStorage.getItem('playerEmail');
 
-       // Ambil score dari localStorage jika ada (data lama)
+       // Ambil level01Score dari localStorage jika ada (data lama)
       let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
       userData.gameProgress = userData.gameProgress || {};
      
-     // Simpan score terbaru ke localStorage
-     userData.gameProgress.level01Score = this.score;
+     // Simpan level01Score terbaru ke localStorage
+     userData.gameProgress.level01Score = this.level01Score;
    
      // Update localStorage dengan semua progress terbaru
-    userData.gameProgress.level01Score = this.score;
-    userData.gameProgress.level01HighScore = Math.max(userData.gameProgress.level01HighScore || 0, this.score);
+    userData.gameProgress.level01Score = this.level01Score;
+    userData.gameProgress.level01HighScore = Math.max(userData.gameProgress.level01HighScore || 0, this.level01Score);
     userData.gameProgress.totalPlays = (userData.gameProgress.totalPlays || 0) + 1;
     userData.gameProgress.bestTime = this.timeElapsed;
     userData.gameProgress.averageTime = typeof this.timeElapsed === 'number' ? this.timeElapsed : 0;
@@ -2362,8 +2361,8 @@ async updateTaxInBackground(musicTitle, x, y) {
     const progress = await this.getUserProgress(email);    
     this.updateUserProgress(email, {
       level01Completed: true,
-      level01Score: this.score,
-      level01HighScore: Math.max(this.score, progress.progress.level01HighScore || 0),
+      level01Score: this.level01Score,
+      level01HighScore: Math.max(this.level01Score, progress.progress.level01HighScore || 0),
       totalPlays: (progress.progress.totalPlays || 0) + 1,
       bestTime: this.timeElapsed,
       averageTime: newAverageTime,
@@ -2372,8 +2371,8 @@ async updateTaxInBackground(musicTitle, x, y) {
       totalAttempts: (progress.progress.totalAttempts || 0) + 1
      }).then(() => {
       this.sound.play('horseNeigh');
-      // Tampilkan black horse utuh hanya jika score >= 1000 --> tidak tampil dulu di score 1000
-      //if (this.score >= 1000 && !this.blackHorseSprite) {
+      // Tampilkan black horse utuh hanya jika level01Score >= 1000 --> tidak tampil dulu di level01Score 1000
+      //if (this.level01Score >= 1000 && !this.blackHorseSprite) {
       //this.transformPuzzleToHorse();
       //}
       this.showClaimHat(() => {
@@ -2397,10 +2396,10 @@ async updateTaxInBackground(musicTitle, x, y) {
 
     } else {
       // ✅ FAILED case - ADD air check:
-    if (this.score > 0 && this.currentAboveHorse) {
+    if (this.level01Score > 0 && this.currentAboveHorse) {
       this.currentAboveHorse.destroy();
       this.currentAboveHorse = null;
-      console.log('💧 Air destroyed - Player has score but failed puzzle');
+      console.log('💧 Air destroyed - Player has level01Score but failed puzzle');
     }
       this.onTimeUp();
     }
@@ -2410,19 +2409,19 @@ async updateTaxInBackground(musicTitle, x, y) {
   async onTimeUp() {
     this.sound.play('horseSnort');
 
-    // Kurangi score jika gagal, minimal 0 --> saat kalah, saat menang di checkpuzzle
-    this.score = Math.max(0, (this.score || 0) - 100);
-    this.scoreText.setText(this.score.toString().padStart(5, '0'));
-    this.registry.set('score', this.score);
-    // Simpan score ke localStorage saat mongodb offline
+    // Kurangi level01Score jika gagal, minimal 0 --> saat kalah, saat menang di checkpuzzle
+    this.level01Score = Math.max(0, (this.level01Score || 0) - 100);
+    this.scoreText.setText(this.level01Score.toString().padStart(5, '0'));
+    this.registry.set('level01Score', this.level01Score);
+    // Simpan level01Score ke localStorage saat mongodb offline
     
     const email = localStorage.getItem('playerEmail');
     let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
     userData.gameProgress = userData.gameProgress || {};
    
-   // Simpan score terbaru ke localStorage
-    userData.gameProgress.level01Score = this.score;
-    userData.gameProgress.level01HighScore = Math.max(userData.gameProgress.level01HighScore || 0, this.score);
+   // Simpan level01Score terbaru ke localStorage
+    userData.gameProgress.level01Score = this.level01Score;
+    userData.gameProgress.level01HighScore = Math.max(userData.gameProgress.level01HighScore || 0, this.level01Score);
     userData.gameProgress.totalPlays = (userData.gameProgress.totalPlays || 0) + 1;
     userData.gameProgress.bestTime = this.timeElapsed;
     userData.gameProgress.averageTime = typeof this.timeElapsed === 'number' ? this.timeElapsed : 0;
@@ -2432,7 +2431,7 @@ async updateTaxInBackground(musicTitle, x, y) {
 
    localStorage.setItem(`gameData-${email}`, JSON.stringify(userData)); 
     
-    //if (email) this.saveScoreToBackend(email, this.score);
+    //if (email) this.saveScoreToBackend(email, this.level01Score);
     //const completionTime = this.timeElapsed;
 
 
@@ -2444,8 +2443,8 @@ async updateTaxInBackground(musicTitle, x, y) {
 
   this.updateUserProgress(email, {
    level01Completed: true,
-   level01Score: this.score,
-   level01HighScore: Math.max(this.score, progress.progress.level01HighScore || 0),
+   level01Score: this.level01Score,
+   level01HighScore: Math.max(this.level01Score, progress.progress.level01HighScore || 0),
    totalPlays: (progress.progress.totalPlays || 0) + 1,
    bestTime: this.timeElapsed,
    averageTime: newAverageTime,
@@ -2454,10 +2453,10 @@ async updateTaxInBackground(musicTitle, x, y) {
    totalAttempts: (progress.progress.totalAttempts || 0) + 1
     }).then(() => {
     // ⬇️ Tambahkan pengecekan ini setelah safeUpdateGameScore tambah 08/07/25
-    // Cek apakah sudah 3x main extra setelah beli menu favorit dan score sudah 0
+    // Cek apakah sudah 3x main extra setelah beli menu favorit dan level01Score sudah 0
     const history = window.getPlayerGameHistory ? window.getPlayerGameHistory(email) : null;
     if (
-        this.score === 0 &&
+        this.level01Score === 0 &&
         history &&
         history.hasPlayedBefore &&
        // history.favoriteGiven && // sudah pernah beli menu favorit
@@ -2468,11 +2467,11 @@ async updateTaxInBackground(musicTitle, x, y) {
         }
     }
     
-    // ✅ ADD THIS SIMPLE CHECK - Destroy air if score > 0:
-  if (this.score > 0 && this.currentAboveHorse) {
+    // ✅ ADD THIS SIMPLE CHECK - Destroy air if level01Score > 0:
+  if (this.level01Score > 0 && this.currentAboveHorse) {
     this.currentAboveHorse.destroy();
     this.currentAboveHorse = null;
-    console.log('💧 Air destroyed - Player still has score');
+    console.log('💧 Air destroyed - Player still has level01Score');
   } 
 
     // === Tambahkan kode ini untuk menghentikan musik favorit saat waktu habis ===
@@ -2509,9 +2508,9 @@ async updateTaxInBackground(musicTitle, x, y) {
       this.showRoundMessage("");
 
     } else if (this.round > 3) {
-      // ✅ CHECK SCORE BEFORE APPLYING GAME OVER:
-  if ((this.score || 0) <= 0) {
-    // Only apply Game Over if score is 0 or negative
+      // ✅ CHECK level01Score BEFORE APPLYING GAME OVER:
+  if ((this.level01Score || 0) <= 0) {
+    // Only apply Game Over if level01Score is 0 or negative
     this.isGameOver = true;
 
      // ⬇️ Tambahkan di sini (setelah set isGameOver = true dan simpan localStorage):
@@ -2531,13 +2530,13 @@ async updateTaxInBackground(musicTitle, x, y) {
        const email = localStorage.getItem('playerEmail');
        if (email) {
        localStorage.setItem(`gameOver_${email}`, 'true');
-       console.log('💾 Game Over state saved - Score is 0');
+       console.log('💾 Game Over state saved - level01Score is 0');
      }
     } else {
-    // Player still has score - don't apply full Game Over
-    console.log(`✅ Round > 3 but player has score ${this.score} - no Game Over saved`);
+    // Player still has level01Score - don't apply full Game Over
+    console.log(`✅ Round > 3 but player has level01Score ${this.level01Score} - no Game Over saved`);
     this.isGameOver = false;
-    // Just show low score warning but allow playing
+    // Just show low level01Score warning but allow playing
     this.showLowScoreWarning();
     }
       this.timeElapsed = 0; //untuk mulai menu favorit saat timer over 00:00 19/06/25
@@ -2576,25 +2575,25 @@ if (window.game && window.game.scene) {
   const level01 = window.game.scene.getScene('Level01Scene');
   
   if (level01) {
-    // Override showGameOver function with score check
+    // Override showGameOver function with level01Score check
     level01.showGameOver = function() {
-      // ✅ CHECK SCORE FIRST
-      if ((this.score || 0) > 0) {
-        console.log(`✅ Score ${this.score} > 0 - Game Over NOT shown`);
+      // ✅ CHECK level01Score FIRST
+      if ((this.level01Score || 0) > 0) {
+        console.log(`✅ level01Score ${this.level01Score} > 0 - Game Over NOT shown`);
         
         // ✅ DESTROY AIR DI KEPALA if exists
-        if (level01 && level01.score > 0) {
-        // Destroy air above horse if player has score
+        if (level01 && level01.level01Score > 0) {
+        // Destroy air above horse if player has level01Score
         if (this.currentAboveHorse) {
           this.currentAboveHorse.destroy();
           this.currentAboveHorse = null;
-          console.log('💧 Air above horse destroyed - Player has score');
+          console.log('💧 Air above horse destroyed - Player has level01Score');
         }
       } 
-        return; // Don't show Game Over if player has score
+        return; // Don't show Game Over if player has level01Score
       }
       
-      console.log(`💀 Score ${this.score} <= 0 - Showing Game Over`);
+      console.log(`💀 level01Score ${this.level01Score} <= 0 - Showing Game Over`);
       
       // ✅ DESTROY AIR DI KEPALA BEFORE SHOW GAME OVER
       if (this.currentAboveHorse) {
@@ -2603,7 +2602,7 @@ if (window.game && window.game.scene) {
         console.log('💧 Air above horse destroyed before Game Over');
       }
       
-      // Show Game Over only if score <= 0
+      // Show Game Over only if level01Score <= 0
       //if (!this.gameOverImg) {
         //this.gameOverImg = this.add.image(960, 400, 'gameOver')
           //.setOrigin(0.5)
@@ -2618,20 +2617,20 @@ if (window.game && window.game.scene) {
       }
     };
     
-    // ✅ IMMEDIATE CLEANUP if score > 0
-    if (level01.score > 0) {
+    // ✅ IMMEDIATE CLEANUP if level01Score > 0
+    if (level01.level01Score > 0) {
       // Remove Game Over image
      // if (level01.gameOverImg) {
        // level01.gameOverImg.destroy();
        // level01.gameOverImg = null;
-       // console.log('🗑️ Game Over image removed - Player has score');
+       // console.log('🗑️ Game Over image removed - Player has level01Score');
       //}
       
       // Remove air above horse
       if (level01.currentAboveHorse) {
         level01.currentAboveHorse.destroy();
         level01.currentAboveHorse = null;
-        console.log('💧 Air above horse removed - Player has score');
+        console.log('💧 Air above horse removed - Player has level01Score');
       }
       
       // Restore play button
@@ -2698,11 +2697,16 @@ async getUserProgress(email) {
       {}, // body kosong, karena email sudah di URL param
     { timeout: 90000 }
     );
+    const progress = res.data.progress;
+    // Deteksi status user
+    const newUser = !progress || progress.totalPlays === 0;
+    const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
+    const winUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) > 0;
     // Response: { success, progress, user }  
     return res.data; // progress: { level01Score, level01HighScore, totalPlays, ... }
   } catch (err) {
     console.error('❌ Get user progress error:', err);
-    return null;
+    return { newUser: true, lossUser: false, winUser: false, progress: null };
   }
 }
 
@@ -2745,20 +2749,32 @@ async checkUserStatusAndGameOver(email) {
     return null;
   }
 
-  // Cek status user lama/baru
-  const isUserBaru = !status.totalPlays || status.totalPlays === 0;
+// Cek status user lama/baru
+  //const newUser = !status.totalPlays || status.totalPlays === 0;
+const history = window.getPlayerGameHistory ? window.getPlayerGameHistory(email) : null;
+const level01Score = (this.level01Score || 0);
 
-  // Jika user baru, aktifkan tombol Play & Puzzle
-  if (isUserBaru) {
+// 1. New User: belum pernah main atau main < 3x
+const newUser = !history || !history.hasPlayedBefore || (history.totalGamesPlayed || 0) < 3;
+
+// 2. Loss User: sudah main >= 3x dan score = 0
+const lossUser = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) >= 3 && level01Score === 0;
+
+// 3. Win User: sudah main >= 3x dan score > 0
+const winUser = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) >= 3 && level01Score > 0;
+  
+// Jika newUser, aktifkan tombol Play & Puzzle
+  if (newUser) {
     this.isGameOver = false;
     this.unblur10PuzzleButton && this.unblur10PuzzleButton();
     console.log('✅ User baru - tombol Play & Puzzle diaktifkan');
     return status;
   }
 
-  // Cek status game over untuk user lama
+  // Cek status game over untuk lossUser or winUser
   if (status.isGameOver) {
-    if (status.score > 0) {
+    if (status.level01Score > 0) {
+      // WIN USER: Sudah main >= 3x, score > 0
       status.isGameOver = false;
       localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
       this.isGameOver = false;
@@ -2767,6 +2783,7 @@ async checkUserStatusAndGameOver(email) {
       // Lanjutkan main
       return status;
     } else {
+      // LOSS USER: Sudah main >= 3x, score = 0
       this.isGameOver = true;
       this.showGameOverReturnMessage();
       this.lockAllGameplayButtons();
@@ -2777,8 +2794,8 @@ async checkUserStatusAndGameOver(email) {
   // Tambah totalPlays setiap kali fungsi ini dipanggil (untuk user lama)
   status.totalPlays = (status.totalPlays || 0) + 1;
 
-  // Jika totalPlays >= 3 dan score masih 0, set game over
-  if (status.totalPlays >= 3 && (status.score || 0) === 0) {
+  // Jika totalPlays >= 3 dan level01Score masih 0, set game over
+  if (status.totalPlays >= 3 && (status.level01Score || 0) === 0) {
     //await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/set-gameover', { email, isGameOver: true });
     await this.setGameOver(email, true); // gunakan fungsi async
     status.isGameOver = true;
@@ -3554,7 +3571,7 @@ showHoldMessageAboveNotes() {
               const resetData = {
               totalPlays: 0,
               isGameOver: false,
-              score: 0
+              level01Score: 0
               };
               localStorage.setItem(`gameData-${email}`, JSON.stringify(resetData));
               alert('Level successfully unlocked. Enjoy playing again!');
@@ -3768,7 +3785,7 @@ showHoldMessageAboveNotes() {
               const resetData = {
               totalPlays: 0,
               isGameOver: false,
-              score: 0
+              level01Score: 0
               };
               localStorage.setItem(`gameData-${email}`, JSON.stringify(resetData));
               alert('Level successfully unlocked. Enjoy playing again!');
@@ -3848,7 +3865,7 @@ showHoldMessageAboveNotes() {
   !this.isPaid &&
   history.hasPlayedBefore &&
   (history.totalGamesPlayed || 0) >= 3 &&
-  score === 0 &&
+  level01Score === 0 &&
   this.isGameOver
 ) { 
   // Kunci tombol Play & 10 Puzzle
@@ -4000,14 +4017,14 @@ showExitPanelOnly() {
   this.exitPanelGroup.add(exitBtn);
 
   exitBtn.on('pointerdown', async() => {
-  // Tambahkan update score ke backend sebelum keluar
+  // Tambahkan update level01Score ke backend sebelum keluar
     //const email = localStorage.getItem('playerEmail');
-    //if (email) this.saveScoreToBackend(email, this.score);
+    //if (email) this.saveScoreToBackend(email, this.level01Score);
     const email = localStorage.getItem('playerEmail');
   if (email) {
     this.updateUserProgress(email, {
       level01Completed: true,
-      level01Score: this.score,
+      level01Score: this.level01Score,
       // Tambahkan field lain jika perlu
       completionTime: this.timeElapsed,
       isPerfectGame: false

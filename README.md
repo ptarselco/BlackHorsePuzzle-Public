@@ -44,8 +44,8 @@ This game is designed to train **concentration**, **memory**, and **balance of h
 ## 🎁 Rewards
 
 5. **🎩 Prize:** Hat (Download it and become a Cowboy!)
-6. **✨ Bonus:** Score 1000 = Additional 10 seconds of playtime in 20 Puzzles *(Coming Soon)*  
-   _⚠️ Do not log out to keep your score. Always concentrate if you want your score to increase._
+6. **✨ Bonus:** level01Score 1000 = Additional 10 seconds of playtime in 20 Puzzles *(Coming Soon)*  
+   _⚠️ Do not log out to keep your level01Score. Always concentrate if you want your level01Score to increase._
 
 ---
 
