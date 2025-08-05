@@ -424,7 +424,8 @@ async  unlockedLevels(email, level) {
     //const progress = await this.getUserProgress(email);
     const progressRes = await this.getUserProgress(email);
     const progress = progressRes.progress || {};
-
+    const totalPlays = progress.totalPlays ?? 0;
+    const level01Score = progress.level01Score ?? 0;
     // 2. Tentukan status user
     const newUser = !progress.totalPlays || progress.totalPlays === 0;
     const lossUser = progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
@@ -436,7 +437,6 @@ async  unlockedLevels(email, level) {
     const newCompletionRate = 100; // Atau hitung sesuai logic, default 100%
     const isPerfectGame = true;    // Atau false jika ada salah, default true
     const totalAttempts = (progress.totalAttempts || 0) + 1; // Default tambah 1
-    const totalPlays = progress.totalPlays ?? 0;
     const bestTime = progress.bestTime ?? 0;
     const averageTime = progress.averageTime ?? 0;
     const completionRate = progress.completionRate ?? 0;
