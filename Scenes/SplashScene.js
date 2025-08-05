@@ -199,8 +199,8 @@ const winUser = history && history.hasPlayedBefore && (history.totalGamesPlayed 
 
   // Cek status game over untuk lossUser or winUser
   if (status.isGameOver) {
-    if (status.level01Score > 0) {
-      // WIN USER: Sudah main >= 3x, score > 0
+    if (winUser) {
+      // WIN USER: Sudah main >= 1x, score > 0
       status.isGameOver = false;
       localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
       this.isGameOver = false;
@@ -208,7 +208,7 @@ const winUser = history && history.hasPlayedBefore && (history.totalGamesPlayed 
       console.log('✅ Game over status di-reset - tombol Play & Puzzle diaktifkan');
       // Lanjutkan main
       return status;
-    } else {
+    } else if (lossUser) {
       // LOSS USER: Sudah main >= 3x, score = 0
       this.isGameOver = true;
       this.showGameOverReturnMessage();
@@ -447,7 +447,7 @@ async  unlockedLevels(email, level) {
      level01Completed: true,
      level01Score: this.level01Score,
      level01HighScore: Math.max(this.level01Score, this.highScore),
-     totalPlays: (progress.progress.totalPlays || 0) + 1,
+     totalPlays: (progress.totalPlays || 0) + 1,
      bestTime: this.timeElapsed,
      averageTime: newAverageTime,
      completionRate: newCompletionRate,
