@@ -133,7 +133,7 @@ class Level01Scene extends Phaser.Scene {
 
   // Deklarasi variabel utama
   let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
-   userData.gameProgress = userData.gameProgress || {
+  userData.gameProgress = userData.gameProgress || {
     level01Completed: false,
     level01Score: 0,
     level01HighScore: 0,
