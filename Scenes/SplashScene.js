@@ -355,7 +355,23 @@ async  unlockedLevels(email, level) {
     const email = localStorage.getItem("playerEmail");
     let playerScore = 0;
 
-   
+    // Panggil sync progress dari backend di sini
+  if (email) {
+    syncProgressFromBackend(email); // ← panggil di sini
+  }
+
+  window.addEventListener('beforeunload', () => {
+  const email = localStorage.getItem("playerEmail");
+  if (!email) return;
+  const progress = {
+    level01Score: window.level01Score || 0,
+    totalPlays: window.totalPlays || 0,
+    isGameOver: window.isGameOver || false
+  };
+  const url = `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`;
+  navigator.sendBeacon(url, JSON.stringify(progress));
+  });
+
     // Essential splash display
    // this.add.image(960, 640, "coverBlank").setDepth(0);
    // ✅ REPLACE with:
