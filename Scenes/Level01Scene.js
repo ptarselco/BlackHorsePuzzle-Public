@@ -119,14 +119,19 @@ class Level01Scene extends Phaser.Scene {
  // create() {
  create(data = {}) {
     console.log("Level01 create, login:", localStorage.getItem("playerEmail"));
+    const email = localStorage.getItem("playerEmail");
     if (!localStorage.getItem("playerEmail")) {
     console.log("Belum login, kembali ke SplashScene"); 
     this.scene.start('SplashScene');
     return;
   }
 
+  if (email) {
+    syncProgressFromBackend(email);
+  }
+ 
+
   // Deklarasi variabel utama
-  const email = localStorage.getItem("playerEmail");
   let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
    userData.gameProgress = userData.gameProgress || {
     level01Completed: false,
