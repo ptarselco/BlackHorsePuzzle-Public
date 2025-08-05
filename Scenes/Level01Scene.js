@@ -3566,29 +3566,28 @@ showHoldMessageAboveNotes() {
               const paid = await checkPaymentStatusFromBackend(email);
               if (paid) {
               clearInterval(this.paymentCheckInterval);
-              // ✅ UNLOCK GAME AFTER PURCHASE:
-              this.unlockGameAfterPurchase();
+
+              // ✅ Refresh status pembayaran dari backend
+              const status = await this.getUserStatus(email, 'Level01, Level01Scene');
+              this.isPaid = status?.isPaid || false;
+
+              // ✅ UNLOCK GAME AFTER PURCHASE
               // PANGGIL UNLOCK LEVEL DI SINI
               const email = localStorage.getItem('playerEmail');
               const unlocked = await unlockedLevels(email, 'Level01Scene');
-              if (unlocked) {
-              // Reset localStorage gameData user
-              const resetData = {
-              totalPlays: 0,
-              isGameOver: false,
-              level01Score: 0
-              };
-              localStorage.setItem(`gameData-${email}`, JSON.stringify(resetData));
+            if (unlocked) {
+              let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+              userData.isGameOver = false;
+              localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+              localStorage.removeItem(`gameOver_${email}`);
               alert('Level successfully unlocked. Enjoy playing again!');
               this.unblur10PuzzleButton();
               this.unlockGameAfterPurchase();
               window.unlockPlayAndHideGameOver && window.unlockPlayAndHideGameOver();
               location.reload();
-              //} else {
-              //alert('Gagal membuka level. Silakan hubungi admin.');           
               }
             }
-           }, 3000);
+          }, 3000);
             
        
   
@@ -3773,37 +3772,33 @@ showHoldMessageAboveNotes() {
              //window.open('https://your-xsolla-link', '_blank');  // belum selesai paystationnya
              this.showWaitingForPaymentMessage();
              
-              // Polling ke backend setiap beberapa detik
+          // Polling ke backend setiap beberapa detik
               this.paymentCheckInterval = setInterval(async () => {
               const paid = await checkPaymentStatusFromBackend(email);
               if (paid) {
               clearInterval(this.paymentCheckInterval);
-              this.handlePaymentSuccess(); 
-              // ✅ UNLOCK GAME AFTER PURCHASE:
-              if (this.isPaid) {
-              this.unlockGameAfterPurchase();
+
+              // ✅ Refresh status pembayaran dari backend
+              const status = await this.getUserStatus(email, 'Level01, Level01Scene');
+              this.isPaid = status?.isPaid || false;
+
+              // ✅ UNLOCK GAME AFTER PURCHASE
               // PANGGIL UNLOCK LEVEL DI SINI
               const email = localStorage.getItem('playerEmail');
               const unlocked = await unlockedLevels(email, 'Level01Scene');
-              if (unlocked) {
-              // Reset localStorage gameData user
-              const resetData = {
-              totalPlays: 0,
-              isGameOver: false,
-              level01Score: 0
-              };
-              localStorage.setItem(`gameData-${email}`, JSON.stringify(resetData));
+            if (unlocked) {
+              let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+              userData.isGameOver = false;
+              localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+              localStorage.removeItem(`gameOver_${email}`);
               alert('Level successfully unlocked. Enjoy playing again!');
               this.unblur10PuzzleButton();
               this.unlockGameAfterPurchase();
               window.unlockPlayAndHideGameOver && window.unlockPlayAndHideGameOver();
               location.reload();
-              //} else {
-              //alert('Gagal membuka level. Silakan hubungi admin.');           
-              }
+              }   
             }
-          }
-        }, 3000);
+           }, 3000);
       
             
       // Setelah pembayaran sukses:
