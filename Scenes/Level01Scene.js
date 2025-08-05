@@ -3586,8 +3586,8 @@ showHoldMessageAboveNotes() {
               localStorage.removeItem(`gameOver_${email}`);
               alert('Level successfully unlocked. Enjoy playing again!');
               this.unblur10PuzzleButton();
-              //this.unlockGameAfterPurchase();
-              window.unlockPlayAndHideGameOver && window.unlockPlayAndHideGameOver();
+              this.unlockGameAfterPurchase();
+              //window.unlockPlayAndHideGameOver && window.unlockPlayAndHideGameOver();
               location.reload();
               }
             }
@@ -3797,8 +3797,8 @@ showHoldMessageAboveNotes() {
               localStorage.removeItem(`gameOver_${email}`);
               alert('Level successfully unlocked. Enjoy playing again!');
               this.unblur10PuzzleButton();
-              //this.unlockGameAfterPurchase();
-              window.unlockPlayAndHideGameOver && window.unlockPlayAndHideGameOver();
+              this.unlockGameAfterPurchase();
+              //window.unlockPlayAndHideGameOver && window.unlockPlayAndHideGameOver();
               location.reload();
               }   
             }
