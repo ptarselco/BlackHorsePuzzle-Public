@@ -146,6 +146,12 @@ class Level01Scene extends Phaser.Scene {
   };
   localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
 
+  // Tambahkan validasi score di sini
+  if (typeof userData.gameProgress.level01Score !== 'number' || isNaN(userData.gameProgress.level01Score)) {
+  userData.gameProgress.level01Score = 0;
+  }
+  this.level01Score = userData.gameProgress.level01Score;
+
   const history = window.getPlayerGameHistory ? window.getPlayerGameHistory(email) : null;
   const newUser = !history || !history.hasPlayedBefore || (history.totalGamesPlayed || 0) < 3;
   const lossUser = localStorage.getItem(`gameOver_${email}`);
@@ -237,11 +243,9 @@ class Level01Scene extends Phaser.Scene {
     this.blankBhL1 = this.add.image(248, 250, 'blankBhL1').setScale(0.7).setDepth(9);
 
     this.scoreText = this.add.text(1716, 40, "00000", { font: "50px Segoe UI", fill: "#fff" }).setDepth(9999);
-    //this.scoreText.setText(this.level01Score.toString().padStart(5, '0')); // Tambahkan baris ini
-    //this.scoreText.setText("00000"); 
     this.scoreText.setText(
-  (this.level01Score !== undefined && this.level01Score !== null ? this.level01Score : 0).toString().padStart(5, '0')
-  );
+    (this.level01Score !== undefined && this.level01Score !== null ? this.level01Score : 0).toString().padStart(5, '0')
+    );
 
     //Atur Ronde untuk Game Over (ATUR WAKTU DI TIMER)
     this.round = 1; // Mulai dari ronde 1
@@ -3583,7 +3587,7 @@ showHoldMessageAboveNotes() {
               alert('Level successfully unlocked. Enjoy playing again!');
               this.unblur10PuzzleButton();
               //this.unlockGameAfterPurchase();
-              //window.unlockPlayAndHideGameOver && window.unlockPlayAndHideGameOver();
+              window.unlockPlayAndHideGameOver && window.unlockPlayAndHideGameOver();
               location.reload();
               }
             }
@@ -3794,7 +3798,7 @@ showHoldMessageAboveNotes() {
               alert('Level successfully unlocked. Enjoy playing again!');
               this.unblur10PuzzleButton();
               //this.unlockGameAfterPurchase();
-              //window.unlockPlayAndHideGameOver && window.unlockPlayAndHideGameOver();
+              window.unlockPlayAndHideGameOver && window.unlockPlayAndHideGameOver();
               location.reload();
               }   
             }
