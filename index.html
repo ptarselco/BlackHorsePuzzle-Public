@@ -261,16 +261,42 @@ if ('serviceWorker' in navigator) {
 } else {
   console.log('⚠️ Service Worker not supported in this browser');
 }
-// 3. PAYMENT STATUS 
+// Fungsi cek status pembayaran dari backend (lengkap)
 window.checkPaymentStatusFromBackend = async function(email) {
   try {
     const encodedEmail = encodeURIComponent(email);
     const res = await axios.get(`https://backend-paypalblackhorsepuzzle.onrender.com/api/payment-status/${encodedEmail}`);
     const data = res.data;
-    return data && data.isPaid === true;
+
+    if (data && data.success) {
+      // Kembalikan seluruh data status pembayaran, bukan hanya boolean
+      return {
+        isPaid: data.isPaid === true,
+        supportAmount: data.supportAmount,
+        paymentMethods: data.paymentMethods,
+        gameStats: data.gameStats,
+        user: data.user
+      };
+    } else {
+      // Jika respons tidak sesuai harapan
+      return {
+        isPaid: false,
+        supportAmount: 0,
+        paymentMethods: [],
+        gameStats: {},
+        user: null
+      };
+    }
   } catch (err) {
     console.error('Failed to check payment status:', err);
-    return false;
+    // Jika error, kembalikan default
+    return {
+      isPaid: false,
+      supportAmount: 0,
+      paymentMethods: [],
+      gameStats: {},
+      user: null
+    };
   }
 };
 // 4. PAYMENT VERIFICATION
@@ -560,21 +586,7 @@ try {
     }, 800);
   }
   }
-  async function syncScoreFromBackend(playerEmail) {
-  try {
-      const res = await axios.post(
-        `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(playerEmail)}/progress`
-      );
-      const backendScore = res.data?.progress?.level01Score || 0;
-      localStorage.setItem(`score_${playerEmail}`, backendScore.toString());
-      window.level01Score = backendScore;
-      window.playerScore = backendScore;
-      console.log('✅ Synced level01Score from backend:', backendScore);
-    } catch (err) {
-      console.error('❌ Failed to fetch level01Score from backend:', err);
-    }
-  }
-
+  
   async function syncProgressFromBackend(email) {
   try {
     const res = await axios.post(
@@ -1263,63 +1275,7 @@ async function verifyPayPalOrder(orderId, email) {
     return false;
   }
 }
-
-// 3.✅ TRY BACKEND - WITH BETTER ERROR HANDLING:
-    try {
-      console.log('🔗 Attempting backend connection...');
-      
-      // Axios timeout pakai config
-  const response = await axios.get(
-    `https://backend-paypalblackhorsepuzzle.onrender.com/api/check-payment`,
-    {
-      params: { userId: email },
-      timeout: 5000,
-      headers: {
-        'Accept': 'application/json'
-      }
-    }
-  );
-
-  const data = response.data;
-      
-      if (data.paid) {
-        console.log(`✅ Payment verified from backend - Method: ${data.method}`);
-        safeUpdatePaymentStatus(true, data.method || 'backend');
-        return { paid: true, method: data.method || 'backend' };
-      } else {
-        console.log('🔒 No payment found from backend - game locked');
-        safeUpdatePaymentStatus(false);
-        return { paid: false, method: null };
-      }
-      
-    } catch (backendError) {
-      console.warn('⚠️ Backend connection failed:', backendError.message);
-      
-      // ✅ FALLBACK TO LOCAL-ONLY MODE:
-      if (backendError.name === 'AbortError') {
-        console.log('⏰ Backend request timeout - using local mode');
-      } else if (backendError.message.includes('CORS')) {
-        console.log('🔒 CORS error - backend not configured yet');
-      } else if (backendError.message.includes('Failed to Axios request')) {
-        console.log('🌐 Network error - backend may be down');
-      }
-      
-      // Axios error handling
-  if (backendError.code === 'ECONNABORTED') {
-    console.log('⏰ Backend request timeout - using local mode');
-  } else if (backendError.message && backendError.message.includes('CORS')) {
-    console.log('🔒 CORS error - backend not configured yet');
-  } else if (backendError.message && backendError.message.includes('Network Error')) {
-    console.log('🌐 Network error - backend may be down');
-  }
-
-      // Default to locked state when backend unavailable
-      console.log('🔒 Backend unavailable - game locked (use URL parameters for testing)');
-      safeUpdatePaymentStatus(false);
-      return { paid: false, method: 'backend_unavailable' };
-    }
-  };
-
+}
 //------------------------------------------------------------------------------------------------------------
 async function startPaymentMonitoring(email) {
   // Monitor payment status every minute

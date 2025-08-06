@@ -468,7 +468,9 @@ async  unlockedLevels(email, level) {
      averageTime: newAverageTime,
      completionRate: newCompletionRate,
      perfectGames: isPerfectGame,
-     totalAttempts: totalAttempts
+     totalAttempts: totalAttempts,
+     completionTime: this.timeElapsed || 0, // Atau hitung sesuai logic
+     isPerfectGame: isPerfectGame === true
    });
 
     // 4. Ambil status user dari backend
@@ -532,6 +534,17 @@ async  unlockedLevels(email, level) {
     console.error('❌ Failed to sync progress from backend:', err);
   }
 }
+
+  // === CEK STATUS PEMBAYARAN DARI BACKEND ===
+    const paymentStatus = await window.checkPaymentStatusFromBackend(email);
+    if (paymentStatus.isPaid) {
+      this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+      this.unlockGameAfterPurchase && this.unlockGameAfterPurchase();
+      console.log('✅ Game unlocked: pembayaran terverifikasi');
+    } else {
+      this.lockAllGameplayButtons && this.lockAllGameplayButtons();
+      console.log('🔒 Game locked: belum ada pembayaran');
+    }
 
     // Jika belum game over, lanjut ke Level01Scene
     // Show loading indicator

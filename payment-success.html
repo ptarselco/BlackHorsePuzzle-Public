@@ -54,7 +54,7 @@
       window.location.href = "/index.html";
     }
 
-  // 3. VERIFIKASI TOKEN PAYPAL 
+  // **VERIFIKASI TOKEN PAYPAL** 
   if (!token || !payerID || !email) {
     alert("❌ Missing PayPal payment information.");
     window.location.href = "/index.html";
@@ -92,7 +92,46 @@
     }
   
 
-// 1.** VERIFY-PAYMENT**
+// Fungsi cek status pembayaran dari backend (lengkap)
+window.checkPaymentStatusFromBackend = async function(email) {
+  try {
+    const encodedEmail = encodeURIComponent(email);
+    const res = await axios.get(`https://backend-paypalblackhorsepuzzle.onrender.com/api/payment-status/${encodedEmail}`);
+    const data = res.data;
+
+    if (data && data.success) {
+      // Kembalikan seluruh data status pembayaran, bukan hanya boolean
+      return {
+        isPaid: data.isPaid === true,
+        supportAmount: data.supportAmount,
+        paymentMethods: data.paymentMethods,
+        gameStats: data.gameStats,
+        user: data.user
+      };
+    } else {
+      // Jika respons tidak sesuai harapan
+      return {
+        isPaid: false,
+        supportAmount: 0,
+        paymentMethods: [],
+        gameStats: {},
+        user: null
+      };
+    }
+  } catch (err) {
+    console.error('Failed to check payment status:', err);
+    // Jika error, kembalikan default
+    return {
+      isPaid: false,
+      supportAmount: 0,
+      paymentMethods: [],
+      gameStats: {},
+      user: null
+    };
+  }
+};
+
+// ** VERIFY-PAYMENT**
 axios.get('https://backend-paypalblackhorsepuzzle.onrender.com/api/verify-payment', {
       params: { txnId, email },
       timeout: 5000,
@@ -128,7 +167,7 @@ axios.get('https://backend-paypalblackhorsepuzzle.onrender.com/api/verify-paymen
         window.location.href = "/payment-error.html";
       });
 
-// 2. **VERIFIKASI ORDER PAYPAL DARI FRONTEND**
+// **VERIFIKASI ORDER PAYPAL DARI FRONTEND**
 axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/verify-paypal', {
   paypalOrderId,
   email
@@ -150,7 +189,7 @@ axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/verify-paypa
   window.location.href = "/payment-error.html";
 });
 
-//3. **CEK STATUS PEMBAYARAN SUKSES**
+// **CEK STATUS PEMBAYARAN SUKSES**
 async function handlePaymentSuccess(email) {
   try {
     const res = await axios.get(`https://backend-paypalblackhorsepuzzle.onrender.com/api/payment-status/${email}`);
@@ -182,45 +221,8 @@ async function handlePaymentSuccess(email) {
   }
 }
 
-// 4. CEK STATUS PEMBAYARAN DARI BACKEND
-async function handlePaymentSuccess(email) {
-  try {
-    // Cek status pembayaran dari backend
-    const response = await axios.get(
-      'https://backend-paypalblackhorsepuzzle.onrender.com/api/check-payment',
-      {
-        params: { userId: email },
-        timeout: 5000,
-        headers: { 'Accept': 'application/json' }
-      }
-    );
-    const data = response.data;
 
-    if (data && data.paid === true) {
-      localStorage.setItem(`paymentVerified_${email}`, 'true');
-      localStorage.removeItem(`gameOver_${email}`);
-      //localStorage.setItem(`score_${email}`, "0");
-      // --Unlock level jika scene aktif--
-      if (window.Level01Scene && typeof window.Level01Scene.prototype.unlockGameAfterPurchase === 'function') {
-        const scene = window.game && window.game.scene && window.game.scene.getScene('Level01Scene');
-        if (scene && typeof scene.unlockGameAfterPurchase === 'function') {
-          scene.unlockGameAfterPurchase();
-        }
-      }
-      //--unlock game dan redirect--
-      window.location.href = "/index.html";
-    } else {
-      alert("❌ Payment not verified yet.");
-      window.location.href = "/payment-error.html";
-    }
-  } catch (err) {
-    console.error("Verification error:", err);
-    alert("❌ Failed to verify payment.");
-    window.location.href = "/payment-error.html";
-  }
-}
-
-// 5. VERIFIKASI ORDER PAYPAL
+// **VERIFIKASI ORDER PAYPAL** = index.html
   async function verifyPayPalOrder(orderId, email) {
   try {
     console.log('🅿️ Verifying PayPal order:', orderId);

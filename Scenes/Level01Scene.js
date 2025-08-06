@@ -126,6 +126,19 @@ class Level01Scene extends Phaser.Scene {
     return;
   }
 
+  window.addEventListener('beforeunload', () => {
+  const email = localStorage.getItem("playerEmail");
+  if (!email) return;
+  const progress = {
+    level01Score: window.level01Score || 0,
+    totalPlays: window.totalPlays || 0,
+    isGameOver: window.isGameOver || false
+  };
+  const url = `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`;
+  navigator.sendBeacon(url, JSON.stringify(progress));
+  });
+
+
   if (email) {
     syncProgressFromBackend(email);
   }
@@ -142,7 +155,9 @@ class Level01Scene extends Phaser.Scene {
     averageTime: 0,
     completionRate: 0,
     perfectGames: 0,
-    totalAttempts: 0
+    totalAttempts: 0,
+    completionTime: 0,
+    isPerfectGame:0
   };
   localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
 
@@ -3579,7 +3594,7 @@ showHoldMessageAboveNotes() {
               // PANGGIL UNLOCK LEVEL DI SINI
               const email = localStorage.getItem('playerEmail');
               const unlocked = await unlockedLevels(email, 'Level01Scene');
-            if (unlocked) {
+              if (unlocked) {
               let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
               userData.isGameOver = false;
               localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
