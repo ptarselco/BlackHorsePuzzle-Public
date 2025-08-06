@@ -3593,7 +3593,7 @@ showHoldMessageAboveNotes() {
               // ✅ UNLOCK GAME AFTER PURCHASE
               // PANGGIL UNLOCK LEVEL DI SINI
               const email = localStorage.getItem('playerEmail');
-              const unlocked = await unlockedLevels(email, 'Level01Scene');
+              const unlocked = await this.unlockedLevels(email, 'Level01Scene');
               if (unlocked) {
               let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
               userData.isGameOver = false;
@@ -3811,7 +3811,7 @@ showHoldMessageAboveNotes() {
               // ✅ UNLOCK GAME AFTER PURCHASE
               // PANGGIL UNLOCK LEVEL DI SINI
               //const email = localStorage.getItem('playerEmail');
-              const unlocked = await unlockedLevels(email, 'Level01Scene');
+              const unlocked = await this.unlockedLevels(email, 'Level01Scene');
               if (unlocked) {
               let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
               userData.isGameOver = false;
