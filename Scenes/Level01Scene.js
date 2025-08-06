@@ -3784,6 +3784,13 @@ showHoldMessageAboveNotes() {
 
     // Handler pembayaran
     this.payBtn.on('pointerdown', () => { // ---> INI ADA
+        // ✅ INISIALISASI EMAIL DI SINI:
+    const email = localStorage.getItem('playerEmail');
+    
+    if (!email) {
+        alert('Email not found. Please login again.');
+        return;
+    }
              // account ini untuk donasi
              // window.open('https://www.paypal.com/ncp/payment/7MARDZW8BDWVG', '_blank'); //ini tanpa harga dan tanpa variant 
              // PAY handler with dynamic PayPal amount
@@ -3803,9 +3810,9 @@ showHoldMessageAboveNotes() {
 
               // ✅ UNLOCK GAME AFTER PURCHASE
               // PANGGIL UNLOCK LEVEL DI SINI
-              const email = localStorage.getItem('playerEmail');
+              //const email = localStorage.getItem('playerEmail');
               const unlocked = await unlockedLevels(email, 'Level01Scene');
-            if (unlocked) {
+              if (unlocked) {
               let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
               userData.isGameOver = false;
               localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
