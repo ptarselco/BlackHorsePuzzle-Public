@@ -1412,6 +1412,7 @@ showGameOverReturnMessage() {
     return;
   }
 
+  
   // ✅ IF level01Score = 0, SHOW FULL GAME OVER PROTECTION WITH CLOSE BUTTON:
   console.log('🔒 level01Score is 0 - Full Game Over protection active');
 
@@ -2918,17 +2919,30 @@ async lockLevel(email, level) {
 // 7. UNLOCK LEVEL
 async  unlockedLevels(email, level) {
   try {
-   // Cek status pembayaran user
-    const statusRes = await axios.get(
-      `https://backend-paypalblackhorsepuzzle.onrender.com/api/payment-status/${email}`,
-      { timeout: 90000 }
-    );
-    const hasPaid = statusRes.data.isPaid === true;
+    console.log('🔍 Checking unlock status for:', email);
 
-    if (!hasPaid) {
-      console.warn('User belum melakukan pembayaran.');
+    // ✅ GUNAKAN FUNCTION YANG SAMA DENGAN AUTO-CHECK:
+    const paymentData = await checkPaymentStatusFromBackend(email);
+    
+    if (!paymentData || paymentData.isPaid !== true) {
+      console.warn('❌ User belum melakukan pembayaran atau payment status tidak valid.');
+      console.log('Payment data:', paymentData);
       return false;
-    } 
+    }
+
+    console.log('✅ Payment verified! Proceeding to unlock level...');
+
+   // Cek status pembayaran user
+   // const statusRes = await axios.get(
+     // `https://backend-paypalblackhorsepuzzle.onrender.com/api/payment-status/${email}`,
+     // { timeout: 90000 }
+    //);
+    //const hasPaid = statusRes.data.isPaid === true;
+
+    //if (!hasPaid) {
+      //console.warn('User belum melakukan pembayaran.');
+      //return false;
+    //} 
 
     // Jika sudah bayar, lanjut unlock level
     const unlockRes = await axios.post(
@@ -2936,8 +2950,16 @@ async  unlockedLevels(email, level) {
       { email, level },
       { timeout: 90000 }
     );
+
+    console.log('🔓 Unlock level response:', unlockRes.data);
+
     this.unblur10PuzzleButton(); // Hapus blur tombol 10 puzzle
-    return unlockRes.data.success || unlockRes.data.unlocked === true;
+
+    const isUnlocked = unlockRes.data.success || unlockRes.data.unlocked === true;
+    console.log('🎯 Final unlock result:', isUnlocked);
+    
+    return isUnlocked;
+    //return unlockRes.data.success || unlockRes.data.unlocked === true;
     // Response backend bisa { success: true, unlocked: true }
     //return res.data.success || res.data.unlocked === true;
   } catch (err) {
@@ -3510,56 +3532,12 @@ showHoldMessageAboveNotes() {
   // Definisikan ShowPaymentPanel (Tutup panel daftar music sebelum tampilkan panel pembayaran)
   // const showPaymentPanel = () => { //menyebabkan penel bayar tidak muncul
   // Tutup panel musik sebelum tampilkan panel pembayaran
-  async showPaymentPanel(musicTitle, baseAmount, taxRate, taxAmount, totalAmount, musicIndex) {
-             // ✅ CHECK PAYMENT STATUS FIRST BEFORE SHOWING PANEL
-  const email = localStorage.getItem('playerEmail');
-  if (email) {
-    console.log('🔍 Checking payment before showing music panel for:', email);
-    
-    try {
-      const paymentData = await checkPaymentStatusFromBackend(email);
-      if (paymentData && paymentData.isPaid === true) {
-        console.log('✅ Payment already detected! Auto-unlocking instead of showing music panel...');
-        
-        // Clear game over state
-        localStorage.removeItem(`gameOver_${email}`);
-        
-        // Update user data
-        let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
-        userData.isGameOver = false;
-        userData.isPaid = true;
-        localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
-        
-        // Unlock game immediately
-        if (this.playBtn) {
-          this.playBtn.setInteractive();
-          this.playBtn.setAlpha(1);
-        }
-        if (this.lv01Puzzle10Btn) {
-          this.lv01Puzzle10Btn.setInteractive();
-          this.lv01Puzzle10Btn.setAlpha(1);
-        }
-        
-        // Hide Game Over panel if exists
-        if (this.gameOverImg) {
-          this.gameOverImg.destroy();
-          this.gameOverImg = null;
-        }
-        alert('Payment verified! Game unlocked automatically.');
-        location.reload();
-        return; // ← STOP - DON'T SHOW PAYMENT PANEL
-      }
-    } catch (error) {
-      console.error('❌ Payment check error in showPaymentPanel:', error);
-    }
-  }
-  
+  showPaymentPanel(musicTitle, baseAmount, taxRate, taxAmount, totalAmount, musicIndex) {
+   
   // ✅ CONTINUE WITH ORIGINAL PAYMENT PANEL CODE:
   console.log('💰 Showing music payment panel...');    
             
-            
-            
-              // Close music panel
+                  // Close music panel
             if (this.musicPanelGroup) {
               this.musicPanelGroup.clear(true, true);
               this.musicPanelGroup = null;
@@ -3631,38 +3609,48 @@ showHoldMessageAboveNotes() {
 
              // account ini untuk donasi
              // window.open('https://www.paypal.com/ncp/payment/7MARDZW8BDWVG', '_blank'); //ini tanpa harga dan tanpa variant 
-             // PAY handler with dynamic PayPal amount
-             window.open('https://www.paypal.com/ncp/payment/ZVFL3ND789CVE');
-             //window.open('https://your-xsolla-link', '_blank');  // belum selesai paystationnya
-             this.showWaitingForPaymentMessage();
+// PAY handler with dynamic PayPal amount
+window.open('https://www.paypal.com/ncp/payment/ZVFL3ND789CVE');
+//window.open('https://your-xsolla-link', '_blank');  // belum selesai paystationnya
+this.showWaitingForPaymentMessage();
              
-              // Polling ke backend setiap beberapa detik
-             this.paymentCheckInterval = setInterval(async () => {
-              const paid = await checkPaymentStatusFromBackend(email);
-              if (paid) {
-              clearInterval(this.paymentCheckInterval);
+            // Polling ke backend setiap beberapa detik
+this.paymentCheckInterval = setInterval(async () => {
+  console.log('🔍 Polling payment status...');
+  
+  const paymentData = await checkPaymentStatusFromBackend(email);
+  
+  if (paymentData && paymentData.isPaid === true) {
+    console.log('✅ Payment confirmed! Processing unlock...');
+    clearInterval(this.paymentCheckInterval);
 
-              // ✅ Refresh status pembayaran dari backend
-              const status = await this.getUserStatus(email, 'Level01, Level01Scene');
-              this.isPaid = status?.isPaid || false;
-
-              // ✅ UNLOCK GAME AFTER PURCHASE
-              // PANGGIL UNLOCK LEVEL DI SINI
-              //const email = localStorage.getItem('playerEmail');
-              const unlocked = await this.unlockedLevels(email, 'Level01Scene');
-              if (unlocked) {
-              let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
-               userData.isGameOver = false;
-               localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
-               localStorage.removeItem(`gameOver_${email}`);
-               alert('Level successfully unlocked. Enjoy playing again!');
-               this.unblur10PuzzleButton();
-               this.unlockGameAfterPurchase();
-               //window.unlockPlayAndHideGameOver && window.unlockPlayAndHideGameOver();
-               location.reload();
-              }
-            }
-          }, 3000);
+    // ✅ DIRECT UNLOCK CALL:
+    const unlocked = await this.unlockedLevels(email, 'Level01Scene');
+    
+    if (unlocked) {
+      console.log('🎉 Level successfully unlocked!');
+      
+      // Clear game over state
+      let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+      userData.isGameOver = false;
+      userData.isPaid = true;
+      localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+      localStorage.removeItem(`gameOver_${email}`);
+      
+      // Unlock UI
+      this.unblur10PuzzleButton();
+      this.unlockGameAfterPurchase();
+      
+      alert('Level successfully unlocked. Enjoy playing again!');
+      location.reload();
+    } else {
+      console.error('❌ Unlock failed despite payment confirmation');
+      alert('Payment confirmed but unlock failed. Please refresh the page.');
+    }
+  } else {
+    console.log('⏳ Payment not confirmed yet...');
+  }
+}, 5000); // Check every 5 seconds
             
               // Setelah pembayaran sukses:
               // ✅ Rest of payment handling code continues...
@@ -3750,51 +3738,8 @@ showHoldMessageAboveNotes() {
  }
   //-------------------------------------------------------------
   // showFavoritPayPanel untuk 4 macam menu slain music favorit
-async showFavoritPayPanel(label, seconds, price, btnRef) {
-// ✅ CHECK PAYMENT STATUS FIRST BEFORE SHOWING PANEL
-  const email = localStorage.getItem('playerEmail');
-  if (email) {
-    console.log('🔍 Checking payment before showing music panel for:', email);
-    
-    try {
-      const paymentData = await checkPaymentStatusFromBackend(email);
-      if (paymentData && paymentData.isPaid === true) {
-        console.log('✅ Payment already detected! Auto-unlocking instead of showing music panel...');
-        
-        // Clear game over state
-        localStorage.removeItem(`gameOver_${email}`);
-        
-        // Update user data
-        let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
-        userData.isGameOver = false;
-        userData.isPaid = true;
-        localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
-        
-        // Unlock game immediately
-        if (this.playBtn) {
-          this.playBtn.setInteractive();
-          this.playBtn.setAlpha(1);
-        }
-        if (this.lv01Puzzle10Btn) {
-          this.lv01Puzzle10Btn.setInteractive();
-          this.lv01Puzzle10Btn.setAlpha(1);
-        }
-        
-        // Hide Game Over panel if exists
-        if (this.gameOverImg) {
-          this.gameOverImg.destroy();
-          this.gameOverImg = null;
-        }
-         alert('Payment verified! Game unlocked automatically.');
-         location.reload();
-        return; // ← STOP - DON'T SHOW PAYMENT PANEL
-      }
-    } catch (error) {
-      console.error('❌ Payment check error in showPaymentPanel:', error);
-    }
-  }
-  
-     // Pastikan status favorit tidak aktif agar tombol bisa di klik
+showFavoritPayPanel(label, seconds, price, btnRef) {
+    // Pastikan status favorit tidak aktif agar tombol bisa di klik
     this.isFavoritActive = false;
 
   // Tutup panel musik jika masih terbuka
@@ -3894,32 +3839,52 @@ async showFavoritPayPanel(label, seconds, price, btnRef) {
              this.showWaitingForPaymentMessage();
              
           // Polling ke backend setiap beberapa detik
-              this.paymentCheckInterval = setInterval(async () => {
-              const paid = await checkPaymentStatusFromBackend(email);
-              if (paid) {
-              clearInterval(this.paymentCheckInterval);
+            this.paymentCheckInterval = setInterval(async () => {
+              console.log('🔍 Polling payment status...');
+
+              //const paid = await checkPaymentStatusFromBackend(email);
+              //if (paid) {
+              //clearInterval(this.paymentCheckInterval);
 
               // ✅ Refresh status pembayaran dari backend
-              const status = await this.getUserStatus(email, 'Level01, Level01Scene');
-              this.isPaid = status?.isPaid || false;
+              //const status = await this.getUserStatus(email, 'Level01, Level01Scene');
+              //this.isPaid = status?.isPaid || false;
+
+            const paymentData = await checkPaymentStatusFromBackend(email);
+  
+            if (paymentData && paymentData.isPaid === true) {
+              console.log('✅ Payment confirmed! Processing unlock...');
+              clearInterval(this.paymentCheckInterval);
 
               // ✅ UNLOCK GAME AFTER PURCHASE
               // PANGGIL UNLOCK LEVEL DI SINI
               //const email = localStorage.getItem('playerEmail');
               const unlocked = await this.unlockedLevels(email, 'Level01Scene');
+
               if (unlocked) {
+                console.log('🎉 Level successfully unlocked!');
+
               let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
               userData.isGameOver = false;
+              userData.isPaid = true;
               localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
               localStorage.removeItem(`gameOver_${email}`);
-              alert('Level successfully unlocked. Enjoy playing again!');
+
+              // Unlock UI
               this.unblur10PuzzleButton();
               this.unlockGameAfterPurchase();
-              //window.unlockPlayAndHideGameOver && window.unlockPlayAndHideGameOver();
+
+              alert('Level successfully unlocked. Enjoy playing again!');
               location.reload();
-              }   
-            }
-           }, 3000);
+            } else {
+      console.error('❌ Unlock failed despite payment confirmation');
+      alert('Payment confirmed but unlock failed. Please refresh the page.');
+    }
+  } else {
+    console.log('⏳ Payment not confirmed yet...');
+  }
+}, 5000); // Check every 5 seconds 
+           
       
             
       // Setelah pembayaran sukses:
