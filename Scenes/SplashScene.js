@@ -124,16 +124,38 @@ async getUserProgress(email) {
       {}, // body kosong, karena email sudah di URL param
     { timeout: 90000 }
     );
-    const progress = res.data.progress;
-    // Deteksi status user
+    const progress = res.data.progress  || {};
+    // ✅ CALCULATE USER TYPES AND RETURN THEM:
     const newUser = !progress || progress.totalPlays === 0;
     const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
     const winUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) > 0;
+    
+    console.log(`👤 User classification: newUser=${newUser}, lossUser=${lossUser}, winUser=${winUser}`);
+    console.log(`📊 Progress data: totalPlays=${progress.totalPlays}, level01Score=${progress.level01Score}`);
     // Response: { success, progress, user }  
-    return res.data; // progress: { level01Score, level01HighScore, totalPlays, ... }
+    return {
+    success: res.data.success,
+      progress: progress,
+      user: res.data.user,
+      // ✅ ADD USER TYPES:
+      newUser: newUser,
+      lossUser: lossUser,
+      winUser: winUser,
+      totalPlays: progress.totalPlays || 0,
+      level01Score: progress.level01Score || 0
+    };
+     
   } catch (err) {
     console.error('❌ Get user progress error:', err);
-    return { newUser: true, lossUser: false, winUser: false, progress: null };
+    return { 
+      newUser: true, 
+      lossUser: false, 
+      winUser: false, 
+      progress: null,
+      success: false,
+      totalPlays: 0,
+      level01Score: 0
+     };
   }
 }
 
@@ -320,17 +342,19 @@ async lockLevel(email, level) {
 // 7. UNLOCK LEVEL
 async  unlockedLevels(email, level) {
   try {
-   // Cek status pembayaran user
-    const statusRes = await axios.get(
-      `https://backend-paypalblackhorsepuzzle.onrender.com/api/payment-status/${email}`,
-      { timeout: 90000 }
-    );
-    const hasPaid = statusRes.data.isPaid === true;
+    console.log('🔍 Checking unlock status for:', email);
 
-    if (!hasPaid) {
-      console.warn('User belum melakukan pembayaran.');
+   // ✅ USE EXISTING checkPaymentStatusFromBackend FUNCTION:
+    const paymentData = await checkPaymentStatusFromBackend(email);
+    
+    if (!paymentData || paymentData.isPaid !== true) {
+      console.warn('❌ User belum melakukan pembayaran atau payment status tidak valid.');
+      console.log('Payment data:', paymentData);
       return false;
-    } 
+    }
+
+    console.log('✅ Payment verified! Proceeding to unlock level...');
+   
 
     // Jika sudah bayar, lanjut unlock level
     const unlockRes = await axios.post(
@@ -338,8 +362,16 @@ async  unlockedLevels(email, level) {
       { email, level },
       { timeout: 90000 }
     );
+
+    console.log('🔓 Unlock level response:', unlockRes.data);
+
     this.unblur10PuzzleButton(); // Hapus blur tombol 10 puzzle
-    return unlockRes.data.success || unlockRes.data.unlocked === true;
+
+    //return unlockRes.data.success || unlockRes.data.unlocked === true;
+    const isUnlocked = unlockRes.data.success || unlockRes.data.unlocked === true;
+    console.log('🎯 Final unlock result:', isUnlocked);
+
+    return isUnlocked;
     // Response backend bisa { success: true, unlocked: true }
     //return res.data.success || res.data.unlocked === true;
   } catch (err) {

@@ -264,23 +264,26 @@ if ('serviceWorker' in navigator) {
 // Fungsi cek status pembayaran dari backend (lengkap)
 window.checkPaymentStatusFromBackend = async function(email) {
   try {
-    const encodedEmail = encodeURIComponent(email);
-    const res = await axios.get(
-      `https://backend-paypalblackhorsepuzzle.onrender.com/api/payment-status/${encodedEmail}`, 
+    //const encodedEmail = encodeURIComponent(email);
+    const res = await axios.post(
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/payment-status/${encodeURIComponent(email)}/payment-status`,
+      { }, // Send email in POST body
       {timeout: 30000}
     );
     const data = res.data;
+    console.log('💳 Payment status response:', data);
 
     if (data && data.success) {
       // Kembalikan seluruh data status pembayaran, bukan hanya boolean
       return {
         isPaid: data.isPaid === true,
-        supportAmount: data.supportAmount,
-        paymentMethods: data.paymentMethods,
-        gameStats: data.gameStats,
-        user: data.user
+        supportAmount: data.supportAmount || 0,
+        paymentMethods: data.paymentMethods || [],
+        gameStats: data.gameStats || {},
+        user: data.user || null
       };
     } else {
+      console.log('⚠️ Payment check: no success flag in response');
       // Jika respons tidak sesuai harapan
       return {
         isPaid: false,
@@ -292,7 +295,7 @@ window.checkPaymentStatusFromBackend = async function(email) {
     }
   } catch (err) {
     console.error('Failed to check payment status:', err);
-    // Jika error, kembalikan default
+    // Jika error, kembalikan default unpaid status
     return {
       isPaid: false,
       supportAmount: 0,
@@ -851,13 +854,70 @@ function updateGameScore(email, newScore) { //versi co 4.1
 function showGameOverWarning(email) {
   console.log('⚠️ Showing game over warning for:', email);
 
+  // ✅ CHECK IF PAYMENT ALREADY MADE FIRST:
+  const urlParams = new URLSearchParams(window.location.search);
+  const hasPayment = urlParams.get('paid') === '1' || 
+                     urlParams.get('paypal_paid') === '1' || 
+                     urlParams.get('paypal_success') === 'true';
+if (hasPayment) {
+ console.log('💳 Payment detected - blocking Game Over warning');
+    return; // Don't show warning if payment exists
+  }
+
+  // ✅ CHECK IF REALLY GAME OVER:
+  const isGameOver = localStorage.getItem(`gameOver_${email}`) === 'true';
+  if (!isGameOver) {
+    console.log('🎮 Game not over - blocking warning');
+    return;
+  }
+
+  // Remove existing warning
+  const existing = document.getElementById('game-over-warning');
+  if (existing) existing.remove();
+
+  // Create warning element
+  const warning = document.createElement('div');
+  warning.id = 'game-over-warning';
+  warning.style.cssText = `
+    position: fixed; top: 100px; right: 30px;
+    background: rgba(255, 0, 0, 0.9);
+    color: white; padding: 15px 20px;
+    border-radius: 8px; z-index: 9999;
+    font-size: 14px; font-weight: bold;
+    box-shadow: 0 4px 12px rgba(255, 0, 0, 0.3);
+    border: 2px solid #ff6666;
+    max-width: 300px;
+  `;
+
+  warning.innerHTML = `
+    <div style="margin-bottom: 10px;">🔒 GAME OVER</div>
+    <div style="font-size: 12px; line-height: 1.4;">
+      Your session ended in Game Over.<br>
+      Purchase favorite menu to continue playing.
+    </div>
+    <button onclick="this.parentElement.remove()" 
+            style="background: #fff; color: #000; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-top: 10px; font-size: 12px;">
+      OK
+    </button>
+  `;
+  
+  document.body.appendChild(warning);
+  
+  // Auto remove after 8 seconds
+  setTimeout(() => {
+    if (document.getElementById('game-over-warning')) {
+      document.getElementById('game-over-warning').remove();
+    }
+  }, 8000);
+}
+
   // Cari posisi loginBox
   const loginBox = document.getElementById('logoutBtn');
   const rect = logoutBtn ? logoutBtn.getBoundingClientRect() : { top: 20, left: window.innerWidth - 180 };
   
   const warning = document.createElement('div');
 }
-}
+
 // ✅ UTILITY FUNCTIONS:
 function showLoginForm() {
   document.getElementById("loginBox").style.display = "block";
@@ -875,28 +935,35 @@ window.addEventListener('DOMContentLoaded', async function() {
   let playerEmail = localStorage.getItem("playerEmail"); 
   console.log('📄 Enhanced Black Horse Puzzle - Initializing secure system');
   
-   if (playerEmail) {
+  if (playerEmail) {
     const isValidEmail = verifyEmailFormat(playerEmail);
     if (isValidEmail) {
       const scoreStatus = checkPlayerScoreStatus(playerEmail);
-      const emailVerified = await checkEmailVerifiedFromBackend(playerEmail);
-
-      // ...lanjutkan logika sesuai status emailVerified dan scoreStatus...
-      console.log('🔍 level01Score status check:', scoreStatus);
-
-      if (scoreStatus.needsFavorite) {
-        console.log('⚠️ User needs to give favorite to continue');
-        showGameOverWarning(playerEmail);
-      } else if (scoreStatus.canPlay) {
-        console.log('✅ User can continue playing with level01Score:', scoreStatus.currentScore);
-        const userScore = parseInt(localStorage.getItem(`score_${playerEmail}`) || 0);
-        updateGameScore(playerEmail, userScore);
-
-        const paymentResult = await checkPaymentStatus(playerEmail);
-        console.log('💳 Payment status:', paymentResult);
-        startPaymentMonitoring(playerEmail);
+      
+      // ✅ CHECK PAYMENT STATUS FIRST BEFORE SHOWING WARNING:
+      try {
+        const paymentData = await checkPaymentStatusFromBackend(playerEmail);
+        console.log('💳 Initial payment check:', paymentData);
+        
+        if (paymentData && paymentData.isPaid === true) {
+          console.log('✅ Payment detected - user can play normally');
+          // Clear game over state
+          localStorage.removeItem(`gameOver_${playerEmail}`);
+          
+          // Don't show warning - user already paid
+        } else if (scoreStatus.needsFavorite) {
+          console.log('⚠️ User needs to give favorite to continue');
+          showGameOverWarning(playerEmail); // Only show if no payment
+        }
+      } catch (error) {
+        console.error('❌ Payment check error:', error);
+        
+        // Fallback: show warning only if really needed
+        if (scoreStatus.needsFavorite) {
+          showGameOverWarning(playerEmail);
+        }
       }
-
+      
       console.log('✅ User logged in successfully with enhanced features');
     } else {
       console.log('❌ Invalid email format, clearing login');
@@ -904,7 +971,7 @@ window.addEventListener('DOMContentLoaded', async function() {
       showLoginForm();
     }
   } else {
-    // Belum login, tampilkan login form
+    // Show login form
     document.getElementById("loginBox").style.display = "block";
     document.getElementById("verificationBox").style.display = "none";
     document.getElementById("logoutBtn").style.display = "none";
