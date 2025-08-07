@@ -265,7 +265,10 @@ if ('serviceWorker' in navigator) {
 window.checkPaymentStatusFromBackend = async function(email) {
   try {
     const encodedEmail = encodeURIComponent(email);
-    const res = await axios.get(`https://backend-paypalblackhorsepuzzle.onrender.com/api/payment-status/${encodedEmail}`);
+    const res = await axios.get(
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/payment-status/${encodedEmail}`, 
+      {timeout: 30000}
+    );
     const data = res.data;
 
     if (data && data.success) {

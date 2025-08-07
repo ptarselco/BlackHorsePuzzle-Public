@@ -3573,6 +3573,14 @@ showHoldMessageAboveNotes() {
 
             
             this.payBtn.on('pointerdown', () => { // ---> INI ADA
+              // ✅ INISIALISASI EMAIL DI SINI:
+              const email = localStorage.getItem('playerEmail');
+    
+              if (!email) {
+              alert('Email not found. Please login again.');
+              return;
+             } 
+
              // account ini untuk donasi
              // window.open('https://www.paypal.com/ncp/payment/7MARDZW8BDWVG', '_blank'); //ini tanpa harga dan tanpa variant 
              // PAY handler with dynamic PayPal amount
@@ -3581,7 +3589,7 @@ showHoldMessageAboveNotes() {
              this.showWaitingForPaymentMessage();
              
               // Polling ke backend setiap beberapa detik
-              this.paymentCheckInterval = setInterval(async () => {
+             this.paymentCheckInterval = setInterval(async () => {
               const paid = await checkPaymentStatusFromBackend(email);
               if (paid) {
               clearInterval(this.paymentCheckInterval);
@@ -3592,24 +3600,22 @@ showHoldMessageAboveNotes() {
 
               // ✅ UNLOCK GAME AFTER PURCHASE
               // PANGGIL UNLOCK LEVEL DI SINI
-              const email = localStorage.getItem('playerEmail');
+              //const email = localStorage.getItem('playerEmail');
               const unlocked = await this.unlockedLevels(email, 'Level01Scene');
               if (unlocked) {
               let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
-              userData.isGameOver = false;
-              localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
-              localStorage.removeItem(`gameOver_${email}`);
-              alert('Level successfully unlocked. Enjoy playing again!');
-              this.unblur10PuzzleButton();
-              this.unlockGameAfterPurchase();
-              //window.unlockPlayAndHideGameOver && window.unlockPlayAndHideGameOver();
-              location.reload();
+               userData.isGameOver = false;
+               localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+               localStorage.removeItem(`gameOver_${email}`);
+               alert('Level successfully unlocked. Enjoy playing again!');
+               this.unblur10PuzzleButton();
+               this.unlockGameAfterPurchase();
+               //window.unlockPlayAndHideGameOver && window.unlockPlayAndHideGameOver();
+               location.reload();
               }
             }
           }, 3000);
             
-       
-  
               // Setelah pembayaran sukses:
               // ✅ Rest of payment handling code continues...
               if (this.payPanel) this.payPanel.destroy();
@@ -3624,8 +3630,6 @@ showHoldMessageAboveNotes() {
                if (this.mainMusic && this.mainMusic.isPlaying) this.mainMusic.stop();
                if (this.winMusic && this.winMusic.isPlaying) this.winMusic.stop();
               
-
-
               //------------------------------------------------------------
               // untuk mengembalikan timer ke no saat balik ke scene setelah beli favorit
               // Reset timer ke 00:00
