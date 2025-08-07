@@ -43,6 +43,43 @@
     }
    </script>
   
+<button id="forceUnlock" style="position: fixed; top: 110px; right: 10px; z-index: 9999; background: green; color: white; padding: 10px; font-size: 12px;">
+  FORCE UNLOCK
+</button>
+
+<script>
+document.getElementById('forceUnlock').onclick = function() {
+  const email = localStorage.getItem('playerEmail');
+  console.log('Testing email:', email);
+  
+  checkPaymentStatusFromBackend(email).then(data => {
+    console.log('Payment check result:', data);
+    
+    if (data && data.isPaid === true) {
+      console.log('✅ Payment detected, unlocking game...');
+      
+      // Remove game over state
+      localStorage.removeItem(`gameOver_${email}`);
+      
+      // Update user data
+      let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+      userData.isGameOver = false;
+      userData.isPaid = true;
+      localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+      
+      alert('Payment verified! Game unlocked. Refreshing...');
+      location.reload();
+    } else {
+      console.log('❌ Payment not detected by frontend');
+      alert('Payment not detected. Check console for details.');
+    }
+  }).catch(error => {
+    console.error('Error checking payment:', error);
+    alert('Error: ' + error.message);
+  });
+};
+</script>
+
     <style>
      html,body {
         margin: 0;
