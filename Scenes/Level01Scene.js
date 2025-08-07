@@ -2944,7 +2944,7 @@ async unlockedLevels(email, level) {
     
     // ✅ CORRECT URL untuk payment-status:
     const statusRes = await axios.post(
-      `https://backend-paypalblackhorsepuzzle.onrender.com/api/payment-status/${encodeURIComponent(email)}/payment-status`,
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/payment-status`,
       {}, // ✅ Empty body - email sudah di URL param
       { timeout: 90000 }
     );

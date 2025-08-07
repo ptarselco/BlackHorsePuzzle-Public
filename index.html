@@ -266,7 +266,7 @@ window.checkPaymentStatusFromBackend = async function(email) {
   try {
     //const encodedEmail = encodeURIComponent(email);
     const res = await axios.post(
-      `https://backend-paypalblackhorsepuzzle.onrender.com/api/payment-status/${encodeURIComponent(email)}/payment-status`,
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/payment-status`,
       { }, // Send email in POST body
       {timeout: 30000}
     );
@@ -305,26 +305,7 @@ window.checkPaymentStatusFromBackend = async function(email) {
     };
   }
 };
-// 4. PAYMENT VERIFICATION
-const params = new URLSearchParams(window.location.search);
-const payment = params.get("payment");
-const txnId = params.get("txnId");
-const email = params.get("email");
 
-if (payment === "success" && txnId && email) {
-     axios.get("https://backend-paypalblackhorsepuzzle.onrender.com/api/verify-payment", {
-    params: { txnId, email }
-  })
-    .then(res => {
-      const data = res.data;
-      if (data.isPaid) {
-        localStorage.setItem(`paymentVerified_${email}`, "true");
-        localStorage.removeItem(`gameOver_${email}`);
-        //localStorage.setItem(`score_${email}`, "0");
-        console.log("✅ Payment verified.");
-      }
-    });
-}
  // Client-side handling of payment status
 if (payment === "cancelled") {
   console.warn("❌ Payment cancelled by user.");
