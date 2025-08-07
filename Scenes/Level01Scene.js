@@ -3507,11 +3507,58 @@ showHoldMessageAboveNotes() {
   }
 
 
-         // Definisikan ShowPaymentPanel (Tutup panel daftar music sebelum tampilkan panel pembayaran)
-         // const showPaymentPanel = () => { //menyebabkan penel bayar tidak muncul
-            // Tutup panel musik sebelum tampilkan panel pembayaran
-            showPaymentPanel(musicTitle, baseAmount, taxRate, taxAmount, totalAmount, musicIndex) {
-            // Close music panel
+  // Definisikan ShowPaymentPanel (Tutup panel daftar music sebelum tampilkan panel pembayaran)
+  // const showPaymentPanel = () => { //menyebabkan penel bayar tidak muncul
+  // Tutup panel musik sebelum tampilkan panel pembayaran
+  async showPaymentPanel(musicTitle, baseAmount, taxRate, taxAmount, totalAmount, musicIndex) {
+             // ✅ CHECK PAYMENT STATUS FIRST BEFORE SHOWING PANEL
+  const email = localStorage.getItem('playerEmail');
+  if (email) {
+    console.log('🔍 Checking payment before showing music panel for:', email);
+    
+    try {
+      const paymentData = await checkPaymentStatusFromBackend(email);
+      if (paymentData && paymentData.isPaid === true) {
+        console.log('✅ Payment already detected! Auto-unlocking instead of showing music panel...');
+        
+        // Clear game over state
+        localStorage.removeItem(`gameOver_${email}`);
+        
+        // Update user data
+        let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+        userData.isGameOver = false;
+        userData.isPaid = true;
+        localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+        
+        // Unlock game immediately
+        if (this.playBtn) {
+          this.playBtn.setInteractive();
+          this.playBtn.setAlpha(1);
+        }
+        if (this.lv01Puzzle10Btn) {
+          this.lv01Puzzle10Btn.setInteractive();
+          this.lv01Puzzle10Btn.setAlpha(1);
+        }
+        
+        // Hide Game Over panel if exists
+        if (this.gameOverImg) {
+          this.gameOverImg.destroy();
+          this.gameOverImg = null;
+        }
+        alert('Payment verified! Game unlocked automatically.');
+        return; // ← STOP - DON'T SHOW PAYMENT PANEL
+      }
+    } catch (error) {
+      console.error('❌ Payment check error in showPaymentPanel:', error);
+    }
+  }
+  
+  // ✅ CONTINUE WITH ORIGINAL PAYMENT PANEL CODE:
+  console.log('💰 Showing music payment panel...');    
+            
+            
+            
+              // Close music panel
             if (this.musicPanelGroup) {
               this.musicPanelGroup.clear(true, true);
               this.musicPanelGroup = null;
@@ -3702,7 +3749,49 @@ showHoldMessageAboveNotes() {
  }
   //-------------------------------------------------------------
   // showFavoritPayPanel untuk 4 macam menu slain music favorit
-  showFavoritPayPanel(label, seconds, price, btnRef) {
+async showFavoritPayPanel(label, seconds, price, btnRef) {
+// ✅ CHECK PAYMENT STATUS FIRST BEFORE SHOWING PANEL
+  const email = localStorage.getItem('playerEmail');
+  if (email) {
+    console.log('🔍 Checking payment before showing music panel for:', email);
+    
+    try {
+      const paymentData = await checkPaymentStatusFromBackend(email);
+      if (paymentData && paymentData.isPaid === true) {
+        console.log('✅ Payment already detected! Auto-unlocking instead of showing music panel...');
+        
+        // Clear game over state
+        localStorage.removeItem(`gameOver_${email}`);
+        
+        // Update user data
+        let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+        userData.isGameOver = false;
+        userData.isPaid = true;
+        localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+        
+        // Unlock game immediately
+        if (this.playBtn) {
+          this.playBtn.setInteractive();
+          this.playBtn.setAlpha(1);
+        }
+        if (this.lv01Puzzle10Btn) {
+          this.lv01Puzzle10Btn.setInteractive();
+          this.lv01Puzzle10Btn.setAlpha(1);
+        }
+        
+        // Hide Game Over panel if exists
+        if (this.gameOverImg) {
+          this.gameOverImg.destroy();
+          this.gameOverImg = null;
+        }
+         alert('Payment verified! Game unlocked automatically.');
+        return; // ← STOP - DON'T SHOW PAYMENT PANEL
+      }
+    } catch (error) {
+      console.error('❌ Payment check error in showPaymentPanel:', error);
+    }
+  }
+  
      // Pastikan status favorit tidak aktif agar tombol bisa di klik
     this.isFavoritActive = false;
 
