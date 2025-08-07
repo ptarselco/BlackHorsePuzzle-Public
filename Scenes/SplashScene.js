@@ -435,6 +435,40 @@ async  unlockedLevels(email, level) {
     return;
   }
 
+  // ✅ TAMBAH AUTO PAYMENT CHECK DI SINI (line 437-438): tamabah 070825
+  console.log('🔍 Auto checking payment status for:', email);
+  try {
+    const paymentData = await checkPaymentStatusFromBackend(email);
+    if (paymentData && paymentData.isPaid === true) {
+      console.log('✅ Payment detected! Auto-unlocking game...');
+      
+      // Clear game over state
+      localStorage.removeItem(`gameOver_${email}`);
+      
+      // Update user data
+      let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+      userData.isGameOver = false;
+      userData.isPaid = true;
+      localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+      
+      // Hide glow effect
+      level1Glow.setVisible(false);
+      btnBlue.setVisible(false);
+      
+      console.log('🎮 Payment verified - proceeding to Level01Scene');
+      this.scene.start("Level01Scene", { 
+        isGameOver: false, 
+        isPaid: true,
+        level01Score: userData.level01Score || 0 
+      });
+      return;
+    } else {
+      console.log('❌ No payment detected - checking game over logic');
+    }
+  } catch (error) {
+    console.error('❌ Payment check error:', error);
+  }
+
   try {
      // 1. Ambil progress user dari backend
     //const progress = await this.getUserProgress(email);
