@@ -3546,6 +3546,7 @@ showHoldMessageAboveNotes() {
           this.gameOverImg = null;
         }
         alert('Payment verified! Game unlocked automatically.');
+        location.reload();
         return; // ← STOP - DON'T SHOW PAYMENT PANEL
       }
     } catch (error) {
@@ -3785,6 +3786,7 @@ async showFavoritPayPanel(label, seconds, price, btnRef) {
           this.gameOverImg = null;
         }
          alert('Payment verified! Game unlocked automatically.');
+         location.reload();
         return; // ← STOP - DON'T SHOW PAYMENT PANEL
       }
     } catch (error) {
