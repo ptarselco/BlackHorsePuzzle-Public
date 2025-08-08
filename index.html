@@ -267,7 +267,7 @@ window.checkPaymentStatusFromBackend = async function(email) {
     console.log('🔍 Checking payment status for:', email);
     //const encodedEmail = encodeURIComponent(email);
     const res = await axios.post(
-      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/payment-status`,
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/${encodeURIComponent(email)}/payment-status`,
       { }, // Send email in POST body
       {timeout: 30000}
     );
@@ -1605,7 +1605,7 @@ function updateGamePaymentStatus(isPaid, method = null) {
     
     console.log('👤 User classification:', { 
       newUser, 
-      activeUser, 
+      winUser, 
       lossUser, 
       currentScore, 
       totalPlays, 
@@ -1634,10 +1634,10 @@ function updateGamePaymentStatus(isPaid, method = null) {
           level01.scene.isActive()) {
         
         // ✅ PROPER LOGIC: New, Active, or Paid Users get access
-        if (newUser || activeUser || isPaid) {
+        if (newUser || winUser || isPaid) {
           console.log('✅ Unlocking game - User type:', 
             newUser ? 'NEW' : 
-            activeUser ? 'ACTIVE' : 
+            winUser ? 'ACTIVE' : 
             isPaid ? 'PAID' : 'UNKNOWN'
           );
           
