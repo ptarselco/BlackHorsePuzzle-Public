@@ -264,6 +264,7 @@ if ('serviceWorker' in navigator) {
 // Fungsi cek status pembayaran dari backend (lengkap)
 window.checkPaymentStatusFromBackend = async function(email) {
   try {
+    console.log('🔍 Checking payment status for:', email);
     //const encodedEmail = encodeURIComponent(email);
     const res = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/${encodeURIComponent(email)}/payment-status`,
@@ -307,10 +308,10 @@ window.checkPaymentStatusFromBackend = async function(email) {
 };
 
  // Client-side handling of payment status
-if (payment === "cancelled") {
-  console.warn("❌ Payment cancelled by user.");
+//if (payment === "cancelled") {
+  //console.warn("❌ Payment cancelled by user.");
   // (optional) localStorage.setItem('paymentCancelled', 'true');
-}
+//}
 
 </script>
 
@@ -837,10 +838,10 @@ function showGameOverWarning(email) {
 
   // ✅ CHECK IF PAYMENT ALREADY MADE FIRST:
   const urlParams = new URLSearchParams(window.location.search);
-  const hasPayment = urlParams.get('paid') === '1' || 
+  const hasPaid = urlParams.get('paid') === '1' || 
                      urlParams.get('paypal_paid') === '1' || 
                      urlParams.get('paypal_success') === 'true';
-if (hasPayment) {
+if (hasPaid) {
  console.log('💳 Payment detected - blocking Game Over warning');
     return; // Don't show warning if payment exists
   }
@@ -1580,13 +1581,44 @@ function updateGamePaymentStatus(isPaid, method = null) {
   console.log('[PAYMENT STATUS]', { isPaid, method }); 
   try {
      const playerEmail = localStorage.getItem("playerEmail");
-    if (!isPaid && playerEmail) {
+    //if (!isPaid && playerEmail) {
       // Tandai game over jika belum bayar
-      localStorage.setItem(`gameOver_${playerEmail}`, 'true');
-    } else if (isPaid && playerEmail) {
+      //localStorage.setItem(`gameOver_${playerEmail}`, 'true');
+    //} else if (isPaid && playerEmail) {
       // Reset game over jika sudah bayar
-      localStorage.setItem(`gameOver_${playerEmail}`, 'false');
+      //localStorage.setItem(`gameOver_${playerEmail}`, 'false');
+    //}
+    if (!playerEmail) {
+      console.log('❌ No email - cannot update payment status');
+      return;
     }
+    
+    // ✅ GET USER CLASSIFICATION:
+    const history = getPlayerGameHistory(playerEmail);
+    const currentScore = parseInt(localStorage.getItem(`score_${playerEmail}`) || 0);
+    const totalPlays = history.totalGamesPlayed || 0;
+    
+    // ✅ PROPER USER CLASSIFICATION:
+    const newUser = totalPlays === 0;  // Only 0 plays = new user
+    const winUser = totalPlays > 0 && currentScore > 0;  // 1 dst plays = active user
+    const lossUser = totalPlays >= 3 && currentScore === 0 && !isPaid;  // 3+ plays, no score, no payment
+    
+    console.log('👤 User classification:', { 
+      newUser, 
+      activeUser, 
+      lossUser, 
+      currentScore, 
+      totalPlays, 
+      isPaid 
+    });
+    
+    // ✅ UPDATE GAME OVER STATE:
+    if (isPaid) {
+      localStorage.setItem(`gameOver_${playerEmail}`, 'false');
+    } else if (lossUser) {
+      localStorage.setItem(`gameOver_${playerEmail}`, 'true');
+    }
+
     // ✅ COMPREHENSIVE SAFETY CHECK:
     if (window.Phaser && 
         window.game && 
@@ -1601,122 +1633,112 @@ function updateGamePaymentStatus(isPaid, method = null) {
           level01.scene.isActive &&
           level01.scene.isActive()) {
         
-        // Check if playBtn exists and has required methods
-        if (level01.playBtn && 
-            level01.playBtn.setInteractive &&
-            level01.playBtn.setAlpha &&
-            level01.playBtn.disableInteractive) {
- 
-          if (isPaid) {
-           console.log('INDEX: PlayBtn diaktifkan di sini', { isPaid, newUser }); 
-           // === UNLOCK PLAY & MUSIC FAVORIT === 
+        // ✅ PROPER LOGIC: New, Active, or Paid Users get access
+        if (newUser || activeUser || isPaid) {
+          console.log('✅ Unlocking game - User type:', 
+            newUser ? 'NEW' : 
+            activeUser ? 'ACTIVE' : 
+            isPaid ? 'PAID' : 'UNKNOWN'
+          );
+          
+          // === UNLOCK PLAY BUTTON ===
+          if (level01.playBtn) {
             level01.playBtn.setInteractive();
-            level01.playBtn.setAlpha(1); //ganti sebelumnya 0.5
-            console.log('INDEX: PlayBtn diaktifkan di sini', { isPaid, newUser });
-            console.log(`✅ Game unlocked in Level01Scene - Payment method: ${method}`);
-            // Putar musik favorit di sini jika belum diputar
-            if (level01.musicToPlayAfterPaid && !level01.currentFavMusic?.isPlaying) {
-           // if (level01.musicNotes && Array.isArray(level01.musicNotes)) {
-             level01.musicNotes.forEach(note => note.setInteractive({ useHandCursor: true }));  
+            level01.playBtn.setAlpha(1);
+          }
+          
+          // === UNLOCK 10 PUZZLE BUTTON ===
+          if (level01.lv01Puzzle10Btn) {
+            level01.lv01Puzzle10Btn.setInteractive();
+            level01.lv01Puzzle10Btn.setAlpha(1);
+          }
+
+          // === UNLOCK FAVORITE MENUS (only for paid users) ===
+          if (isPaid) {
+            // Only unlock favorite music for paid users
+            if (level01.musicNotes && Array.isArray(level01.musicNotes)) {
+              level01.musicNotes.forEach(note => note.setInteractive({ useHandCursor: true }));  
+            }
             if (level01.airBtn) level01.airBtn.setInteractive();
-          // Menggunakan grassImg:
-          if (level01.grassContainer && level01.grassContainer.list[0]) {
+            if (level01.grassContainer && level01.grassContainer.list[0]) {
               level01.grassContainer.list[0].setInteractive({ useHandCursor: true });
               level01.grassContainer.list[0].setAlpha(1);
+            }
+            if (level01.carrotBtn) level01.carrotBtn.setInteractive();
+            if (level01.appleBtn) level01.appleBtn.setInteractive();
+          } else {
+            // Keep favorite menus interactive for purchase
+            if (level01.musicNotes && Array.isArray(level01.musicNotes)) {
+              level01.musicNotes.forEach(note => note.setInteractive({ useHandCursor: true }));
+            }
+            if (level01.airBtn) level01.airBtn.setInteractive();
+            if (level01.grassContainer && level01.grassContainer.list[0]) {
+              level01.grassContainer.list[0].setInteractive();
+              level01.grassContainer.list[0].setAlpha(0.7);
+            }
+            if (level01.carrotBtn) level01.carrotBtn.setInteractive();
+            if (level01.appleBtn) level01.appleBtn.setInteractive();
+          }
+          
+          // === SUCCESS NOTIFICATION ===
+          if (window.showSuccessNotification && isPaid) {
+            const methodText = method === 'paypal' ? 'PayPal' : 
+                             method === 'xsolla' ? 'Xsolla' : 
+                             method || 'System';
+            showSuccessNotification(`✅ Game Unlocked via ${methodText} - Ready to Play!`);
+          }
+          } else if (lossUser) {
+          console.log('🔒 Locking game - Loss user without payment');
+          
+          // === LOCK PLAY BUTTON ===
+          if (level01.playBtn) {
+            level01.playBtn.disableInteractive();
+            level01.playBtn.setAlpha(0.5);
+          }
+          
+          // === LOCK 10 PUZZLE BUTTON ===
+          if (level01.lv01Puzzle10Btn) {
+            level01.lv01Puzzle10Btn.disableInteractive();
+            level01.lv01Puzzle10Btn.setAlpha(0.5);
+          }
+          
+          // === KEEP FAVORITE MENUS INTERACTIVE (for purchase) ===
+          if (level01.musicNotes && Array.isArray(level01.musicNotes)) {
+            level01.musicNotes.forEach(note => note.setInteractive({ useHandCursor: true }));
+          }
+          if (level01.airBtn) level01.airBtn.setInteractive();
+          if (level01.grassContainer && level01.grassContainer.list[0]) {
+            level01.grassContainer.list[0].setInteractive();
+            level01.grassContainer.list[0].setAlpha(0.5);
           }
           if (level01.carrotBtn) level01.carrotBtn.setInteractive();
           if (level01.appleBtn) level01.appleBtn.setInteractive();
           
-        }
-            // ✅ SHOW SUCCESS NOTIFICATION WITH PAYMENT METHOD:
-            if (window.showSuccessNotification) {
-              const methodText = method === 'paypal' ? 'PayPal' : 
-                               method === 'xsolla' ? 'Xsolla' : 
-                               method || 'System';
-              showSuccessNotification(`✅ Game Unlocked via ${methodText} - Ready to Play!`);
-            }
-
-          } else {
-            // Tambahan: CEGAH LOCK UNTUK USER BARU ATAU MASIH GRATIS
-            const playerEmail = localStorage.getItem("playerEmail");
-            const history = playerEmail ? getPlayerGameHistory(playerEmail) : null;
-            const newUser = !history || !history.hasPlayedBefore || (history.totalGamesPlayed || 0) < 3;
-
-            if (newUser) {
-              // User baru atau masih gratis, jangan lock Play & 10Puzzle
-              //if (level01.playBtn) {
-                //level01.playBtn.setInteractive();
-                //level01.playBtn.setAlpha(0.5);
-              //}
-              if (level01.lv01Puzzle10Btn) {
-                level01.lv01Puzzle10Btn.setInteractive();
-                level01.lv01Puzzle10Btn.setAlpha(1);
-              }
-              // Musik latar tetap play, musik favorit tetap stop
-              if (level01.currentFavMusic && level01.currentFavMusic.isPlaying) {
-                level01.currentFavMusic.stop();
-              }
-              if (level01.mainMusic && !level01.mainMusic.isPlaying) {
-                level01.mainMusic.play({ loop: true });
-              } else if (level01.mainMusic && level01.mainMusic.isPaused) {
-                level01.mainMusic.resume();
-              }
-              // Jangan tampilkan pesan game lock!
-              return; // STOP di sini, jangan lanjut ke blok lock!
-            }
-
-            // === LOCK ALL BUTTONS ===
-            level01.playBtn.disableInteractive();
-            level01.playBtn.setAlpha(0.5);
-            // Stop musik favorit jika sedang main
+          // === STOP FAVORITE MUSIC ===
           if (level01.currentFavMusic && level01.currentFavMusic.isPlaying) {
             level01.currentFavMusic.stop();
           }
-          // === PLAY MAIN MUSIC (LATAR) JIKA BELUM MAIN ===
+           // === PLAY MAIN MUSIC ===
           if (level01.mainMusic && !level01.mainMusic.isPlaying) {
-          level01.mainMusic.play({ loop: true });
+            level01.mainMusic.play({ loop: true });
           } else if (level01.mainMusic && level01.mainMusic.isPaused) {
-          level01.mainMusic.resume();
+            level01.mainMusic.resume();
           }
-          if (level01.lv01Puzzle10Btn) {
-              level01.lv01Puzzle10Btn.disableInteractive();
-              level01.lv01Puzzle10Btn.setAlpha(0.5);
-            }
-            // ✅ UNLOCK FAVORITE MENU BUTTONS
-          if (level01.airBtn) level01.airBtn.setInteractive();
-          // Menggunakan grassImg:
-          if (level01.grassContainer && level01.grassContainer.list[0]) {
-              level01.grassContainer.list[0].setInteractive();
-              level01.grassContainer.list[0].setAlpha(0.5);
-          }
-          if (level01.carrotBtn) level01.carrotBtn.setInteractive();
-          if (level01.appleBtn) level01.appleBtn.setInteractive();
-          if (level01.musicNotes && Array.isArray(level01.musicNotes)) {
-             level01.musicNotes.forEach(note => note.setInteractive({ useHandCursor: true }));
-          }
-            // ✅ SHOW LOCK NOTIFICATION:
-            if (window.showErrorNotification) {
-              showPaymentRequiredMessage();
-            }
-              if (window.showErrorNotification) { 
-              //  showErrorNotification('🔒 Game Locked - Please buy a favorite item to unlock');
-            }  
-            console.log('🔒 Game locked in Level01Scene - No payment detected');
-          }
-        } else {
-          console.log(`🎮 Level01Scene playBtn not ready - Payment status: ${isPaid ? 'paid' : 'unpaid'}`);
-        };
+          
+          console.log('🔒 Game locked - Loss user needs to purchase');
+        }
       } else {
-        console.log(`🎮 Level01Scene not active - Payment status: ${isPaid ? 'paid' : 'unpaid'}`);
-      };
+        console.log(`🎮 Level01Scene not ready - Payment status: ${isPaid ? 'paid' : 'unpaid'}`);
+      }
     } else {
       console.log(`🎮 Phaser not ready - Payment status: ${isPaid ? 'paid' : 'unpaid'}`);
-    };
+    }
   } catch (error) {
     console.error('❌ Error in updateGamePaymentStatus:', error);
-    console.log(`🎮 Fallback - Payment status: ${isPaid ? 'paid' : 'unpaid'}`);
   }
 }
+
+
 document.addEventListener('visibilitychange', async () => {
   if (document.visibilityState === 'visible') {
     const email = localStorage.getItem('playerEmail');
@@ -2016,11 +2038,11 @@ function checkGameAccess() {
   
   // Check payment status
   const urlParams = new URLSearchParams(window.location.search);
-  const hasPayment = urlParams.get('paid') === '1';
+  const hasPaid = urlParams.get('paid') === '1';
   const hasPaypalPayment = urlParams.get('paypal_paid') === '1' || 
                            urlParams.get('paypal_success') === 'true';  
   
-  if (!hasPayment) {
+  if (!hasPaid) {
     // No payment - show payment required message  
     showPaymentRequiredMessage();
     return false;
@@ -2043,11 +2065,11 @@ function showPaymentRequiredMessage() {
   }
    // ✅ CHECK IF PAYMENT ALREADY MADE:
   const urlParams = new URLSearchParams(window.location.search);
-  const hasPayment = urlParams.get('paid') === '1' || 
+  const hasPaid = urlParams.get('paid') === '1' || 
                      urlParams.get('paypal_paid') === '1' || 
                      urlParams.get('paypal_success') === 'true';
   
-  if (hasPayment) {
+  if (hasPaid) {
     console.log('💳 Payment already made - message blocked');
     return;
   }

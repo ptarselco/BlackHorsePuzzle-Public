@@ -121,14 +121,14 @@ async getUserProgress(email) {
     const res = await axios.post(
     `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
     //'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/progress', {
-      {}, // body kosong, karena email sudah di URL param
+      { email, level01Score: newScore, }, 
     { timeout: 90000 }
     );
     const progress = res.data.progress  || {};
     // ✅ CALCULATE USER TYPES AND RETURN THEM:
     const newUser = !progress || progress.totalPlays === 0;
     const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
-    const winUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) > 0;
+    const winUser = progress && progress.totalPlays > 0 && (progress.level01Score || 0) > 0;
     
     console.log(`👤 User classification: newUser=${newUser}, lossUser=${lossUser}, winUser=${winUser}`);
     console.log(`📊 Progress data: totalPlays=${progress.totalPlays}, level01Score=${progress.level01Score}`);

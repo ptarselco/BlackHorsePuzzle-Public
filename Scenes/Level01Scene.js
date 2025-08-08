@@ -2954,29 +2954,53 @@ async unlockedLevels(email, level) {
     if (!hasPaid) {
       console.warn('❌ User belum melakukan pembayaran.');
       console.log('Payment response:', statusRes.data);
+      // ✅ BETTER ERROR MESSAGE - NO ALERT:
+      console.log('💳 Payment not confirmed yet - user should refresh or wait');
       return false;
     } 
 
     console.log('✅ Payment verified! Proceeding to unlock level...');
 
     // Jika sudah bayar, lanjut unlock level
-    const unlockRes = await axios.post(
-      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/unlock',
-      { email, level },
-      { timeout: 90000 }
-    );
+    //const unlockRes = await axios.post(
+      //'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/unlock',
+      //{ email, level },
+      //{ timeout: 90000 }
+    //);
+    // ✅ DIRECT UNLOCK WITHOUT BACKEND CALL:
+    console.log('🔓 Payment confirmed - unlocking game directly');
+
+    // Clear game over state
+    localStorage.removeItem(`gameOver_${email}`);
+    
+    // Update user data
+    let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+    userData.isGameOver = false;
+    userData.isPaid = true;
+    localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+
+    // Direct unlock via updateGamePaymentStatus
+    if (window.updateGamePaymentStatus) {
+      updateGamePaymentStatus(true, 'purchase');
+    }
 
     console.log('🔓 Unlock level response:', unlockRes.data);
 
     this.unblur10PuzzleButton(); // Hapus blur tombol 10 puzzle
 
-    const isUnlocked = unlockRes.data.success || unlockRes.data.unlocked === true;
-    console.log('🎯 Final unlock result:', isUnlocked);
+    console.log('🎯 Direct unlock result: true');
+    return true;
 
-    return isUnlocked;
+    //const isUnlocked = unlockRes.data.success || unlockRes.data.unlocked === true;
+    //console.log('🎯 Final unlock result:', isUnlocked);
+
+    //return isUnlocked;
     
   } catch (err) {
     console.error('❌ Unlock level error:', err);
+
+    // ✅ NO ALERT - JUST LOG:
+    console.log('❌ Unlock process failed - user should refresh page');
     return false;
   }
 }
