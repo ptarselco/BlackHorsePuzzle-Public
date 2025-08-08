@@ -1614,9 +1614,11 @@ function updateGamePaymentStatus(isPaid, method = null) {
     
     // ✅ UPDATE GAME OVER STATE:
     if (isPaid) {
-      localStorage.setItem(`gameOver_${playerEmail}`, 'false');
+      unlockPlayAndHideGameOver();
+      //localStorage.setItem(`gameOver_${playerEmail}`, 'false');
+      localStorage.setItem(`gameOver_${email}`, 'false');
     } else if (lossUser) {
-      localStorage.setItem(`gameOver_${playerEmail}`, 'true');
+      localStorage.setItem(`gameOver_${email}`, 'true');
     }
 
     // ✅ COMPREHENSIVE SAFETY CHECK:

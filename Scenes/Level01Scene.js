@@ -3658,36 +3658,34 @@ this.paymentCheckInterval = setInterval(async () => {
   const paymentData = await checkPaymentStatusFromBackend(email);
   
   if (paymentData && paymentData.isPaid === true) {
-    console.log('✅ Payment confirmed! Processing unlock...');
     clearInterval(this.paymentCheckInterval);
-
-    // ✅ DIRECT UNLOCK CALL:
+    console.log('✅ Payment confirmed! Processing unlock...');
     const unlocked = await this.unlockedLevels(email, 'Level01Scene');
     
     if (unlocked) {
-      console.log('🎉 Level successfully unlocked!');
-      
-      // Clear game over state
-      let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
-      userData.isGameOver = false;
-      userData.isPaid = true;
-      localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
-      localStorage.removeItem(`gameOver_${email}`);
-      
       // Unlock UI
       this.unblur10PuzzleButton();
       this.unlockGameAfterPurchase();
-      
-      alert('Level successfully unlocked. Enjoy playing again!');
+      alert('🎉 Level successfully unlocked!');
       location.reload();
     } else {
-      console.error('❌ Unlock failed despite payment confirmation');
+      // Jangan unlock UI jika gagal
       alert('Payment confirmed but unlock failed. Please refresh the page.');
+      // Pastikan tombol tetap lock
+      if (this.playBtn) {
+        this.playBtn.disableInteractive();
+        this.playBtn.setAlpha(0.5);
+      }
+      if (this.lv01Puzzle10Btn) {
+        this.lv01Puzzle10Btn.disableInteractive();
+        this.lv01Puzzle10Btn.setAlpha(0.5);
+      }
     }
   } else {
     console.log('⏳ Payment not confirmed yet...');
   }
 }, 5000); // Check every 5 seconds
+
             
               // Setelah pembayaran sukses:
               // ✅ Rest of payment handling code continues...
@@ -3876,54 +3874,40 @@ showFavoritPayPanel(label, seconds, price, btnRef) {
              this.showWaitingForPaymentMessage();
              
           // Polling ke backend setiap beberapa detik
-            this.paymentCheckInterval = setInterval(async () => {
-              console.log('🔍 Polling payment status...');
-
-              //const paid = await checkPaymentStatusFromBackend(email);
-              //if (paid) {
-              //clearInterval(this.paymentCheckInterval);
-
-              // ✅ Refresh status pembayaran dari backend
-              //const status = await this.getUserStatus(email, 'Level01, Level01Scene');
-              //this.isPaid = status?.isPaid || false;
-
-            const paymentData = await checkPaymentStatusFromBackend(email);
+       this.paymentCheckInterval = setInterval(async () => {
+  console.log('🔍 Polling payment status...');
   
-            if (paymentData && paymentData.isPaid === true) {
-              console.log('✅ Payment confirmed! Processing unlock...');
-              clearInterval(this.paymentCheckInterval);
-
-              // ✅ UNLOCK GAME AFTER PURCHASE
-              // PANGGIL UNLOCK LEVEL DI SINI
-              //const email = localStorage.getItem('playerEmail');
-              const unlocked = await this.unlockedLevels(email, 'Level01Scene');
-
-              if (unlocked) {
-                console.log('🎉 Level successfully unlocked!');
-
-              let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
-              userData.isGameOver = false;
-              userData.isPaid = true;
-              localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
-              localStorage.removeItem(`gameOver_${email}`);
-
-              // Unlock UI
-              this.unblur10PuzzleButton();
-              this.unlockGameAfterPurchase();
-
-              alert('Level successfully unlocked. Enjoy playing again!');
-              location.reload();
-            } else {
-      console.error('❌ Unlock failed despite payment confirmation');
+  const paymentData = await checkPaymentStatusFromBackend(email);
+  
+  if (paymentData && paymentData.isPaid === true) {
+    clearInterval(this.paymentCheckInterval);
+    console.log('✅ Payment confirmed! Processing unlock...');
+    const unlocked = await this.unlockedLevels(email, 'Level01Scene');
+    
+    if (unlocked) {
+      // Unlock UI
+      this.unblur10PuzzleButton();
+      this.unlockGameAfterPurchase();
+      alert('🎉 Level successfully unlocked!');
+      location.reload();
+    } else {
+      // Jangan unlock UI jika gagal
       alert('Payment confirmed but unlock failed. Please refresh the page.');
+      // Pastikan tombol tetap lock
+      if (this.playBtn) {
+        this.playBtn.disableInteractive();
+        this.playBtn.setAlpha(0.5);
+      }
+      if (this.lv01Puzzle10Btn) {
+        this.lv01Puzzle10Btn.disableInteractive();
+        this.lv01Puzzle10Btn.setAlpha(0.5);
+      }
     }
   } else {
     console.log('⏳ Payment not confirmed yet...');
   }
-}, 5000); // Check every 5 seconds 
-           
-      
-            
+}, 5000); // Check every 5 seconds     
+                    
       // Setelah pembayaran sukses:
       if (this.payPanel) this.payPanel.destroy();
       if (this.payText) this.payText.destroy();
