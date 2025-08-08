@@ -3649,7 +3649,7 @@ showHoldMessageAboveNotes() {
 // PAY handler with dynamic PayPal amount
 window.open('https://www.paypal.com/ncp/payment/ZVFL3ND789CVE');
 //window.open('https://your-xsolla-link', '_blank');  // belum selesai paystationnya
-this.asyncShowWaitingForPaymentMessage();
+this.showWaitingForPaymentMessage();
 
             // Polling ke backend setiap beberapa detik
 this.paymentCheckInterval = setInterval(async () => {
@@ -3871,7 +3871,7 @@ showFavoritPayPanel(label, seconds, price, btnRef) {
   // PAY handler with dynamic PayPal amount
   window.open('https://www.paypal.com/ncp/payment/ZVFL3ND789CVE');
              //window.open('https://your-xsolla-link', '_blank');  // belum selesai paystationnya
-  this.asyncShowWaitingForPaymentMessage();
+  this.showWaitingForPaymentMessage();
              
           // Polling ke backend setiap beberapa detik
        this.paymentCheckInterval = setInterval(async () => {
