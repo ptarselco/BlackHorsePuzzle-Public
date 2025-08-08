@@ -1578,10 +1578,14 @@ window.unlockPlayAndHideGameOver = function() {
 // This function updates the game payment status and UI based on the payment state
 // ✅ ENHANCED GAME PAYMENT STATUS UPDATE:
 function updateGamePaymentStatus(isPaid, method = null) {
+  const email = localStorage.getItem("playerEmail");
+  if (!email) {
+    console.log('❌ Email not defined in updateGamePaymentStatus');
+    return;
+  }
   console.log('[PAYMENT STATUS]', { isPaid, method }); 
   try {
-     const playerEmail = localStorage.getItem("playerEmail");
-    //if (!isPaid && playerEmail) {
+     //if (!isPaid && playerEmail) {
       // Tandai game over jika belum bayar
       //localStorage.setItem(`gameOver_${playerEmail}`, 'true');
     //} else if (isPaid && playerEmail) {

@@ -2962,11 +2962,12 @@ async unlockedLevels(email, level) {
     console.log('✅ Payment verified! Proceeding to unlock level...');
 
     // Jika sudah bayar, lanjut unlock level
-    //const unlockRes = await axios.post(
-      //'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/unlock',
-      //{ email, level },
-      //{ timeout: 90000 }
-    //);
+    const unlockRes = await axios.post(
+      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/unlock',
+      { email, level },
+      { timeout: 90000 }
+    );
+   
     // ✅ DIRECT UNLOCK WITHOUT BACKEND CALL:
     console.log('🔓 Payment confirmed - unlocking game directly');
 
@@ -2991,10 +2992,9 @@ async unlockedLevels(email, level) {
     console.log('🎯 Direct unlock result: true');
     return true;
 
-    //const isUnlocked = unlockRes.data.success || unlockRes.data.unlocked === true;
-    //console.log('🎯 Final unlock result:', isUnlocked);
-
-    //return isUnlocked;
+    const isUnlocked = unlockRes.data.success || unlockRes.data.unlocked === true;
+    console.log('🎯 Final unlock result:', isUnlocked);
+    return isUnlocked;
     
   } catch (err) {
     console.error('❌ Unlock level error:', err);
@@ -3659,6 +3659,7 @@ this.paymentCheckInterval = setInterval(async () => {
   
   if (paymentData && paymentData.isPaid === true) {
     clearInterval(this.paymentCheckInterval);
+    await this.updateGamePaymentStatus(paymentData.isPaid, paymentData.method);
     console.log('✅ Payment confirmed! Processing unlock...');
     const unlocked = await this.unlockedLevels(email, 'Level01Scene');
     
@@ -3881,6 +3882,7 @@ showFavoritPayPanel(label, seconds, price, btnRef) {
   
   if (paymentData && paymentData.isPaid === true) {
     clearInterval(this.paymentCheckInterval);
+    await this.updateGamePaymentStatus(paymentData.isPaid, paymentData.method);
     console.log('✅ Payment confirmed! Processing unlock...');
     const unlocked = await this.unlockedLevels(email, 'Level01Scene');
     

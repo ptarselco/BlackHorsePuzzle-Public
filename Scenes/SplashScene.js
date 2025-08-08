@@ -369,12 +369,14 @@ async  unlockedLevels(email, level) {
     //return unlockRes.data.success || unlockRes.data.unlocked === true;
     const isUnlocked = unlockRes.data.success || unlockRes.data.unlocked === true;
     console.log('🎯 Final unlock result:', isUnlocked);
-
     return isUnlocked;
     // Response backend bisa { success: true, unlocked: true }
     //return res.data.success || res.data.unlocked === true;
   } catch (err) {
     console.error('Unlock level error:', err);
+
+    // ✅ NO ALERT - JUST LOG:
+    console.log('❌ Unlock process failed - user should refresh page');
     return false;
   }
 }
