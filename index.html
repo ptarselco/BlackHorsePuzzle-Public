@@ -267,7 +267,7 @@ window.checkPaymentStatusFromBackend = async function(email) {
     console.log('🔍 Checking payment status for:', email);
     //const encodedEmail = encodeURIComponent(email);
     const res = await axios.post(
-      `https://backend-paypalblackhorsepuzzle.onrender.com/api/${encodeURIComponent(email)}/payment-status`,
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/payment-status`,
       { }, // Send email in POST body
       {timeout: 30000}
     );
