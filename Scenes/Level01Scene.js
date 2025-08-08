@@ -3649,8 +3649,8 @@ showHoldMessageAboveNotes() {
 // PAY handler with dynamic PayPal amount
 window.open('https://www.paypal.com/ncp/payment/ZVFL3ND789CVE');
 //window.open('https://your-xsolla-link', '_blank');  // belum selesai paystationnya
-this.showWaitingForPaymentMessage();
-             
+this.asyncShowWaitingForPaymentMessage();
+
             // Polling ke backend setiap beberapa detik
 this.paymentCheckInterval = setInterval(async () => {
   console.log('🔍 Polling payment status...');
@@ -3868,10 +3868,10 @@ showFavoritPayPanel(label, seconds, price, btnRef) {
     }
              // account ini untuk donasi
              // window.open('https://www.paypal.com/ncp/payment/7MARDZW8BDWVG', '_blank'); //ini tanpa harga dan tanpa variant 
-             // PAY handler with dynamic PayPal amount
-             window.open('https://www.paypal.com/ncp/payment/ZVFL3ND789CVE');
+  // PAY handler with dynamic PayPal amount
+  window.open('https://www.paypal.com/ncp/payment/ZVFL3ND789CVE');
              //window.open('https://your-xsolla-link', '_blank');  // belum selesai paystationnya
-             this.showWaitingForPaymentMessage();
+  this.asyncShowWaitingForPaymentMessage();
              
           // Polling ke backend setiap beberapa detik
        this.paymentCheckInterval = setInterval(async () => {
@@ -3967,36 +3967,60 @@ showFavoritPayPanel(label, seconds, price, btnRef) {
   }
   //-------------------------------------------------------------
  // showWaitingForPaymentMessage untuk menampilkan pesan "Please wait confirmation your payment..." jika pembayaran sedang diproses
-  showWaitingForPaymentMessage() {
-   if (
-  !this.isPaid &&
-  history.hasPlayedBefore &&
-  (history.totalGamesPlayed || 0) >= 3 &&
-  level01Score === 0 &&
-  this.isGameOver
-) { 
-  // Kunci tombol Play & 10 Puzzle
-  if (this.playBtn) {
-    this.playBtn.disableInteractive();
-    this.playBtn.setAlpha(0.5);
-  }
-  if (this.lv01Puzzle10Btn) {
-    this.lv01Puzzle10Btn.disableInteractive();
-    this.lv01Puzzle10Btn.setAlpha(0.5);
-  }
-  // Tampilkan pesan "Game Lock - Unlock with Black Horse's favorite menu"
-  if (this.waitingMsg) this.waitingMsg.destroy();
-  this.waitingMsg = this.add.text(960, 700, "Game Lock - Unlock with Black Horse's favorite menu", {
-  font: "bold 36px Segoe UI",
-  fill: "#fff",
-  backgroundColor: "#023d3f",
-  padding: { left: 30, right: 30, top: 10, bottom: 10 }
-  }).setOrigin(0.5).setDepth(5001);
-  // Hilang otomatis setelah 2 detik (opsional)
-  this.time.delayedCall(2000, () => {
-  if (this.waitingMsg) this.waitingMsg.destroy();
-  this.waitingMsg = null;
-  });
+ async showWaitingForPaymentMessage() {
+  // Ambil email dan history
+  const email = localStorage.getItem('playerEmail');
+  // Ambil progress dari backend
+ 
+   // ✅ CALCULATE USER TYPES AND RETURN THEM:
+    const progressRes = await this.getUserProgress(email);
+    const progress = progressRes.progress || {};
+    const isPaid = progressRes.isPaid === true; // Ambil dari backend jika ada
+    const level01Score = progress.level01Score || 0;
+
+    const newUser = !progress || progress.totalPlays === 0;
+    const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
+    const winUser = progress && progress.totalPlays > 0 && (progress.level01Score || 0) > 0;
+    
+
+  // Hanya lock tombol jika lossUser dan belum bayar
+  if (lossUser) {
+    // Kunci tombol Play & 10 Puzzle
+    if (this.playBtn) {
+      this.playBtn.disableInteractive();
+      this.playBtn.setAlpha(0.5);
+    }
+    if (this.lv01Puzzle10Btn) {
+      this.lv01Puzzle10Btn.disableInteractive();
+      this.lv01Puzzle10Btn.setAlpha(0.5);
+    }
+    // Tampilkan pesan "Game Lock - Unlock with Black Horse's favorite menu"
+    if (this.waitingMsg) this.waitingMsg.destroy();
+    this.waitingMsg = this.add.text(960, 700, "Game Lock - Unlock with Black Horse's favorite menu", {
+      font: "bold 36px Segoe UI",
+      fill: "#fff",
+      backgroundColor: "#023d3f",
+      padding: { left: 30, right: 30, top: 10, bottom: 10 }
+    }).setOrigin(0.5).setDepth(5001);
+    // Hilang otomatis setelah 2 detik (opsional)
+    this.time.delayedCall(2000, () => {
+      if (this.waitingMsg) this.waitingMsg.destroy();
+      this.waitingMsg = null;
+    });
+  } else {
+    // Jika bukan lossUser, pastikan tombol aktif
+    if (this.playBtn) {
+      this.playBtn.setInteractive({ useHandCursor: true });
+      this.playBtn.setAlpha(1);
+    }
+    if (this.lv01Puzzle10Btn) {
+      this.lv01Puzzle10Btn.setInteractive({ useHandCursor: true });
+      this.lv01Puzzle10Btn.setAlpha(1);
+    }
+    if (this.waitingMsg) {
+      this.waitingMsg.destroy();
+      this.waitingMsg = null;
+    }
   }
 }
 //-----------------------------------------------------------------
