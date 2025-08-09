@@ -840,6 +840,10 @@ console.log('✅ REAL BACKEND VERIFICATION READY - CONNECT TO RENDER.COM');
     const history = getPlayerGameHistory(playerEmail);
     const currentScore = parseInt(localStorage.getItem(`score_${playerEmail}`) || 0);
     const totalPlays = history.totalGamesPlayed || 0;
+
+    // ✅ Tambahkan ini untuk ambil status pembayaran
+    const paymentData = JSON.parse(localStorage.getItem(`gameData-${playerEmail}`) || '{}');
+    const isPaid = paymentData.isPaid === true;
     
     // ✅ PROPER USER CLASSIFICATION:
     const newUser = totalPlays === 0;  // Only 0 plays = new user
