@@ -915,6 +915,7 @@ function checkPlayerScoreStatus(email) {
 }
 
 // ✅ ENHANCED SAFETY CHECK in updateGameScore function:
+const scoreStatus = checkPlayerScoreStatus(playerEmail); 
 updateGameScore(playerEmail, scoreStatus.currentScore);
 //updateGameScore(email,scoreStatus.currentScore);
 console.log('✅ updateGameScore dipanggil:', playerEmail,scoreStatus.currentScore);
