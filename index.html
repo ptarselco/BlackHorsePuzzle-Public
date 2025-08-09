@@ -980,11 +980,13 @@ if (hasPaid) {
     }
   }, 8000);
 }
+// ✅ ENHANCED GAME SCORE UPDATE FUNCTION:
+  handleScoreStatus(email, scoreStatus);
 
-  // Cari posisi loginBox
-  const loginBox = document.getElementById('logoutBtn');
-  const rect = logoutBtn ? logoutBtn.getBoundingClientRect() : { top: 20, left: window.innerWidth - 180 };
-  
+  // Cari posisi logoutBox
+  const logoutBox = document.getElementById('logoutBtn');
+  const rect = logoutBox ? logoutBox.getBoundingClientRect() : { top: 20, left: window.innerWidth - 180 };
+
   const warning = document.createElement('div');
 
 
@@ -1719,6 +1721,10 @@ function waitForGameReady(callback, maxAttempts = 10) {
 
 // ✅ SAFE GAME UPDATE SCOREFUNCTIONS:
 function updateGameScore(email, newScore) {
+   if (!email) {
+    console.error('❌ Email is null or undefined in updateGameScore');
+    return;
+  }
   localStorage.setItem(`score_${email}`, newScore.toString());
   window.level01Score = newScore;
   window.playerScore = newScore;
