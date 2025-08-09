@@ -915,8 +915,8 @@ function checkPlayerScoreStatus(email) {
 }
 
 // ✅ ENHANCED SAFETY CHECK in updateGameScore function:
-updateGameScore(inputEmail,scoreStatus.currentScore);
-console.log('✅ updateGameScore dipanggil:', inputEmail,scoreStatus.currentScore);
+updateGameScore(email,scoreStatus.currentScore);
+console.log('✅ updateGameScore dipanggil:', email,scoreStatus.currentScore);
 
 // ✅ pesan ini untuk pemain lama yang sudah game over
 function showGameOverWarning(email) {
