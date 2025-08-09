@@ -915,10 +915,14 @@ function checkPlayerScoreStatus(email) {
 }
 
 // ✅ ENHANCED SAFETY CHECK in updateGameScore function:
+if (playerEmail) {
 const scoreStatus = checkPlayerScoreStatus(playerEmail); 
 updateGameScore(playerEmail, scoreStatus.currentScore);
 //updateGameScore(email,scoreStatus.currentScore);
 console.log('✅ updateGameScore dipanggil:', playerEmail,scoreStatus.currentScore);
+} else {
+  console.warn('❌ playerEmail tidak ditemukan - tidak bisa updateGameScore');
+}
 
 // ✅ pesan ini untuk pemain lama yang sudah game over
 function showGameOverWarning(email) {
