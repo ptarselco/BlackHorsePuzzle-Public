@@ -3627,8 +3627,12 @@ this.paymentCheckInterval = setInterval(async () => {
   
   if (paymentData && paymentData.isPaid === true) {
     clearInterval(this.paymentCheckInterval);
-    const paymentData = await checkPaymentStatusFromBackend(email);
+
+  if (window.updateGamePaymentStatus) {  
     window.updateGamePaymentStatus(paymentData.isPaid, paymentData.method);
+    } else {
+      console.error('window.updateGamePaymentStatus is not defined!');
+    }
     console.log('✅ Payment confirmed! Processing unlock...');
     const unlocked = await this.unlockedLevels(email, 'Level01Scene');
     
@@ -3840,7 +3844,7 @@ showFavoritPayPanel(label, seconds, price, btnRef) {
              // window.open('https://www.paypal.com/ncp/payment/7MARDZW8BDWVG', '_blank'); //ini tanpa harga dan tanpa variant 
   // PAY handler with dynamic PayPal amount
   window.open('https://www.paypal.com/ncp/payment/ZVFL3ND789CVE');
-             //window.open('https://your-xsolla-link', '_blank');  // belum selesai paystationnya
+  //window.open('https://your-xsolla-link', '_blank');  // belum selesai paystationnya
   this.showWaitingForPaymentMessage();
              
           // Polling ke backend setiap beberapa detik
@@ -3851,8 +3855,13 @@ showFavoritPayPanel(label, seconds, price, btnRef) {
   
   if (paymentData && paymentData.isPaid === true) {
     clearInterval(this.paymentCheckInterval);
-    const paymentData = await checkPaymentStatusFromBackend(email);
+
+   if (window.updateGamePaymentStatus) { 
     window.updateGamePaymentStatus(paymentData.isPaid, paymentData.method);
+    } else {
+      console.error('window.updateGamePaymentStatus is not defined!');
+    }
+
     console.log('✅ Payment confirmed! Processing unlock...');
     const unlocked = await this.unlockedLevels(email, 'Level01Scene');
     

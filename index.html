@@ -755,12 +755,37 @@ window.verifyEmailWithBackend = async function(email) {
 
 console.log('✅ REAL BACKEND VERIFICATION READY - CONNECT TO RENDER.COM');
 
+ // ✅ GET USER CLASSIFICATION:
+    const history = getPlayerGameHistory(playerEmail);
+    const currentScore = parseInt(localStorage.getItem(`score_${playerEmail}`) || 0);
+    const totalPlays = history.totalGamesPlayed || 0;
+    
+    // ✅ PROPER USER CLASSIFICATION:
+    const newUser = totalPlays === 0;  // Only 0 plays = new user
+    const winUser = totalPlays > 0 && currentScore > 0;  // 1 dst plays = active user
+    const lossUser = totalPlays >= 3 && currentScore === 0 && !isPaid;  // 3+ plays, no score, no payment
+    
+    console.log('👤 User classification:', { 
+      newUser, 
+      winUser, 
+      lossUser, 
+      currentScore, 
+      totalPlays, 
+      isPaid 
+    });
+    
+   //✅ UPDATE GAME OVER STATE:
+    if (isPaid) {
+      unlockPlayAndHideGameOver();
+      //localStorage.setItem(`gameOver_${playerEmail}`, 'false');
+      localStorage.setItem(`gameOver_${email}`, 'false');
+    } else if (lossUser) {
+      localStorage.setItem(`gameOver_${email}`, 'true');
+    } 
+
 
 // ✅  PAGE INITIALIZATION:
-  
-  // INSERT THIS ENHANCED VERSION starting from line 508:
-
-// ✅ ENHANCED level01Score MANAGEMENT FUNCTIONS (ADD FIRST):
+  // ✅ ENHANCED level01Score MANAGEMENT FUNCTIONS (ADD FIRST):
 // ✅ ENHANCED GET PLAYER GAME level01Score AND HISTORY
 function getPlayerGameHistory(email) {
   const history = localStorage.getItem(`gameHistory_${email}`);
@@ -773,6 +798,7 @@ function getPlayerGameHistory(email) {
     favoriteGiven: false
   };
 }
+
 
 // ✅ ENHANCED UPDATE PLAYER GAME level01Score HISTORY
 function updatePlayerGameHistory(email, updates) {
@@ -1128,7 +1154,30 @@ window.checkPaymentStatus = async function(email) {
   
   console.log('💳 Payment check result:', result);
   return result;
-//};
+
+// This function updates the game payment status and UI based on the payment state
+// ✅ ENHANCED GAME PAYMENT STATUS UPDATE:
+
+window.updateGamePaymentStatus = function(isPaid, method = null) {
+  const email = localStorage.getItem("playerEmail");
+  if (!email) {
+    console.error('❌ playerEmail not defined in updateGamePaymentStatus');
+    return;
+  }
+  let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+  userData.isPaid = isPaid;
+  localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+  window.isPaid = isPaid;
+  // Unlock tombol jika sudah bayar
+  if (isPaid) {
+    if (window.unblur10PuzzleButton) window.unblur10PuzzleButton();
+    if (window.unlockGameAfterPurchase) window.unlockGameAfterPurchase();
+    console.log('✅ Payment status updated, game unlocked');
+  } else {
+    if (window.lockAllGameplayButtons) window.lockAllGameplayButtons();
+    console.log('🔒 Payment not confirmed, game locked');
+  }
+}
 
 //-------------------------------------------------------------------------------------------------------------------
 // 1. CREATE ORDER PAYPAL
@@ -1372,6 +1421,7 @@ function stopPaymentMonitoring() {
 }
 
 
+
 // mulai co 4.1
   // Cek apakah sudah main minimal 3 ronde (atau sesuai logic kamu)
   //const isGameOver = newScore === 0 && history.hasPlayedBefore && history.totalGamesPlayed >= 3;
@@ -1448,6 +1498,7 @@ window.lockPlayAndShowGameOver = function() {
   });
 }
   
+
 // Tambahkan fungsi unlock global
 window.unlockPlayAndHideGameOver = function() {
   // Dapatkan scene Level01Scene
@@ -1504,58 +1555,6 @@ window.unlockPlayAndHideGameOver = function() {
   console.log('✅ Game unlocked: Play & Puzzle enabled, Game Over & payment panel hidden');
 };
 
-// This function updates the game payment status and UI based on the payment state
-// ✅ ENHANCED GAME PAYMENT STATUS UPDATE:
-
-window.updateGamePaymentStatus = function(isPaid, method = null) {
-  const email = localStorage.getItem("playerEmail");
-  if (!email) {
-    console.error('❌ playerEmail not defined in updateGamePaymentStatus');
-    return;
-  }
-  let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
-  userData.isPaid = isPaid;
-  localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
-  window.isPaid = isPaid;
-  // Unlock tombol jika sudah bayar
-  if (isPaid) {
-    if (window.unblur10PuzzleButton) window.unblur10PuzzleButton();
-    if (window.unlockGameAfterPurchase) window.unlockGameAfterPurchase();
-    console.log('✅ Payment status updated, game unlocked');
-  } else {
-    if (window.lockAllGameplayButtons) window.lockAllGameplayButtons();
-    console.log('🔒 Payment not confirmed, game locked');
-  }
-}
-    
-    // ✅ GET USER CLASSIFICATION:
-    const history = getPlayerGameHistory(playerEmail);
-    const currentScore = parseInt(localStorage.getItem(`score_${playerEmail}`) || 0);
-    const totalPlays = history.totalGamesPlayed || 0;
-    
-    // ✅ PROPER USER CLASSIFICATION:
-    const newUser = totalPlays === 0;  // Only 0 plays = new user
-    const winUser = totalPlays > 0 && currentScore > 0;  // 1 dst plays = active user
-    const lossUser = totalPlays >= 3 && currentScore === 0 && !isPaid;  // 3+ plays, no score, no payment
-    
-    console.log('👤 User classification:', { 
-      newUser, 
-      winUser, 
-      lossUser, 
-      currentScore, 
-      totalPlays, 
-      isPaid 
-    });
-    
-    // ✅ UPDATE GAME OVER STATE:
-    if (isPaid) {
-      unlockPlayAndHideGameOver();
-      //localStorage.setItem(`gameOver_${playerEmail}`, 'false');
-      localStorage.setItem(`gameOver_${email}`, 'false');
-    } else if (lossUser) {
-      localStorage.setItem(`gameOver_${email}`, 'true');
-    }
-
     // ✅ COMPREHENSIVE SAFETY CHECK:
     if (window.Phaser && 
         window.game && 
@@ -1571,12 +1570,12 @@ window.updateGamePaymentStatus = function(isPaid, method = null) {
           level01.scene.isActive()) {
         
         // ✅ PROPER LOGIC: New, Active, or Paid Users get access
-        if (newUser || winUser || isPaid) {
-          console.log('✅ Unlocking game - User type:', 
-            newUser ? 'NEW' : 
-            winUser ? 'ACTIVE' : 
-            isPaid ? 'PAID' : 'UNKNOWN'
-          );
+        if (newUser || winUser || lossUser) {
+          let userType = 'UNKNOWN';
+          if (newUser) userType = 'NEW';
+          else if (winUser) userType = 'ACTIVE';
+          else if (lossUser) userType = 'LOSS';
+          console.log('✅ Unlocking game - User type:', userType);
           
           // === UNLOCK PLAY BUTTON ===
           if (level01.playBtn) {
