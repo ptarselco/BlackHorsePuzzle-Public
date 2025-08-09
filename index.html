@@ -836,6 +836,7 @@ window.verifyEmailWithBackend = async function(email) {
 console.log('✅ REAL BACKEND VERIFICATION READY - CONNECT TO RENDER.COM');
 
  // ✅ GET USER CLASSIFICATION:
+    const playerEmail = localStorage.getItem("playerEmail");
     const history = getPlayerGameHistory(playerEmail);
     const currentScore = parseInt(localStorage.getItem(`score_${playerEmail}`) || 0);
     const totalPlays = history.totalGamesPlayed || 0;

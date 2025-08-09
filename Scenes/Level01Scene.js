@@ -2795,7 +2795,7 @@ async checkUserStatusAndGameOver(email) {
     return null;
   }
 
-  const progress = res.data.progress  || {};
+  const progress = status.progress  || {};
     // ✅ CALCULATE USER TYPES AND RETURN THEM:
     const newUser = !progress || progress.totalPlays === 0;
     const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
