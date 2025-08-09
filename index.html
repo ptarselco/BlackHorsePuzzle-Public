@@ -733,7 +733,7 @@ async function checkEmailVerifiedFromBackend(email) {
   try {
     const response = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/check-email',
-      { email: inputEmail},
+      { email: email},
       { timeout: 8000 }
     );
     return response.data && response.data.emailVerified === true;
