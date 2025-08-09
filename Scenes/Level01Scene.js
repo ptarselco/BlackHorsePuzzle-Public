@@ -2795,19 +2795,12 @@ async checkUserStatusAndGameOver(email) {
     return null;
   }
 
-// Cek status user lama/baru
-  //const newUser = !status.totalPlays || status.totalPlays === 0;
-const history = window.getPlayerGameHistory ? window.getPlayerGameHistory(email) : null;
-const level01Score = (this.level01Score || 0);
+  const progress = res.data.progress  || {};
+    // ✅ CALCULATE USER TYPES AND RETURN THEM:
+    const newUser = !progress || progress.totalPlays === 0;
+    const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
+    const winUser = progress && progress.totalPlays > 0 && (progress.level01Score || 0) > 0;
 
-// 1. New User: belum pernah main atau main < 3x
-const newUser = !history || !history.hasPlayedBefore || (history.totalGamesPlayed || 0) < 3;
-
-// 2. Loss User: sudah main >= 3x dan score = 0
-const lossUser = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) >= 3 && level01Score === 0;
-
-// 3. Win User: sudah main >= 3x dan score > 0
-const winUser = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) >= 3 && level01Score > 0;
   
 // Jika newUser, aktifkan tombol Play & Puzzle
   if (newUser) {
@@ -2936,30 +2929,23 @@ async lockLevel(email, level) {
   }
 }
 
-
+//=================================================================================================
 // 7. UNLOCK LEVEL
-async unlockedLevels(email, level) {
+async  unlockedLevels(email, level) {
   try {
     console.log('🔍 Checking unlock status for:', email);
-    
-    // ✅ CORRECT URL untuk payment-status:
-    const statusRes = await axios.post(
-      `https://backend-paypalblackhorsepuzzle.onrender.com/api/${encodeURIComponent(email)}/payment-status`,
-      {}, // ✅ Empty body - email sudah di URL param
-      { timeout: 90000 }
-    );
-    
-    const hasPaid = statusRes.data.isPaid === true;
 
-    if (!hasPaid) {
-      console.warn('❌ User belum melakukan pembayaran.');
-      console.log('Payment response:', statusRes.data);
-      // ✅ BETTER ERROR MESSAGE - NO ALERT:
-      console.log('💳 Payment not confirmed yet - user should refresh or wait');
+   // ✅ USE EXISTING checkPaymentStatusFromBackend FUNCTION:
+    const paymentData = await checkPaymentStatusFromBackend(email);
+    
+    if (!paymentData || paymentData.isPaid !== true) {
+      console.warn('❌ User belum melakukan pembayaran atau payment status tidak valid.');
+      console.log('Payment data:', paymentData);
       return false;
-    } 
+    }
 
     console.log('✅ Payment verified! Proceeding to unlock level...');
+   
 
     // Jika sudah bayar, lanjut unlock level
     const unlockRes = await axios.post(
@@ -2967,37 +2953,19 @@ async unlockedLevels(email, level) {
       { email, level },
       { timeout: 90000 }
     );
-   
-    // ✅ DIRECT UNLOCK WITHOUT BACKEND CALL:
-    console.log('🔓 Payment confirmed - unlocking game directly');
-
-    // Clear game over state
-    localStorage.removeItem(`gameOver_${email}`);
-    
-    // Update user data
-    let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
-    userData.isGameOver = false;
-    userData.isPaid = true;
-    localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
-
-    // Direct unlock via updateGamePaymentStatus
-    if (window.updateGamePaymentStatus) {
-      updateGamePaymentStatus(true, 'purchase');
-    }
 
     console.log('🔓 Unlock level response:', unlockRes.data);
 
     this.unblur10PuzzleButton(); // Hapus blur tombol 10 puzzle
 
-    console.log('🎯 Direct unlock result: true');
-    return true;
-
+    //return unlockRes.data.success || unlockRes.data.unlocked === true;
     const isUnlocked = unlockRes.data.success || unlockRes.data.unlocked === true;
     console.log('🎯 Final unlock result:', isUnlocked);
     return isUnlocked;
-    
+    // Response backend bisa { success: true, unlocked: true }
+    //return res.data.success || res.data.unlocked === true;
   } catch (err) {
-    console.error('❌ Unlock level error:', err);
+    console.error('Unlock level error:', err);
 
     // ✅ NO ALERT - JUST LOG:
     console.log('❌ Unlock process failed - user should refresh page');
@@ -3659,7 +3627,8 @@ this.paymentCheckInterval = setInterval(async () => {
   
   if (paymentData && paymentData.isPaid === true) {
     clearInterval(this.paymentCheckInterval);
-    await this.updateGamePaymentStatus(paymentData.isPaid, paymentData.method);
+    const paymentData = await checkPaymentStatusFromBackend(email);
+    window.updateGamePaymentStatus(paymentData.isPaid, paymentData.method);
     console.log('✅ Payment confirmed! Processing unlock...');
     const unlocked = await this.unlockedLevels(email, 'Level01Scene');
     
@@ -3875,14 +3844,15 @@ showFavoritPayPanel(label, seconds, price, btnRef) {
   this.showWaitingForPaymentMessage();
              
           // Polling ke backend setiap beberapa detik
-       this.paymentCheckInterval = setInterval(async () => {
+  this.paymentCheckInterval = setInterval(async () => {
   console.log('🔍 Polling payment status...');
   
   const paymentData = await checkPaymentStatusFromBackend(email);
   
   if (paymentData && paymentData.isPaid === true) {
     clearInterval(this.paymentCheckInterval);
-    await this.updateGamePaymentStatus(paymentData.isPaid, paymentData.method);
+    const paymentData = await checkPaymentStatusFromBackend(email);
+    window.updateGamePaymentStatus(paymentData.isPaid, paymentData.method);
     console.log('✅ Payment confirmed! Processing unlock...');
     const unlocked = await this.unlockedLevels(email, 'Level01Scene');
     
@@ -4004,8 +3974,8 @@ showFavoritPayPanel(label, seconds, price, btnRef) {
       backgroundColor: "#023d3f",
       padding: { left: 30, right: 30, top: 10, bottom: 10 }
     }).setOrigin(0.5).setDepth(5001);
-    // Hilang otomatis setelah 2 detik (opsional)
-    this.time.delayedCall(2000, () => {
+    // Hilang otomatis setelah 3000 ms (3 detik)
+    this.time.delayedCall(3000, () => {
       if (this.waitingMsg) this.waitingMsg.destroy();
       this.waitingMsg = null;
     });

@@ -196,19 +196,12 @@ async checkUserStatusAndGameOver(email) {
     return null;
   }
 
-// Cek status user lama/baru
-  //const newUser = !status.totalPlays || status.totalPlays === 0;
-const history = window.getPlayerGameHistory ? window.getPlayerGameHistory(email) : null;
-const level01Score = (this.level01Score || 0);
+ const progress = res.data.progress  || {};
+    // ✅ CALCULATE USER TYPES AND RETURN THEM:
+    const newUser = !progress || progress.totalPlays === 0;
+    const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
+    const winUser = progress && progress.totalPlays > 0 && (progress.level01Score || 0) > 0;
 
-// 1. New User: belum pernah main atau main < 3x
-const newUser = !history || !history.hasPlayedBefore || (history.totalGamesPlayed || 0) < 3;
-
-// 2. Loss User: sudah main >= 3x dan score = 0
-const lossUser = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) >= 3 && level01Score === 0;
-
-// 3. Win User: sudah main >= 3x dan score > 0
-const winUser = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) >= 3 && level01Score > 0;
   
 // Jika newUser, aktifkan tombol Play & Puzzle
   if (newUser) {
@@ -242,16 +235,16 @@ const winUser = history && history.hasPlayedBefore && (history.totalGamesPlayed 
   status.totalPlays = (status.totalPlays || 0) + 1;
 
   // Jika totalPlays >= 3 dan level01Score masih 0, set game over
-  if (status.totalPlays >= 3 && (status.level01Score || 0) === 0) {
-    //await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/set-gameover', { email, isGameOver: true });
-    await this.setGameOver(email, true); // gunakan fungsi async
-    status.isGameOver = true;
-    localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
-    this.isGameOver = true;
-    this.showGameOverReturnMessage();
-    this.lockAllGameplayButtons();
-    return status;
-  }
+ // if (status.totalPlays >= 3 && (status.level01Score || 0) === 0) {
+          //await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/set-gameover', { email, isGameOver: true });
+ // await this.setGameOver(email, true); // gunakan fungsi async
+ // status.isGameOver = true;
+ // localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
+ // this.isGameOver = true;
+ // this.showGameOverReturnMessage();
+ // this.lockAllGameplayButtons();
+ // return status;
+ // }
 
   // Simpan totalPlays terbaru ke localStorage
   localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
@@ -292,7 +285,7 @@ async checkGameOverStatusFromServer() {
       this.isGameOver = true;
       this.showGameOverReturnMessage();
       await this.lockLevel(email, 'Level01');
-      //this.lockAllGameplayButtons();
+      this.lockAllGameplayButtons();
       return;
     }
     } catch (err) {

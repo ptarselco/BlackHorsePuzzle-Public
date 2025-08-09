@@ -807,30 +807,8 @@ function checkPlayerScoreStatus(email) {
 }
 
 // ✅ ENHANCED SAFETY CHECK in updateGameScore function:
-function updateGameScore(email, newScore) { //versi co 4.1 
-  //newScore = parseInt(newScore) || 0;
-  localStorage.setItem(`score_${email}`, newScore.toString());
-  window.level01Score = newScore;
-  window.playerScore = newScore;
-
-  // Simpan ke backend setiap kali level01Score berubah
-  axios.post(
-    `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
-    {
-      level01Score: newScore
-      // Tambahkan data lain jika perlu
-    }
-  ).then(() => {
-    console.log('✅ level01Score saved to backend');
-  }).catch((err) => {
-    console.error('❌ Failed to save level01Score to backend:', err);
-  });
-
-  const history = getPlayerGameHistory(email);
-  updatePlayerGameHistory(email, {
-    highestScore: Math.max(history.highestScore, newScore),
-    lastPlayedDate: new Date().toISOString()
-  });
+updateGameScore(inputEmail,scoreStatus.currentScore);
+console.log('✅ updateGameScore dipanggil:', inputEmail,scoreStatus.currentScore);
 
 // ✅ pesan ini untuk pemain lama yang sudah game over
 function showGameOverWarning(email) {
@@ -898,7 +876,7 @@ if (hasPaid) {
   const rect = logoutBtn ? logoutBtn.getBoundingClientRect() : { top: 20, left: window.innerWidth - 180 };
   
   const warning = document.createElement('div');
-}
+
 
 // ✅ UTILITY FUNCTIONS:
 function showLoginForm() {
@@ -920,7 +898,7 @@ window.addEventListener('DOMContentLoaded', async function() {
   if (playerEmail) {
     const isValidEmail = verifyEmailFormat(playerEmail);
     if (isValidEmail) {
-      const scoreStatus = checkPlayerScoreStatus(playerEmail);
+      constscoreStatus = checkPlayerScoreStatus(playerEmail);
       
       // ✅ CHECK PAYMENT STATUS FIRST BEFORE SHOWING WARNING:
       try {
@@ -961,13 +939,13 @@ window.addEventListener('DOMContentLoaded', async function() {
 });
  
  
- async function ScoreStatus(inputEmail, scoreStatus) {
+ async function scoreStatus(inputEmail,scoreStatus) {
     if (scoreStatus.needsFavorite) {
         //console.log('⚠️ Returning user with no level01Score - showing game over warning');
         //showGameOverWarning(inputEmail);
-      } else if (scoreStatus.hasPlayedBefore && scoreStatus.currentScore > 0) {
-        console.log('✅ Returning user with level01Score:', scoreStatus.currentScore);
-        updateGameScore(inputEmail, scoreStatus.currentScore);
+      } else if (scoreStatus.hasPlayedBefore &&scoreStatus.currentScore > 0) {
+        console.log('✅ Returning user with level01Score:',scoreStatus.currentScore);
+        updateGameScore(inputEmail,scoreStatus.currentScore);
       }else if (!scoreStatus.hasPlayedBefore) {
         console.log('🆕 New user - setting initial level01Score');
         localStorage.setItem(`score_${inputEmail}`, '0');
@@ -1080,56 +1058,6 @@ window.addEventListener('DOMContentLoaded', async function() {
     
     console.log('✅ Logout button setup complete');
   }
-
-
-// ✅ ENHANCED level01Score UPDATE FUNCTION:
-function updateGameScore(email, newScore) {
-  localStorage.setItem(`score_${email}`, newScore.toString());
-  
-  window.level01Score = newScore;
-  window.playerScore = newScore;
-  
-  const history = getPlayerGameHistory(email);
-  updatePlayerGameHistory(email, {
-    highestScore: Math.max(history.highestScore, newScore),
-    lastPlayedDate: new Date().toISOString()
-  });
-  
-  if (newScore === 0 && history.hasPlayedBefore) {
-    updatePlayerGameHistory(email, {
-      gameOvers: history.gameOvers + 1
-    });
-    //});
-
-    // Kunci tombol Play & 10 Puzzle, tampilkan image Game Over Lusi
-    setTimeout(() => {
-      const level01 = window.game?.scene?.getScene('Level01Scene');
-      //if (level01) {
-      if (level01 && level01.scoreText && typeof level01.scoreText.setVisible === 'function') {
-      level01.scoreText.setVisible(false);
-        // Kunci tombol Play
-        if (level01.playBtn) {
-          level01.playBtn.disableInteractive();
-          level01.playBtn.setAlpha(0.5);
-          console.log('INDEX: PlayBtn diaktifkan di sini', { isPaid, newUser });
-         }
-        // Kunci tombol 10 Puzzle
-        if (level01.lv01Puzzle10Btn) {
-          level01.lv01Puzzle10Btn.disableInteractive();
-          level01.lv01Puzzle10Btn.setAlpha(0.5);
-        }
-        // Tampilkan image Game Over Lusi
-        //if (typeof level01.showGameOverImage === 'function') {
-         // level01.showGameOverImage();
-        //} else if (level01.add && level01.textures.exists('gameOver')) {
-         // level01.add.image(960, 540, 'gameOver').setDepth(9999).setOrigin(0.5);
-       // }
-      }
-    }, 1000);
-  }
- console.log('📊 level01Score updated:', email, newScore);
- }
-//});
 
   //--------------------------------------------------------------------------------------------
 
@@ -1339,8 +1267,9 @@ async function startPaymentMonitoring(email) {
     try {
       //checkPaymentStatus(email);
       const result = await checkPaymentStatus(email);
-      updateGamePaymentStatus(result.paid, result.method);
-    } catch (monitoringError) {
+      const paymentData = await checkPaymentStatusFromBackend(email);
+      window.updateGamePaymentStatus(paymentData.isPaid, paymentData.method);
+     } catch (monitoringError) {
       console.error('❌ Payment monitoring error:', monitoringError);
      // ✅ SHOW ERROR NOTIFICATION: ----muncul error di F12
      if (window.showErrorNotification) {
@@ -1577,25 +1506,27 @@ window.unlockPlayAndHideGameOver = function() {
 
 // This function updates the game payment status and UI based on the payment state
 // ✅ ENHANCED GAME PAYMENT STATUS UPDATE:
-function updateGamePaymentStatus(isPaid, method = null) {
+
+window.updateGamePaymentStatus = function(isPaid, method = null) {
   const email = localStorage.getItem("playerEmail");
   if (!email) {
-    console.log('❌ Email not defined in updateGamePaymentStatus');
+    console.error('❌ playerEmail not defined in updateGamePaymentStatus');
     return;
   }
-  console.log('[PAYMENT STATUS]', { isPaid, method }); 
-  try {
-     //if (!isPaid && playerEmail) {
-      // Tandai game over jika belum bayar
-      //localStorage.setItem(`gameOver_${playerEmail}`, 'true');
-    //} else if (isPaid && playerEmail) {
-      // Reset game over jika sudah bayar
-      //localStorage.setItem(`gameOver_${playerEmail}`, 'false');
-    //}
-    if (!playerEmail) {
-      console.log('❌ No email - cannot update payment status');
-      return;
-    }
+  let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+  userData.isPaid = isPaid;
+  localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+  window.isPaid = isPaid;
+  // Unlock tombol jika sudah bayar
+  if (isPaid) {
+    if (window.unblur10PuzzleButton) window.unblur10PuzzleButton();
+    if (window.unlockGameAfterPurchase) window.unlockGameAfterPurchase();
+    console.log('✅ Payment status updated, game unlocked');
+  } else {
+    if (window.lockAllGameplayButtons) window.lockAllGameplayButtons();
+    console.log('🔒 Payment not confirmed, game locked');
+  }
+}
     
     // ✅ GET USER CLASSIFICATION:
     const history = getPlayerGameHistory(playerEmail);
@@ -1739,18 +1670,15 @@ function updateGamePaymentStatus(isPaid, method = null) {
     } else {
       console.log(`🎮 Phaser not ready - Payment status: ${isPaid ? 'paid' : 'unpaid'}`);
     }
-  } catch (error) {
-    console.error('❌ Error in updateGamePaymentStatus:', error);
-  }
-}
+
 
 
 document.addEventListener('visibilitychange', async () => {
   if (document.visibilityState === 'visible') {
     const email = localStorage.getItem('playerEmail');
     if (email) {
-      const result = await window.checkPaymentStatus(email);
-      window.updateGamePaymentStatus(result.paid, result.method);
+      const paymentData = await checkPaymentStatusFromBackend(email);
+      window.updateGamePaymentStatus(paymentData.isPaid, paymentData.method);
     }
   }
 }); 
@@ -1798,16 +1726,37 @@ function waitForGameReady(callback, maxAttempts = 10) {
   checkReady();
 }
 
-// ✅ SAFE GAME UPDATE FUNCTIONS:
-function safeUpdateGameScore(email, level01Score) {
-  waitForGameReady(() => {
-    updateGameScore(email, level01Score);
+// ✅ SAFE GAME UPDATE SCOREFUNCTIONS:
+function updateGameScore(email, newScore) {
+  localStorage.setItem(`score_${email}`, newScore.toString());
+  window.level01Score = newScore;
+  window.playerScore = newScore;
+
+  // Simpan ke backend setiap kali level01Score berubah
+  axios.post(
+    `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
+    {
+      level01Score: newScore
+      // Tambahkan data lain jika perlu nanti untuk level01ScoreSeri2 dan seri selanjutnya
+    }
+  ).then(() => {
+    console.log('✅ level01Score saved to backend');
+  }).catch((err) => {
+    console.error('❌ Failed to save level01Score to backend:', err);
+  });
+
+  const history = getPlayerGameHistory(email);
+  updatePlayerGameHistory(email, {
+    highestScore: Math.max(history.highestScore, newScore),
+    lastPlayedDate: new Date().toISOString()
   });
 }
-
-function safeUpdatePaymentStatus(isPaid, method = null) {
-  waitForGameReady(() => {
-    updateGamePaymentStatus(isPaid, method);
+  
+// ✅ SAFE PAYMENT STATUS UPDATE FUNCTION:
+function safeUpdatePaymentStatus(email) {
+  waitForGameReady(async () => {
+    const paymentData = await checkPaymentStatusFromBackend(email);
+    window.updateGamePaymentStatus(paymentData.isPaid, paymentData.method);
   });
 }
 
