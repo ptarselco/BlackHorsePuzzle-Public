@@ -306,6 +306,86 @@ window.checkPaymentStatusFromBackend = async function(email) {
     };
   }
 };
+//<!-- FIND function checkPaymentStatus around line 350 dan REPLACE dengan: -->
+window.checkPaymentStatus = async function(email) {
+  let result = { paid: false, method: null };
+
+  try {
+    console.log('💳 Checking payment status for:', email);
+    
+    const urlParams = new URLSearchParams(window.location.search);
+
+    //const paymentResult = await checkPaymentStatus(email); // (inputEmail) ganti ke Email
+      //  startPaymentMonitoring(email); // (inputEmail) ganti ke Email
+      
+    // Check Xsolla payment
+    if (urlParams.get('paid') === '1') {
+      console.log('✅ Payment detected from Xsolla URL parameter');
+      if (window.safeUpdatePaymentStatus) {
+        safeUpdatePaymentStatus(true, 'xsolla');
+      }
+      result = { paid: true, method: 'xsolla' };
+    } 
+    // Check PayPal payment
+    else if (urlParams.get('paypal_paid') === '1' || urlParams.get('paypal_success') === 'true') {
+      console.log('✅ Payment detected from PayPal URL parameter');
+      if (window.safeUpdatePaymentStatus) {
+        safeUpdatePaymentStatus(true, 'paypal');
+      }
+      result = { paid: true, method: 'paypal' };
+    }
+    // Check PayPal Order ID
+    //else if (urlParams.get('paypal_order_id')) {
+     // console.log('✅ PayPal Order ID detected');
+    else if (urlParams.get('paypal_paid') === '1' || urlParams.get('paypal_success') === 'true') {
+      console.log('✅ Payment detected from PayPal URL parameter');
+      if (window.safeUpdatePaymentStatus) {
+        safeUpdatePaymentStatus(true, 'paypal');
+      }
+      result = { paid: true, method: 'paypal' };
+    }
+    // Check PayPal Token 
+    else if (urlParams.get('token') && urlParams.get('PayerID')) {
+      console.log('✅ PayPal token and PayerID detected');
+      if (window.safeUpdatePaymentStatus) {
+        safeUpdatePaymentStatus(true, 'paypal');
+      }
+      result = { paid: true, method: 'paypal' };
+    }
+  } catch (error) {
+    console.error('❌ Payment check failed:', error);
+    if (window.safeUpdatePaymentStatus) {
+      safeUpdatePaymentStatus(false);
+    }
+    result = { paid: false, method: 'error' };
+  }
+  
+  console.log('💳 Payment check result:', result);
+  return result;
+};
+// This function updates the game payment status and UI based on the payment state
+// ✅ ENHANCED GAME PAYMENT STATUS UPDATE:
+
+window.updateGamePaymentStatus = function(isPaid, method = null) {
+  const email = localStorage.getItem("playerEmail");
+  if (!email) {
+    console.error('❌ playerEmail not defined in updateGamePaymentStatus');
+    return;
+  }
+  let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+  userData.isPaid = isPaid;
+  localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+  window.isPaid = isPaid;
+  // Unlock tombol jika sudah bayar
+  if (isPaid) {
+    if (window.unblur10PuzzleButton) window.unblur10PuzzleButton();
+    if (window.unlockGameAfterPurchase) window.unlockGameAfterPurchase();
+    console.log('✅ Payment status updated, game unlocked');
+  } else {
+    if (window.lockAllGameplayButtons) window.lockAllGameplayButtons();
+    console.log('🔒 Payment not confirmed, game locked');
+  }
+}
 
  // Client-side handling of payment status
 //if (payment === "cancelled") {
@@ -783,9 +863,7 @@ console.log('✅ REAL BACKEND VERIFICATION READY - CONNECT TO RENDER.COM');
       localStorage.setItem(`gameOver_${email}`, 'true');
     } 
 
-
-// ✅  PAGE INITIALIZATION:
-  // ✅ ENHANCED level01Score MANAGEMENT FUNCTIONS (ADD FIRST):
+// ✅ ENHANCED level01Score MANAGEMENT FUNCTIONS (ADD FIRST):
 // ✅ ENHANCED GET PLAYER GAME level01Score AND HISTORY
 function getPlayerGameHistory(email) {
   const history = localStorage.getItem(`gameHistory_${email}`);
@@ -812,9 +890,9 @@ function updatePlayerGameHistory(email, updates) {
 // ✅ ENHANCED CHECK PLAYER level01Score STATUS 
 function checkPlayerScoreStatus(email) {
   const currentScore = parseInt(localStorage.getItem(`score_${email}`) || 0);
+  const history = getPlayerGameHistory(email);
   //localStorage.setItem(`score_${email}`, '0');
   //const currentScore = 0; // Selalu 0, tidak ada angka 3
-  const history = getPlayerGameHistory(email);
   
   console.log('🔍 Checking level01Score status for:', email);
   console.log('Current level01Score:', currentScore);
@@ -823,7 +901,6 @@ function checkPlayerScoreStatus(email) {
   return {
     currentScore: currentScore,
     hasPlayedBefore: history.hasPlayedBefore,
-    //canPlay: currentScore > 0 || !history.hasPlayedBefore,
     canPlay: !history.hasPlayedBefore || currentScore > 0, // User baru atau user lama dengan level01Score > 0
     needsFavorite: currentScore === 0 && history.hasPlayedBefore && !history.favoriteGiven,
     isGameOver: currentScore === 0 && history.hasPlayedBefore,
@@ -1066,7 +1143,7 @@ window.addEventListener('DOMContentLoaded', async function() {
   // ✅ SETUP LOGOUT BUTTON:
   const logoutBtn = document.getElementById('logoutBtn');
   if (logoutBtn) {
-    logoutBtn.style.zIndex = '9998';
+    logoutBtn.style.zIndex = '9990';
     logoutBtn.style.position = 'fixed';
     logoutBtn.style.pointerEvents = 'auto';
     logoutBtn.style.top = '18px';
@@ -1089,97 +1166,7 @@ window.addEventListener('DOMContentLoaded', async function() {
 
     
 // ✅ ENHANCED MULTI-PAYMENT VERIFICATION FUNCTIONS:
-//<!-- FIND function checkPaymentStatus around line 350 dan REPLACE dengan: -->
-window.checkPaymentStatus = async function(email) {
-  let result = { paid: false, method: null };
 
-  try {
-    console.log('💳 Checking payment status for:', email);
-    
-    const urlParams = new URLSearchParams(window.location.search);
-
-    //const paymentResult = await checkPaymentStatus(email); // (inputEmail) ganti ke Email
-      //  startPaymentMonitoring(email); // (inputEmail) ganti ke Email
-      
-    // Check Xsolla payment
-    if (urlParams.get('paid') === '1') {
-      console.log('✅ Payment detected from Xsolla URL parameter');
-      if (window.safeUpdatePaymentStatus) {
-        safeUpdatePaymentStatus(true, 'xsolla');
-      }
-      result = { paid: true, method: 'xsolla' };
-    } 
-    // Check PayPal payment
-    else if (urlParams.get('paypal_paid') === '1' || urlParams.get('paypal_success') === 'true') {
-      console.log('✅ Payment detected from PayPal URL parameter');
-      if (window.safeUpdatePaymentStatus) {
-        safeUpdatePaymentStatus(true, 'paypal');
-      }
-      result = { paid: true, method: 'paypal' };
-    }
-    // Check PayPal Order ID
-    //else if (urlParams.get('paypal_order_id')) {
-     // console.log('✅ PayPal Order ID detected');
-    else if (urlParams.get('paypal_paid') === '1' || urlParams.get('paypal_success') === 'true') {
-      console.log('✅ Payment detected from PayPal URL parameter');
-      if (window.safeUpdatePaymentStatus) {
-        safeUpdatePaymentStatus(true, 'paypal');
-      }
-      result = { paid: true, method: 'paypal' };
-    }
-    // Check PayPal Token 
-    else if (urlParams.get('token') && urlParams.get('PayerID')) {
-      console.log('✅ PayPal token and PayerID detected');
-      if (window.safeUpdatePaymentStatus) {
-        safeUpdatePaymentStatus(true, 'paypal');
-      }
-      result = { paid: true, method: 'paypal' };
-    }
-    // Default to unpaid
-    else {
-      console.log('🔒 No payment found - game locked');
-      if (window.safeUpdatePaymentStatus) {
-        safeUpdatePaymentStatus(false);
-      }
-      result = { paid: false, method: null };
-    }
-    
-  } catch (error) {
-    console.error('❌ Payment check failed:', error);
-    if (window.safeUpdatePaymentStatus) {
-      safeUpdatePaymentStatus(false);
-    }
-    result = { paid: false, method: 'error' };
-  }
-  
-  console.log('💳 Payment check result:', result);
-  return result;
-
-// This function updates the game payment status and UI based on the payment state
-// ✅ ENHANCED GAME PAYMENT STATUS UPDATE:
-
-window.updateGamePaymentStatus = function(isPaid, method = null) {
-  const email = localStorage.getItem("playerEmail");
-  if (!email) {
-    console.error('❌ playerEmail not defined in updateGamePaymentStatus');
-    return;
-  }
-  let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
-  userData.isPaid = isPaid;
-  localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
-  window.isPaid = isPaid;
-  // Unlock tombol jika sudah bayar
-  if (isPaid) {
-    if (window.unblur10PuzzleButton) window.unblur10PuzzleButton();
-    if (window.unlockGameAfterPurchase) window.unlockGameAfterPurchase();
-    console.log('✅ Payment status updated, game unlocked');
-  } else {
-    if (window.lockAllGameplayButtons) window.lockAllGameplayButtons();
-    console.log('🔒 Payment not confirmed, game locked');
-  }
-}
-
-//-------------------------------------------------------------------------------------------------------------------
 // 1. CREATE ORDER PAYPAL
 async function createPayPalOrder(email, amount, message = 'Black Horse Puzzle Support') {
   try {
@@ -1304,7 +1291,7 @@ async function verifyPayPalOrder(orderId, email) {
     return false;
   }
 }
-}
+
 //------------------------------------------------------------------------------------------------------------
 async function startPaymentMonitoring(email) {
   // Monitor payment status every minute
@@ -1419,8 +1406,6 @@ function stopPaymentMonitoring() {
     console.log('🔄 Payment monitoring stopped');
   }
 }
-
-
 
 // mulai co 4.1
   // Cek apakah sudah main minimal 3 ronde (atau sesuai logic kamu)

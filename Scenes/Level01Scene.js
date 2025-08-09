@@ -3603,23 +3603,28 @@ showHoldMessageAboveNotes() {
               });
 
             
-            this.payBtn.on('pointerdown', () => { // ---> INI ADA
-              // ✅ INISIALISASI EMAIL DI SINI:
-              const email = localStorage.getItem('playerEmail');
+this.payBtn.on('pointerdown', () => { // ---> INI ADA
+// ✅ INISIALISASI EMAIL DI SINI:
+const email = localStorage.getItem('playerEmail');
     
-              if (!email) {
-              alert('Email not found. Please login again.');
-              return;
-             } 
+if (!email) {
+alert('Email not found. Please login again.');
+return;
+} 
 
-             // account ini untuk donasi
-             // window.open('https://www.paypal.com/ncp/payment/7MARDZW8BDWVG', '_blank'); //ini tanpa harga dan tanpa variant 
+// account ini untuk donasi
+// window.open('https://www.paypal.com/ncp/payment/7MARDZW8BDWVG', '_blank'); //ini tanpa harga dan tanpa variant 
 // PAY handler with dynamic PayPal amount
-window.open('https://www.paypal.com/ncp/payment/ZVFL3ND789CVE');
+const paypalWindow = window.open('https://www.paypal.com/ncp/payment/ZVFL3ND789CVE');
 //window.open('https://your-xsolla-link', '_blank');  // belum selesai paystationnya
 this.showWaitingForPaymentMessage();
 
-            // Polling ke backend setiap beberapa detik
+// Cek setiap 1 detik apakah window PayPal sudah ditutup
+const checkPayPalClosed = setInterval(() => {
+  if (paypalWindow.closed) {
+    clearInterval(checkPayPalClosed);
+
+// Polling ke backend setiap beberapa detik
 this.paymentCheckInterval = setInterval(async () => {
   console.log('🔍 Polling payment status...');
   
@@ -3654,11 +3659,13 @@ this.paymentCheckInterval = setInterval(async () => {
         this.lv01Puzzle10Btn.disableInteractive();
         this.lv01Puzzle10Btn.setAlpha(0.5);
       }
-    }
-  } else {
+     }
+    } else {
     console.log('⏳ Payment not confirmed yet...');
-  }
-}, 5000); // Check every 5 seconds
+   }
+  }, 5000); // Check every 5 seconds
+ }
+}, 1000);
 
             
               // Setelah pembayaran sukses:
@@ -3714,8 +3721,8 @@ this.paymentCheckInterval = setInterval(async () => {
             });
           }
 
-  // mengatur waktu favorit yang dibeli dan muncul text countdown
-  addFavoritTimeToMainTimer(seconds, label) {
+   // mengatur waktu favorit yang dibeli dan muncul text countdown
+   addFavoritTimeToMainTimer(seconds, label) {
     // Hentikan timer ronde sebelumnya jika ada
     if (this.roundTimer) {
       this.roundTimer.remove(false);
@@ -3831,21 +3838,26 @@ showFavoritPayPanel(label, seconds, price, btnRef) {
     });
 
 
-    // Handler pembayaran
-    this.payBtn.on('pointerdown', () => { // ---> INI ADA
-        // ✅ INISIALISASI EMAIL DI SINI:
-    const email = localStorage.getItem('playerEmail');
-    
-    if (!email) {
-        alert('Email not found. Please login again.');
-        return;
-    }
-             // account ini untuk donasi
-             // window.open('https://www.paypal.com/ncp/payment/7MARDZW8BDWVG', '_blank'); //ini tanpa harga dan tanpa variant 
+// Handler pembayaran
+this.payBtn.on('pointerdown', () => { // ---> INI ADA
+// ✅ INISIALISASI EMAIL DI SINI:
+const email = localStorage.getItem('playerEmail');
+
+if (!email) {
+alert('Email not found. Please login again.');
+return;
+}
+  // account ini untuk donasi
+  // window.open('https://www.paypal.com/ncp/payment/7MARDZW8BDWVG', '_blank'); //ini tanpa harga dan tanpa variant 
   // PAY handler with dynamic PayPal amount
-  window.open('https://www.paypal.com/ncp/payment/ZVFL3ND789CVE');
+  const paypalWindow = window.open('https://www.paypal.com/ncp/payment/ZVFL3ND789CVE');
   //window.open('https://your-xsolla-link', '_blank');  // belum selesai paystationnya
   this.showWaitingForPaymentMessage();
+
+  // Cek setiap 1 detik apakah window PayPal sudah ditutup
+  const checkPayPalClosed = setInterval(() => {
+    if (paypalWindow.closed) {
+      clearInterval(checkPayPalClosed);
              
           // Polling ke backend setiap beberapa detik
   this.paymentCheckInterval = setInterval(async () => {
@@ -3883,11 +3895,13 @@ showFavoritPayPanel(label, seconds, price, btnRef) {
         this.lv01Puzzle10Btn.disableInteractive();
         this.lv01Puzzle10Btn.setAlpha(0.5);
       }
-    }
-  } else {
+     }
+    } else {
     console.log('⏳ Payment not confirmed yet...');
-  }
-}, 5000); // Check every 5 seconds     
+   }
+  }, 5000); // Check every 5 seconds     
+ }
+}, 1000); // Cek setiap 1 detik
                     
       // Setelah pembayaran sukses:
       if (this.payPanel) this.payPanel.destroy();
