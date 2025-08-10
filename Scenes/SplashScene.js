@@ -349,7 +349,6 @@ async  unlockedLevels(email, level) {
 
     console.log('✅ Payment verified! Proceeding to unlock level...');
    
-
     // Jika sudah bayar, lanjut unlock level
     const unlockRes = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/unlock',
@@ -359,9 +358,13 @@ async  unlockedLevels(email, level) {
 
     console.log('🔓 Unlock level response:', unlockRes.data);
 
-    this.unblur10PuzzleButton(); // Hapus blur tombol 10 puzzle
-
-    //return unlockRes.data.success || unlockRes.data.unlocked === true;
+   if (unlockRes.data.success || unlockRes.data.unlocked === true) { 
+     this.unblur10PuzzleButton(); // Hapus blur tombol 10 puzzle
+     this.unlockGameAfterPurchase(); // Aktifkan tombol Play & Puzzle
+    } 
+   
+    // ✅ LOGIKA UNLOCK LEVEL:
+    // Jika backend mengembalikan { success: true } atau { unlocked: true }
     const isUnlocked = unlockRes.data.success || unlockRes.data.unlocked === true;
     console.log('🎯 Final unlock result:', isUnlocked);
     return isUnlocked;

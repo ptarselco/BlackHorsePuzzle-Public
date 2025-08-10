@@ -1692,9 +1692,6 @@ unlockGameAfterPurchase() {
     console.log('✅ Game Over state cleared - Player can play again');
   }
   
-  // Restore buttons to full functionality
-  //this.unblur10PuzzleButton();
-
   // Re-enable buttons
   if (this.lv01Puzzle10Btn) {
     this.lv01Puzzle10Btn.setInteractive();
@@ -2944,8 +2941,7 @@ async  unlockedLevels(email, level) {
 
     console.log('✅ Payment verified! Proceeding to unlock level...');
    
-
-    // Jika sudah bayar, lanjut unlock level
+   // Jika sudah bayar, lanjut unlock level
     const unlockRes = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/unlock',
       { email, level },
@@ -2954,7 +2950,10 @@ async  unlockedLevels(email, level) {
 
     console.log('🔓 Unlock level response:', unlockRes.data);
 
-    this.unblur10PuzzleButton(); // Hapus blur tombol 10 puzzle
+   if (unlockRes.data.success || unlockRes.data.unlocked === true) {
+     this.unblur10PuzzleButton(); // Hapus blur tombol 10 puzzle
+     this.unlockGameAfterPurchase(); // Aktifkan tombol Play & Puzzle
+    } 
 
     //return unlockRes.data.success || unlockRes.data.unlocked === true;
     const isUnlocked = unlockRes.data.success || unlockRes.data.unlocked === true;
