@@ -176,7 +176,7 @@ async updateUserProgress(email, progress) {
 }
 
 // 3. GET USER STATUS DARI BACKEND (POST)
-async getUserStatus(email, level = 'Level01, Level01Scene') {
+async getUserStatus(email, level = 'Level01Scene') {
   try {
     const response = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/status',
@@ -192,13 +192,13 @@ async getUserStatus(email, level = 'Level01, Level01Scene') {
 // GABUNGKAN CHECK USER STATUS DAN GAME OVER
 async checkUserStatusAndGameOver(email) {
   // Ambil status user dari backend (POST)
-  const status = await this.getUserStatus(email, 'Level01, Level01Scene');
+  const status = await this.getUserStatus(email, 'Level01Scene');
   if (!status) {
     console.error('Gagal ambil status user');
-    return null;
-  }
+      return null;
+    }
 
- const progress = res.data.progress  || {};
+ const progress = status.progress  || {};
     // ✅ CALCULATE USER TYPES AND RETURN THEM:
     const newUser = !progress || progress.totalPlays === 0;
     const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
