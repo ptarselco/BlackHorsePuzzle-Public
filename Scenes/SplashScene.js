@@ -294,7 +294,7 @@ async checkGameOverStatusFromServer() {
     // Fallback ke localStorage jika backend gagal
     const isLocked = localStorage.getItem(`gameOver_${email}`) === 'true';
     if (isLocked) {
-      //this.showGameOverReturnMessage();
+      this.showGameOverReturnMessage();
       //this.lockAllGameplayButtons();
       //await this.lockLevel(email, 'Level01');
       return;

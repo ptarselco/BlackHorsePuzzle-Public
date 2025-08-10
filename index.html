@@ -1002,7 +1002,7 @@ window.addEventListener('DOMContentLoaded', async function() {
   if (email) {
     const isValidEmail = verifyEmailFormat(email);
     if (isValidEmail) {
-      constscoreStatus = checkPlayerScoreStatus(email);
+      const scoreStatus = checkPlayerScoreStatus(email);
       
       // ✅ CHECK PAYMENT STATUS FIRST BEFORE SHOWING WARNING:
       try {
