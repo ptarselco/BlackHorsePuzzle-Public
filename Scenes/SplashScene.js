@@ -72,6 +72,7 @@ lockAllGameplayButtons() {
   if (this.lv01Puzzle10Btn) {
     this.lv01Puzzle10Btn.disableInteractive();
     this.lv01Puzzle10Btn.setAlpha(0.5); // Visual indication
+     this.showGameOverReturnMessage();
   }
   // Tambahkan logika lain sesuai kebutuhan
   console.log('✅ Semua tombol gameplay dikunci');
@@ -125,7 +126,7 @@ async getUserProgress(email) {
       { timeout: 90000 }
     );
     //const progress = res.data.progress  || {};
-    const progress = response.data.progress || {};
+    const progress = res.data.progress || {};
     // ✅ CALCULATE USER TYPES AND RETURN THEM:
     const newUser = !progress || progress.totalPlays === 0;
     const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
@@ -135,9 +136,9 @@ async getUserProgress(email) {
     console.log(`📊 Progress data: totalPlays=${progress.totalPlays}, level01Score=${progress.level01Score}`);
     // Response: { success, progress, user }  
     return {
-    success: response.data.success,
+    success: res.data.success,
       progress: progress,
-      user: response.data.user,
+      user: res.data.user,
       // ✅ ADD USER TYPES:
       newUser: newUser,
       lossUser: lossUser,
