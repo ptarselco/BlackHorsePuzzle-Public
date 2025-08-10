@@ -380,6 +380,15 @@ async  unlockedLevels(email, level) {
     // Cek apakah email sudah ada di localStorage
     const email = localStorage.getItem("email");
     let playerScore = 0;
+    // ✅ ENHANCED SAFETY CHECK in updateGameScore function:
+    if (email) {
+    const scoreStatus = checkPlayerScoreStatus(email); 
+    updateGameScore(email, scoreStatus.currentScore);
+    //updateGameScore(email,scoreStatus.currentScore);
+    console.log('✅ updateGameScore dipanggil:', email,scoreStatus.currentScore);
+    } else {
+    console.warn('❌ email tidak ditemukan - tidak bisa updateGameScore');
+   }
 
     // Panggil sync progress dari backend di sini
   if (email) {
