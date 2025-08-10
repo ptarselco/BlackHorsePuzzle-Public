@@ -3643,7 +3643,7 @@ this.paymentCheckInterval = setInterval(async () => {
       this.unblur10PuzzleButton();
       this.unlockGameAfterPurchase();
       alert('🎉 Level successfully unlocked!');
-      location.reload();
+      //location.reload();
     } else {
       // Jangan unlock UI jika gagal
       alert('Payment confirmed but unlock failed. Please refresh the page.');
@@ -3879,7 +3879,7 @@ return;
       this.unblur10PuzzleButton();
       this.unlockGameAfterPurchase();
       alert('🎉 Level successfully unlocked!');
-      location.reload();
+      //location.reload();
     } else {
       // Jangan unlock UI jika gagal
       alert('Payment confirmed but unlock failed. Please refresh the page.');

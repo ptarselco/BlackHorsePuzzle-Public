@@ -227,8 +227,8 @@ async checkUserStatusAndGameOver(email) {
     } else if (lossUser) {
       // LOSS USER: Sudah main >= 3x, score = 0
       this.isGameOver = true;
-      //this.showGameOverReturnMessage();
-      //this.lockAllGameplayButtons();
+      this.showGameOverReturnMessage();
+      this.lockAllGameplayButtons();
       return status;
     }
   }

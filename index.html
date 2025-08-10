@@ -1336,8 +1336,7 @@ async function performSecureLogout() {
     // Complete data cleanup
     localStorage.removeItem('email');
     if (email) {
-      //localStorage.removeItem(`score_${email}`);
-      //localStorage.removeItem(`gameOver_${email}`);
+      localStorage.removeItem(`gameOver_${email}`);
       localStorage.removeItem(`welcomeBackShown`);
       localStorage.removeItem(`hasClaimedHat`);
     }
