@@ -221,6 +221,14 @@ async checkUserStatusAndGameOver(email) {
       localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
       this.isGameOver = false;
       this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+
+      // ✅ Aktifkan playBtn untuk winUser
+      if (this.playBtn) {
+      this.playBtn.setInteractive({ useHandCursor: true });
+      this.playBtn.setAlpha(1);
+      this.playBtn.setVisible(true);
+      }
+
       console.log('✅ Game over status di-reset - tombol Play & Puzzle diaktifkan');
       // Lanjutkan main
       return status;

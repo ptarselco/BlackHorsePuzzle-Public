@@ -2810,30 +2810,42 @@ async checkUserStatusAndGameOver(email) {
       localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
       this.isGameOver = false;
       this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+
+      // ✅ Aktifkan playBtn untuk winUser
+      if (this.playBtn) {
+      this.playBtn.setInteractive({ useHandCursor: true });
+      this.playBtn.setAlpha(1);
+      this.playBtn.setVisible(true);
+      }
+
       console.log('✅ Game over status di-reset - tombol Play & Puzzle diaktifkan');
       // Lanjutkan main
-      return status;
-    } else {
+    //  return status;
+    //} else {
       // LOSS USER: Sudah main >= 3x, score = 0
-      this.isGameOver = true;
-      //this.showGameOverReturnMessage();
-      //this.lockAllGameplayButtons();
-      return status;
+    //  this.isGameOver = true;
+    //  this.showGameOverReturnMessage();
+    //  this.lockAllGameplayButtons();
+    //  return status;
     }
   }
 
   // Tambah totalPlays setiap kali fungsi ini dipanggil (untuk user lama)
   status.totalPlays = (status.totalPlays || 0) + 1;
-
+  
   // Jika totalPlays >= 3 dan level01Score masih 0, set game over
-  if (status.totalPlays >= 3 && (status.level01Score || 0) === 0) {
-    //await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/set-gameover', { email, isGameOver: true });
-    await this.setGameOver(email, true); // gunakan fungsi async
+  const isLossUser = (
+    (status.isGameOver && (status.level01Score || 0) === 0) || 
+    (status.totalPlays >= 3 && (status.level01Score || 0) === 0)
+  );
+  if (isLossUser) {
     status.isGameOver = true;
+    await this.setGameOver(email, true); // gunakan fungsi async
+    status.isGameOver = true; // pastikan status di-set ke true
     localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
     this.isGameOver = true;
-   // this.showGameOverReturnMessage();
-   // this.lockAllGameplayButtons();
+    this.showGameOverReturnMessage();
+    this.lockAllGameplayButtons();
     return status;
   }
 
@@ -3623,13 +3635,13 @@ const checkPayPalClosed = setInterval(() => {
 
 // Polling ke backend setiap beberapa detik
 this.paymentCheckInterval = setInterval(async () => {
+  showPleaseWaitMessage('Please wait, unlocking in progress...');
   console.log('🔍 Polling payment status...');
-  
   const paymentData = await checkPaymentStatusFromBackend(email);
   
   if (paymentData && paymentData.isPaid === true) {
     clearInterval(this.paymentCheckInterval);
-
+    hidePleaseWaitMessage();
   if (window.updateGamePaymentStatus) {  
     window.updateGamePaymentStatus(paymentData.isPaid, paymentData.method);
     } else {
