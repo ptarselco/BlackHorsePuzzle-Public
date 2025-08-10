@@ -974,16 +974,6 @@ if (hasPaid) {
     }
   }, 8000);
 }
-// ✅ ENHANCED GAME SCORE UPDATE FUNCTION:
-  handleScoreStatus(email, scoreStatus);
-   if (email) {
-    const scoreStatus = checkPlayerScoreStatus(email);
-    updateGameScore(email, scoreStatus.currentScore);
-  } else {
-    console.warn('❌ Email belum didefinisikan');
-  }
-
-
 
   // Cari posisi logoutBox
   const logoutBox = document.getElementById('logoutBtn');
