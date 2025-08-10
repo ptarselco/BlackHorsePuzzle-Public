@@ -118,12 +118,14 @@ unblur10PuzzleButton() {
 // 1. GET FUNCTION FOR USER PROGRESS
 async getUserProgress(email) {
   try {
-    const res = await axios.post(
+    //const res = await axios.post(
+    const response = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
       { email, level01Score },
       { timeout: 90000 }
     );
-    const progress = res.data.progress  || {};
+    //const progress = res.data.progress  || {};
+    const progress = response.data.progress || {};
     // ✅ CALCULATE USER TYPES AND RETURN THEM:
     const newUser = !progress || progress.totalPlays === 0;
     const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
