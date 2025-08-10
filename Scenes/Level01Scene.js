@@ -144,11 +144,13 @@ if (email) {
   syncProgressFromBackend(email);
 }
 
+// Deklarasi variabel utama
+let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+
 // Panggil fungsi async tanpa await
 this.initUserData(email, userData);
 
-// Deklarasi variabel utama
-let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+
 
 // Pastikan gameProgress selalu ada
 if (!userData.gameProgress) {
