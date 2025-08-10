@@ -392,10 +392,21 @@ async  unlockedLevels(email, level) {
     updateGameScore(email, scoreStatus.currentScore);
     //updateGameScore(email,scoreStatus.currentScore);
     console.log('✅ updateGameScore dipanggil:', email,scoreStatus.currentScore);
-    } else {
+    
+    // Sembunyikan loginBox, tampilkan logoutBtn
+    const loginBox = document.getElementById("loginBox");
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (loginBox) loginBox.style.display = "none";
+    if (logoutBtn) logoutBtn.style.display = "inline-block";
+  } else {
+    // Email tidak ditemukan, tampilkan loginBox dan sembunyikan logoutBtn
     console.warn('❌ email tidak ditemukan - tidak bisa updateGameScore');
-   }
-
+    const loginBox = document.getElementById("loginBox");
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (loginBox) loginBox.style.display = "block";
+    if (logoutBtn) logoutBtn.style.display = "none";
+  }
+  
     // Panggil sync progress dari backend di sini
   if (email) {
     syncProgressFromBackend(email); // ← panggil di sini
