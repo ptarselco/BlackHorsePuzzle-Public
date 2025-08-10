@@ -144,14 +144,20 @@ if (email) {
   syncProgressFromBackend(email);
 }
 
-// Deklarasi variabel utama
-let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
-
 // Panggil fungsi async tanpa await
 this.initUserData(email, userData);
 
+// Deklarasi variabel utama
+let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
 
- 
+// Pastikan gameProgress selalu ada
+if (!userData.gameProgress) {
+  userData.gameProgress = {
+    level01Score: 0,
+    // tambahkan field lain jika perlu
+  };
+}
+
   // Tambahkan validasi score di sini
   if (typeof userData.gameProgress.level01Score !== 'number' || isNaN(userData.gameProgress.level01Score)) {
   userData.gameProgress.level01Score = 0;
