@@ -861,7 +861,7 @@ console.log('✅ REAL BACKEND VERIFICATION READY - CONNECT TO RENDER.COM');
     
    //✅ UPDATE GAME OVER STATE:
     if (isPaid) {
-      unlockPlayAndHideGameOver();
+      window.unlockPlayAndHideGameOver();
       //localStorage.setItem(`gameOver_${email}`, 'false');
       localStorage.setItem(`gameOver_${email}`, 'false');
     } else if (lossUser) {
