@@ -27,7 +27,7 @@ class SplashScene extends Phaser.Scene {
     this.load.on('complete', () => {
       document.getElementById('loader').style.display = 'none';
       
-      if (!localStorage.getItem("playerEmail")) {
+      if (!localStorage.getItem("email")) {
         document.getElementById("loginBox").style.display = "block";
         document.getElementById("logoutBtn").style.display = "none";
       } else {
@@ -272,7 +272,7 @@ async setGameOver(email, isGameOver = true) {
 
 // 5. CHECK GAME OVER STATUS DARI SERVER
 async checkGameOverStatusFromServer() {
-  const email = localStorage.getItem('playerEmail');
+  const email = localStorage.getItem('email');
   if (!email) return;
 
   try {
@@ -377,8 +377,8 @@ async  unlockedLevels(email, level) {
   
   create() {
    console.log('🎬 Creating cinematic splash scene...'); 
-    // Cek apakah playerEmail sudah ada di localStorage
-    const email = localStorage.getItem("playerEmail");
+    // Cek apakah email sudah ada di localStorage
+    const email = localStorage.getItem("email");
     let playerScore = 0;
 
     // Panggil sync progress dari backend di sini
@@ -387,7 +387,7 @@ async  unlockedLevels(email, level) {
   }
 
   window.addEventListener('beforeunload', () => {
-  const email = localStorage.getItem("playerEmail");
+  const email = localStorage.getItem("email");
   if (!email) return;
   const progress = {
     level01Score: window.level01Score || 0,
@@ -454,7 +454,7 @@ async  unlockedLevels(email, level) {
   level1Glow.setVisible(true);
   btnBlue.setVisible(true);
 
-  const email = localStorage.getItem("playerEmail");
+  const email = localStorage.getItem("email");
   if (!email) {
     document.getElementById("loginBox").style.display = "block";
     alert("Please Login with your email!");

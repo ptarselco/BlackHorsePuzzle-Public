@@ -36,7 +36,7 @@ class Level02Scene extends Phaser.Scene {
     document.getElementById('loader').style.display = 'none';
   
   // Tampilkan loginBox jika user belum login
- if (!localStorage.getItem("playerEmail")) {
+ if (!localStorage.getItem("email")) {
   document.getElementById("loginBox").style.display = "block";
    document.getElementById("logoutBtn").style.display = "none";
 } else {
@@ -46,14 +46,14 @@ class Level02Scene extends Phaser.Scene {
 } 
 
   create() {
-    console.log("Level02 create, login:", localStorage.getItem("playerEmail"));
-    if (!localStorage.getItem("playerEmail")) {
+    console.log("Level02 create, login:", localStorage.getItem("email"));
+    if (!localStorage.getItem("email")) {
     console.log("Belum login, kembali ke SplashScene"); 
    this.scene.start('SplashScene');
     return;
   }
 
-  const email = localStorage.getItem("playerEmail");
+  const email = localStorage.getItem("email");
   let playerScore = 0;
 
   this.add.image(960, 640, "board");

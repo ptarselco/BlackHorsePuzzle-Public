@@ -107,7 +107,7 @@ class Level01Scene extends Phaser.Scene {
   this.load.on('complete', () => {
   document.getElementById('loader').style.display = 'none';
       // Tampilkan loginBox jika user belum login
- if (!localStorage.getItem("playerEmail")) {
+ if (!localStorage.getItem("email")) {
   document.getElementById("loginBox").style.display = "block";
    document.getElementById("logoutBtn").style.display = "none";
 } else {
@@ -118,16 +118,16 @@ class Level01Scene extends Phaser.Scene {
 
  // create() {
  create(data = {}) {
-    console.log("Level01 create, login:", localStorage.getItem("playerEmail"));
-    const email = localStorage.getItem("playerEmail");
-    if (!localStorage.getItem("playerEmail")) {
+    console.log("Level01 create, login:", localStorage.getItem("email"));
+    const email = localStorage.getItem("email");
+    if (!localStorage.getItem("email")) {
     console.log("Belum login, kembali ke SplashScene"); 
     this.scene.start('SplashScene');
     return;
   }
 
   window.addEventListener('beforeunload', () => {
-  const email = localStorage.getItem("playerEmail");
+  const email = localStorage.getItem("email");
   if (!email) return;
   const progress = {
     level01Score: window.level01Score || 0,
@@ -191,7 +191,7 @@ class Level01Scene extends Phaser.Scene {
  
 // Auto-save progress ke backend setiap 10 detik
   this.autoSaveInterval = setInterval(() => {
-    const email = localStorage.getItem('playerEmail');
+    const email = localStorage.getItem('email');
     if (!email) return;
     this.updateUserProgress(email, {
       level01Completed: true,
@@ -356,7 +356,7 @@ class Level01Scene extends Phaser.Scene {
       this.scoreText.setText(this.level01Score.toString().padStart(5, '0'));
 
       // Tambahkan pengecekan login sebelum mengaktifkan tombol Play saat logout
-      if (localStorage.getItem("playerEmail")) {
+      if (localStorage.getItem("email")) {
       // Panggil fungsi mulai game, misal:
       if (this.isPaid || newUser ) {
       if (this.playBtn) {
@@ -1392,7 +1392,7 @@ showGameOverReturnMessage() {
     console.log(`✅ Player has level01Score ${this.level01Score} - allowing gameplay`);
     
     // Clear Game Over state since player has level01Score
-    const email = localStorage.getItem('playerEmail');
+    const email = localStorage.getItem('email');
     if (email) {
       localStorage.removeItem(`gameOver_${email}`);
       console.log('✅ Game Over cleared - Player has level01Score to continue');
@@ -1691,7 +1691,7 @@ unlockGameAfterPurchase() {
   this.isGameOverClosed = false; // ✅ Clear both states
 
   // ✅ CLEAR GAME OVER STATE FROM LOCALSTORAGE:
-  const email = localStorage.getItem('playerEmail');
+  const email = localStorage.getItem('email');
   if (email) {
     localStorage.removeItem(`gameOver_${email}`);
     console.log('✅ Game Over state cleared - Player can play again');
@@ -2354,7 +2354,7 @@ async updateTaxInBackground(musicTitle, x, y) {
       this.level01Score = (this.level01Score || 0) + 100;
       this.scoreText.setText(this.level01Score.toString().padStart(5, '0')); // Tambahkan baris ini
       this.registry.set('level01Score', this.level01Score);
-      const email = localStorage.getItem('playerEmail');
+      const email = localStorage.getItem('email');
 
        // Ambil level01Score dari localStorage jika ada (data lama)
       let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
@@ -2440,7 +2440,7 @@ async updateTaxInBackground(musicTitle, x, y) {
     this.registry.set('level01Score', this.level01Score);
     // Simpan level01Score ke localStorage saat mongodb offline
     
-    const email = localStorage.getItem('playerEmail');
+    const email = localStorage.getItem('email');
     let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
     userData.gameProgress = userData.gameProgress || {};
    
@@ -2552,7 +2552,7 @@ async updateTaxInBackground(musicTitle, x, y) {
   
    
    // ✅ SAVE GAME OVER STATE TO LOCALSTORAGE:
-       const email = localStorage.getItem('playerEmail');
+       const email = localStorage.getItem('email');
        if (email) {
        localStorage.setItem(`gameOver_${email}`, 'true');
        console.log('💾 Game Over state saved - level01Score is 0');
@@ -2871,7 +2871,7 @@ async setGameOver(email, isGameOver = true) {
 
 // 5. CHECK GAME OVER STATUS DARI SERVER
 async checkGameOverStatusFromServer() {
-  const email = localStorage.getItem('playerEmail');
+  const email = localStorage.getItem('email');
   if (!email) return;
 
   try {
@@ -3605,7 +3605,7 @@ showHoldMessageAboveNotes() {
             
 this.payBtn.on('pointerdown', () => { // ---> INI ADA
 // ✅ INISIALISASI EMAIL DI SINI:
-const email = localStorage.getItem('playerEmail');
+const email = localStorage.getItem('email');
     
 if (!email) {
 alert('Email not found. Please login again.');
@@ -3841,7 +3841,7 @@ showFavoritPayPanel(label, seconds, price, btnRef) {
 // Handler pembayaran
 this.payBtn.on('pointerdown', () => { // ---> INI ADA
 // ✅ INISIALISASI EMAIL DI SINI:
-const email = localStorage.getItem('playerEmail');
+const email = localStorage.getItem('email');
 
 if (!email) {
 alert('Email not found. Please login again.');
@@ -3964,7 +3964,7 @@ return;
  // showWaitingForPaymentMessage untuk menampilkan pesan "Please wait confirmation your payment..." jika pembayaran sedang diproses
  async showWaitingForPaymentMessage() {
   // Ambil email dan history
-  const email = localStorage.getItem('playerEmail');
+  const email = localStorage.getItem('email');
   // Ambil progress dari backend
  
    // ✅ CALCULATE USER TYPES AND RETURN THEM:
@@ -4144,9 +4144,9 @@ showExitPanelOnly() {
 
   exitBtn.on('pointerdown', async() => {
   // Tambahkan update level01Score ke backend sebelum keluar
-    //const email = localStorage.getItem('playerEmail');
+    //const email = localStorage.getItem('email');
     //if (email) this.saveScoreToBackend(email, this.level01Score);
-    const email = localStorage.getItem('playerEmail');
+    const email = localStorage.getItem('email');
   if (email) {
     this.updateUserProgress(email, {
       level01Completed: true,

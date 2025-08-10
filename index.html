@@ -367,9 +367,9 @@ window.checkPaymentStatus = async function(email) {
 // ✅ ENHANCED GAME PAYMENT STATUS UPDATE:
 
 window.updateGamePaymentStatus = function(isPaid, method = null) {
-  const email = localStorage.getItem("playerEmail");
+  const email = localStorage.getItem("email");
   if (!email) {
-    console.error('❌ playerEmail not defined in updateGamePaymentStatus');
+    console.error('❌ email not defined in updateGamePaymentStatus');
     return;
   }
   let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
@@ -489,7 +489,7 @@ window.updateGamePaymentStatus = function(isPaid, method = null) {
 
 // SEANBEACON menyimpan level01Score dan waktu ke backend saat sebelum halaman ditutup
  window.addEventListener('beforeunload', () => {
-  const email = localStorage.getItem('playerEmail');
+  const email = localStorage.getItem('email');
   //const level01Score = window.Level01Scene?.instance?.level01Score || 0; // pastikan ambil level01Score terbaru
   const level01Score = localStorage.getItem(`score_${email}`) || 0;
   const time = window.Level01Scene?.instance?.timeElapsed || 0;
@@ -514,7 +514,7 @@ window.updateGamePaymentStatus = function(isPaid, method = null) {
 
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
-    const email = localStorage.getItem('playerEmail');
+    const email = localStorage.getItem('email');
     const level01Score = localStorage.getItem(`score_${email}`) || 0;
     // Jika ada timeElapsed yang valid, ambil dari scene, jika tidak, pakai 0
     let time = 0;
@@ -622,7 +622,7 @@ try {
       return;
     }
 
-    //localStorage.setItem("playerEmail", inputEmail);
+    //localStorage.setItem("email", inputEmail);
     console.log('📧 Attempting login with email:', inputEmail);
     
     console.log('Step 3: Sending verification email...');
@@ -700,7 +700,7 @@ document.getElementById("verifyBtn").onclick = async function() {
     if (data.user && data.user.emailVerified === true) {
       //alert('Email verified successfully! Welcome to Black Horse Puzzle!');
       document.getElementById("verificationCodeInput").value = "";
-      localStorage.setItem("playerEmail", email);
+      localStorage.setItem("email", email);
       document.getElementById("verificationBox").style.display = "none";
       document.getElementById("logoutBtn").style.display = "inline-block";
       document.getElementById("verificationCodeInput").value = "";
@@ -836,13 +836,13 @@ window.verifyEmailWithBackend = async function(email) {
 console.log('✅ REAL BACKEND VERIFICATION READY - CONNECT TO RENDER.COM');
 
  // ✅ GET USER CLASSIFICATION:
-    const playerEmail = localStorage.getItem("playerEmail");
-    const history = getPlayerGameHistory(playerEmail);
-    const currentScore = parseInt(localStorage.getItem(`score_${playerEmail}`) || 0);
+    const email = localStorage.getItem("email");
+    const history = getPlayerGameHistory(email);
+    const currentScore = parseInt(localStorage.getItem(`score_${email}`) || 0);
     const totalPlays = history.totalGamesPlayed || 0;
 
     // ✅ Tambahkan ini untuk ambil status pembayaran
-    const paymentData = JSON.parse(localStorage.getItem(`gameData-${playerEmail}`) || '{}');
+    const paymentData = JSON.parse(localStorage.getItem(`gameData-${email}`) || '{}');
     const isPaid = paymentData.isPaid === true;
     
     // ✅ PROPER USER CLASSIFICATION:
@@ -862,7 +862,7 @@ console.log('✅ REAL BACKEND VERIFICATION READY - CONNECT TO RENDER.COM');
    //✅ UPDATE GAME OVER STATE:
     if (isPaid) {
       unlockPlayAndHideGameOver();
-      //localStorage.setItem(`gameOver_${playerEmail}`, 'false');
+      //localStorage.setItem(`gameOver_${email}`, 'false');
       localStorage.setItem(`gameOver_${email}`, 'false');
     } else if (lossUser) {
       localStorage.setItem(`gameOver_${email}`, 'true');
@@ -915,13 +915,13 @@ function checkPlayerScoreStatus(email) {
 }
 
 // ✅ ENHANCED SAFETY CHECK in updateGameScore function:
-if (playerEmail) {
-const scoreStatus = checkPlayerScoreStatus(playerEmail); 
-updateGameScore(playerEmail, scoreStatus.currentScore);
+if (email) {
+const scoreStatus = checkPlayerScoreStatus(email); 
+updateGameScore(email, scoreStatus.currentScore);
 //updateGameScore(email,scoreStatus.currentScore);
-console.log('✅ updateGameScore dipanggil:', playerEmail,scoreStatus.currentScore);
+console.log('✅ updateGameScore dipanggil:', email,scoreStatus.currentScore);
 } else {
-  console.warn('❌ playerEmail tidak ditemukan - tidak bisa updateGameScore');
+  console.warn('❌ email tidak ditemukan - tidak bisa updateGameScore');
 }
 
 // ✅ pesan ini untuk pemain lama yang sudah game over
@@ -1016,42 +1016,42 @@ function showLoginForm() {
 //-------------------------------------------------------------------------------------------
 // ✅ ENHANCED DOMCONTENTLOADED WITH level01Score MANAGEMENT:
 window.addEventListener('DOMContentLoaded', async function() {
-  let playerEmail = localStorage.getItem("playerEmail"); 
+  let email = localStorage.getItem("email"); 
   console.log('📄 Enhanced Black Horse Puzzle - Initializing secure system');
   
-  if (playerEmail) {
-    const isValidEmail = verifyEmailFormat(playerEmail);
+  if (email) {
+    const isValidEmail = verifyEmailFormat(email);
     if (isValidEmail) {
-      constscoreStatus = checkPlayerScoreStatus(playerEmail);
+      constscoreStatus = checkPlayerScoreStatus(email);
       
       // ✅ CHECK PAYMENT STATUS FIRST BEFORE SHOWING WARNING:
       try {
-        const paymentData = await checkPaymentStatusFromBackend(playerEmail);
+        const paymentData = await checkPaymentStatusFromBackend(email);
         console.log('💳 Initial payment check:', paymentData);
         
         if (paymentData && paymentData.isPaid === true) {
           console.log('✅ Payment detected - user can play normally');
           // Clear game over state
-          localStorage.removeItem(`gameOver_${playerEmail}`);
+          localStorage.removeItem(`gameOver_${email}`);
           
           // Don't show warning - user already paid
         } else if (scoreStatus.needsFavorite) {
           console.log('⚠️ User needs to give favorite to continue');
-          showGameOverWarning(playerEmail); // Only show if no payment
+          showGameOverWarning(email); // Only show if no payment
         }
       } catch (error) {
         console.error('❌ Payment check error:', error);
         
         // Fallback: show warning only if really needed
         if (scoreStatus.needsFavorite) {
-          showGameOverWarning(playerEmail);
+          showGameOverWarning(email);
         }
       }
       
       console.log('✅ User logged in successfully with enhanced features');
     } else {
       console.log('❌ Invalid email format, clearing login');
-      localStorage.removeItem("playerEmail");
+      localStorage.removeItem("email");
       showLoginForm();
     }
   } else {
@@ -1112,12 +1112,12 @@ async function handleScoreStatus(inputEmail, scoreStatus) {
 
     console.log('🔄 Starting enhanced logout process...');
     
-    const email = localStorage.getItem("playerEmail");
+    const email = localStorage.getItem("email");
     
     stopPaymentMonitoring();
     
     
-    localStorage.removeItem("playerEmail");
+    localStorage.removeItem("email");
     document.getElementById("emailInput").value = "";
     document.getElementById("loginBox").style.display = "block";
     document.getElementById("emailInput").style.display = "inline-block";
@@ -1340,7 +1340,7 @@ async function startPaymentMonitoring(email) {
  // ADD ini setelah DOM ready event handler (around line 709):
 
 async function performSecureLogout() {
-  const email = localStorage.getItem('playerEmail');
+  const email = localStorage.getItem('email');
   let winUser = false;
  if (email && localStorage.getItem(`gameData-${email}`)) {
     const gameData = JSON.parse(localStorage.getItem(`gameData-${email}`));
@@ -1354,7 +1354,7 @@ async function performSecureLogout() {
     stopPaymentMonitoring();
     
     // Complete data cleanup
-    localStorage.removeItem('playerEmail');
+    localStorage.removeItem('email');
     if (email) {
       //localStorage.removeItem(`score_${email}`);
       //localStorage.removeItem(`gameOver_${email}`);
@@ -1680,7 +1680,7 @@ window.unlockPlayAndHideGameOver = function() {
 
 document.addEventListener('visibilitychange', async () => {
   if (document.visibilityState === 'visible') {
-    const email = localStorage.getItem('playerEmail');
+    const email = localStorage.getItem('email');
     if (email) {
       const paymentData = await checkPaymentStatusFromBackend(email);
       window.updateGamePaymentStatus(paymentData.isPaid, paymentData.method);
@@ -1992,9 +1992,9 @@ function showErrorNotification(text) {
 
 // Function to check game access and show appropriate message
 function checkGameAccess() {
-  const playerEmail = localStorage.getItem("playerEmail");
+  const email = localStorage.getItem("email");
   
-  if (!playerEmail) {
+  if (!email) {
     // No login - show login required message
     showLoginRequiredMessage();
     return false;
@@ -2018,10 +2018,10 @@ function checkGameAccess() {
 // Function to show payment required message
 function showPaymentRequiredMessage() {
   // ✅ CHECK IF GAME IS ACTUALLY OVER:
-  const playerEmail = localStorage.getItem("playerEmail");
+  const email = localStorage.getItem("email");
   
-  if (playerEmail) {
-    const isGameOver = localStorage.getItem(`gameOver_${playerEmail}`) === 'true';
+  if (email) {
+    const isGameOver = localStorage.getItem(`gameOver_${email}`) === 'true';
     if (!isGameOver) {
       console.log('🎮 Game not over yet - message blocked');
       return;
