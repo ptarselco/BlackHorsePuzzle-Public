@@ -836,7 +836,7 @@ window.verifyEmailWithBackend = async function(email) {
 console.log('✅ REAL BACKEND VERIFICATION READY - CONNECT TO RENDER.COM');
 
  // ✅ GET USER CLASSIFICATION:
-    const email = localStorage.getItem("email");
+    //const email = localStorage.getItem("email");
     const history = getPlayerGameHistory(email);
     const currentScore = parseInt(localStorage.getItem(`score_${email}`) || 0);
     const totalPlays = history.totalGamesPlayed || 0;
@@ -915,6 +915,7 @@ function checkPlayerScoreStatus(email) {
 }
 
 // ✅ ENHANCED SAFETY CHECK in updateGameScore function:
+const email = localStorage.getItem("email");
 if (email) {
 const scoreStatus = checkPlayerScoreStatus(email); 
 updateGameScore(email, scoreStatus.currentScore);
