@@ -225,8 +225,8 @@ async checkUserStatusAndGameOver(email) {
     } else if (lossUser) {
       // LOSS USER: Sudah main >= 3x, score = 0
       this.isGameOver = true;
-      this.showGameOverReturnMessage();
-      this.lockAllGameplayButtons();
+      //this.showGameOverReturnMessage();
+      //this.lockAllGameplayButtons();
       return status;
     }
   }
@@ -283,24 +283,23 @@ async checkGameOverStatusFromServer() {
     const data = response.data;
     if (data.isGameOver) {
       this.isGameOver = true;
-      this.showGameOverReturnMessage();
-      await this.lockLevel(email, 'Level01');
-      this.lockAllGameplayButtons();
+      //this.showGameOverReturnMessage();
+      //await this.lockLevel(email, 'Level01');
+      //this.lockAllGameplayButtons();
       return;
     }
     } catch (err) {
     // Fallback ke localStorage jika backend gagal
     const isLocked = localStorage.getItem(`gameOver_${email}`) === 'true';
     if (isLocked) {
-      this.showGameOverReturnMessage();
-      this.lockAllGameplayButtons();
-      await this.lockLevel(email, 'Level01');
+      //this.showGameOverReturnMessage();
+      //this.lockAllGameplayButtons();
+      //await this.lockLevel(email, 'Level01');
       return;
     }
     console.error('Error checking game over status:', err);
     }
 }
-
 
 // 6. LOCK LEVEL (mengunci akses level untuk user)
 async lockLevel(email, level) {
@@ -310,26 +309,29 @@ async lockLevel(email, level) {
       { email, level },
       { timeout: 90000 }
     );
-    // Tambahkan blur tombol di sini
-    if (this.isGameOver) {
-    this.blur10PuzzleButton();
+    if (res.data.success) {
+      this.isGameOver = true;
+      this.blur10PuzzleButton();
+      this.lockAllGameplayButtons();
+      this.showGameOverReturnMessage();
+      return true;
     }
-    return res.data.success === true;
+    return false;
   } catch (err) {
     // Fallback ke localStorage jika backend gagal
-  const isLocked = localStorage.getItem(`gameOver_${email}`) === 'true';
-  if (isLocked) {
-    this.isGameOver = true;
-    this.showGameOverReturnMessage();
-    await this.lockLevel(email, 'level01'); // Lock backend & frontend jika game over
-    return;
-  }
-  // Jika tidak game over, tidak perlu lock
-  console.error('Error checking game over status:', err);
-  return false;
+    const isLocked = localStorage.getItem(`gameOver_${email}`) === 'true';
+    if (isLocked) {
+      this.isGameOver = true;
+      this.blur10PuzzleButton();
+      this.lockAllGameplayButtons();
+      this.showGameOverReturnMessage();
+      return true;
+    }
+    // Jika tidak game over, tidak perlu lock
+    console.error('Error checking game over status:', err);
+    return false;
   }
 }
-
 
 // 7. UNLOCK LEVEL
 async  unlockedLevels(email, level) {
@@ -373,6 +375,7 @@ async  unlockedLevels(email, level) {
     return false;
   }
 }
+
   // ========== LAZY LOAD LEVEL01 ASSETS (Non-blocking) ==========
   
   create() {

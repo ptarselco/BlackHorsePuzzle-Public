@@ -1386,43 +1386,46 @@ setupBoard(data) {
   // Atau, panggil logika reset/init board yang sudah ada
 }
 
-showGameOverReturnMessage() {
-  // ✅ CHECK level01Score FIRST - If level01Score > 0, allow playing
-  if ((this.level01Score || 0) > 0) {
-    console.log(`✅ Player has level01Score ${this.level01Score} - allowing gameplay`);
-    
-    // Clear Game Over state since player has level01Score
-    const email = localStorage.getItem('email');
-    if (email) {
-      localStorage.removeItem(`gameOver_${email}`);
-      console.log('✅ Game Over cleared - Player has level01Score to continue');
+async showGameOverReturnMessage() {
+  // Cek apakah panel sudah ada
+  if (this.gameOverReturnPanel) return;
+
+  const email = localStorage.getItem('email');
+  let progress = {};
+  if (email) {
+    try {
+      const res = await axios.post(
+        `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
+        {},
+        { timeout: 90000 }
+      );
+      progress = res.data.progress || {};
+    } catch (err) {
+      console.error('❌ Gagal ambil progress user:', err);
+      progress = {};
     }
-    
-    // ✅ ADD CONSOLE LOG HERE (when level01Score = 0):
-    console.log(`🔒 Game Over protection active: level01Score ${this.level01Score}`);
+  }
 
-   // // ✅ IF level01Score = 0, SHOW FULL GAME OVER PROTECTION WITH CLOSE BUTTON:
-  //  console.log('🔒 level01Score is 0 - Full Game Over protection active');
+  // Kalkulasi tipe user
+  const newUser = !progress || progress.totalPlays === 0;
+  const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
+  const winUser = progress && progress.totalPlays > 0 && (progress.level01Score || 0) > 0;
 
-    // Reset isGameOver flag
+  // Jika bukan lossUser, tidak perlu tampilkan pesan Game Over
+  if (!lossUser) {
     this.isGameOver = false;
-    
-    // Show level01Score-based continue message with CLOSE button
-    this.showScoreBasedContinueMessage();
+    this.unblur10PuzzleButton && this.unblur10PuzzleButton();
     return;
   }
 
-  
-  // ✅ IF level01Score = 0, SHOW FULL GAME OVER PROTECTION WITH CLOSE BUTTON:
-  console.log('🔒 level01Score is 0 - Full Game Over protection active');
-
+  // Jika lossUser, tampilkan panel Game Over
   // Background overlay
   const overlay = this.add.rectangle(960, 640, 1200, 600, 0x000000, 0.01)
     .setDepth(9998);
 
   // Main message panel
   const messagePanel = this.add.rectangle(960, 640, 900, 420, 0x023d3f, 1)
-    .setStrokeStyle(4, 0x00eaff) //0xff0000
+    .setStrokeStyle(4, 0x00eaff)
     .setDepth(9999);
 
   // Title
@@ -1432,7 +1435,7 @@ showGameOverReturnMessage() {
     align: "center"
   }).setOrigin(0.5).setDepth(10000);
 
-  // Main message (English)
+  // Main message
   const message = this.add.text(960, 620, 
     "Your last position was GAME OVER.\n\n" +
     "To continue playing, you need to persuade\n" +
@@ -1453,7 +1456,7 @@ showGameOverReturnMessage() {
     padding: { left: 20, right: 20, top: 10, bottom: 10 }
   }).setOrigin(0.5).setDepth(10000);
 
-   // ✅ ADD CLOSE BUTTON (X) - Top right corner
+  // Close button (X)
   const closeBtn = this.add.text(1350, 480, "✕", {
     font: "bold 40px Arial",
     fill: "#fff",
@@ -1461,32 +1464,24 @@ showGameOverReturnMessage() {
     padding: { left: 10, right: 10, top: 5, bottom: 5 }
   }).setOrigin(0.5).setDepth(10000).setInteractive({ useHandCursor: true });
 
-  // Close button handler - Allows access to favorite menu
   closeBtn.on('pointerdown', () => {
-    // Remove Game Over return message
     overlay.destroy();
     messagePanel.destroy();
     title.destroy();
     message.destroy();
     continueBtn.destroy();
     closeBtn.destroy();
-    // ✅ SPECIAL STATE: Game Over closed but not cleared
-    // Player can access favorite menu but puzzles remain locked
     this.isGameOverClosed = true;
-    this.isGameOver = false; // Allow favorite menu access
-    // Blur/disable 10 puzzle button
+    this.isGameOver = false;
     this.blur10PuzzleButton();
-    
-  console.log('🔓 Game Over message closed - Favorite menu accessible, puzzles locked');
+    console.log('🔓 Game Over message closed - Favorite menu accessible, puzzles locked');
   });
-  // Store references for cleanup
+
+  this.gameOverReturnPanel = messagePanel;
   this.gameOverReturnElements = [overlay, messagePanel, title, message, continueBtn];
-  // Tambahkan ini untuk memastikan status game over aktif:
   this.isGameOver = true;
-  // Lock all gameplay buttons immediately
   this.lockAllGameplayButtons();
 }
-
 
 // ========== level01Score-BASED CONTINUE MESSAGE ==========
 showScoreBasedContinueMessage() {
@@ -2824,8 +2819,8 @@ async checkUserStatusAndGameOver(email) {
     } else {
       // LOSS USER: Sudah main >= 3x, score = 0
       this.isGameOver = true;
-      this.showGameOverReturnMessage();
-      this.lockAllGameplayButtons();
+      //this.showGameOverReturnMessage();
+      //this.lockAllGameplayButtons();
       return status;
     }
   }
@@ -2840,8 +2835,8 @@ async checkUserStatusAndGameOver(email) {
     status.isGameOver = true;
     localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
     this.isGameOver = true;
-    this.showGameOverReturnMessage();
-    this.lockAllGameplayButtons();
+   // this.showGameOverReturnMessage();
+   // this.lockAllGameplayButtons();
     return status;
   }
 
@@ -2882,8 +2877,8 @@ async checkGameOverStatusFromServer() {
     const data = response.data;
     if (data.isGameOver) {
       this.isGameOver = true;
-      this.showGameOverReturnMessage();
-      await this.lockLevel(email, 'Level01');
+      //this.showGameOverReturnMessage();
+      //await this.lockLevel(email, 'Level01');
       //this.lockAllGameplayButtons();
       return;
     }
@@ -2891,15 +2886,14 @@ async checkGameOverStatusFromServer() {
     // Fallback ke localStorage jika backend gagal
     const isLocked = localStorage.getItem(`gameOver_${email}`) === 'true';
     if (isLocked) {
-      this.showGameOverReturnMessage();
-      this.lockAllGameplayButtons();
-      await this.lockLevel(email, 'Level01');
+      //this.showGameOverReturnMessage();
+      //this.lockAllGameplayButtons();
+      //await this.lockLevel(email, 'Level01');
       return;
     }
     console.error('Error checking game over status:', err);
     }
 }
-
 
 // 6. LOCK LEVEL (mengunci akses level untuk user)
 async lockLevel(email, level) {
@@ -2909,23 +2903,27 @@ async lockLevel(email, level) {
       { email, level },
       { timeout: 90000 }
     );
-    // Tambahkan blur tombol di sini
-    if (this.isGameOver) {
-    this.blur10PuzzleButton();
+    if (res.data.success) {
+      this.isGameOver = true;
+      this.blur10PuzzleButton();
+      this.lockAllGameplayButtons();
+      this.showGameOverReturnMessage();
+      return true;
     }
-    return res.data.success === true;
+    return false;
   } catch (err) {
     // Fallback ke localStorage jika backend gagal
-  const isLocked = localStorage.getItem(`gameOver_${email}`) === 'true';
-  if (isLocked) {
-    this.isGameOver = true;
-    this.showGameOverReturnMessage();
-    await this.lockLevel(email, 'level01'); // Lock backend & frontend jika game over
-    return;
-  }
-  // Jika tidak game over, tidak perlu lock
-  console.error('Error checking game over status:', err);
-  return false;
+    const isLocked = localStorage.getItem(`gameOver_${email}`) === 'true';
+    if (isLocked) {
+      this.isGameOver = true;
+      this.blur10PuzzleButton();
+      this.lockAllGameplayButtons();
+      this.showGameOverReturnMessage();
+      return true;
+    }
+    // Jika tidak game over, tidak perlu lock
+    console.error('Error checking game over status:', err);
+    return false;
   }
 }
 
