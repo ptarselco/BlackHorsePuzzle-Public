@@ -2804,7 +2804,7 @@ async checkUserStatusAndGameOver(email) {
 
   // Cek status game over untuk lossUser or winUser
   if (status.isGameOver) {
-    if (status.level01Score > 0) {
+    if (status.level01Score > 0) { // winUser
       // WIN USER: Sudah main >= 3x, score > 0
       status.isGameOver = false;
       localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
