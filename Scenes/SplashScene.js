@@ -135,9 +135,9 @@ async getUserProgress(email) {
     console.log(`📊 Progress data: totalPlays=${progress.totalPlays}, level01Score=${progress.level01Score}`);
     // Response: { success, progress, user }  
     return {
-    success: res.data.success,
+    success: response.data.success,
       progress: progress,
-      user: res.data.user,
+      user: response.data.user,
       // ✅ ADD USER TYPES:
       newUser: newUser,
       lossUser: lossUser,
