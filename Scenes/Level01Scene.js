@@ -901,10 +901,10 @@ this.donationBtn.on('pointerout', () => {
 // ✅ CLICK EFFECTS (Maju ke depan + cahaya spiral)
 this.donationBtn.on('pointerdown', () => { // ini 1 
  // ✅ ADD GAME OVER PROTECTION: tidak perlu lock karena donasi
-  if (this.isGameOver) {
-    this.showHoldMessageAboveNotes(); // Show "Please buy favorite menu" message
-    return; // Block donation button if game over
-  } 
+  //if (this.isGameOver) {
+    //this.showHoldMessageAboveNotes(); // Show "Please buy favorite menu" message
+    //return; // Block donation button if game over
+  //} 
   // 1. Button press animation (maju ke depan seperti play button)
   this.tweens.add({
     targets: this.donationBtn,
@@ -929,7 +929,7 @@ this.donationBtn.on('pointerdown', () => { // ini 1
 //-----------------------------------------------------------------------------------------
   
     // Mengunci tombol play dari klik 10 puzzle
-    this.isGameOver = false;
+    // this.isGameOver = false;
 
     // Favorit (dummy, bisa diatur ulang)
     this.add.image(999, 1100, 'apple1').setScale(0.7);
@@ -3669,20 +3669,40 @@ const checkPayPalClosed = setInterval(() => {
 // Polling ke backend setiap beberapa detik
 this.paymentCheckInterval = setInterval(async () => {
   showPleaseWaitMessage('Please wait, unlocking in progress...');
+  const waitStart = Date.now();
+
   console.log('🔍 Polling payment status...');
   const paymentData = await checkPaymentStatusFromBackend(email);
   
   if (paymentData && paymentData.isPaid === true) {
     clearInterval(this.paymentCheckInterval);
-    hidePleaseWaitMessage();
-  if (window.updateGamePaymentStatus) {  
+
+    // Pastikan pesan "Please wait" tampil minimal 3 detik
+    const elapsed = Date.now() - waitStart;
+    const minWait = 3000;
+    if (elapsed < minWait) {
+      setTimeout(() => {
+        hidePleaseWaitMessage();
+      }, minWait - elapsed);
+    } else {
+      hidePleaseWaitMessage();
+    } 
+
+   // 1. Update status payment ke window/UI
+   if (window.updateGamePaymentStatus) {  
     window.updateGamePaymentStatus(paymentData.isPaid, paymentData.method);
     } else {
       console.error('window.updateGamePaymentStatus is not defined!');
     }
+
+    // 2. ✅ CLEAR GAME OVER STATE di backend & localStorage
+    await this.setGameOver(email, false); // clear game over di backend
+    localStorage.removeItem(`gameOver_${email}`); // clear di localStorage
+
     console.log('✅ Payment confirmed! Processing unlock...');
-    const unlocked = await this.unlockedLevels(email, 'Level01Scene');
     
+    // 3. Unlock UI dan tampilkan pesan sukses
+    const unlocked = await this.unlockedLevels(email, 'Level01Scene');
     if (unlocked) {
       // Unlock UI
       this.unblur10PuzzleButton();
