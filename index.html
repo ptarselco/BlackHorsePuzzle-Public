@@ -262,6 +262,7 @@ if ('serviceWorker' in navigator) {
   console.log('⚠️ Service Worker not supported in this browser');
 }
 //======================================================================================
+const email = localStorage.getItem("email");
 if (email) {
   syncProgressFromBackend(email);
 }
@@ -950,7 +951,7 @@ window.unlockPlayAndHideGameOver = function() {
 console.log('✅ REAL BACKEND VERIFICATION READY - CONNECT TO RENDER.COM');
 
  // ✅ GET USER CLASSIFICATION:
-    const email = localStorage.getItem("email");
+    //const email = localStorage.getItem("email"); pasang di atas dekat pemanggil initUserData
     const history = getPlayerGameHistory(email);
     const currentScore = parseInt(localStorage.getItem(`score_${email}`) || 0);
     const totalPlays = history.totalGamesPlayed || 0;
