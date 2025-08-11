@@ -383,11 +383,11 @@ if (!userData.gameProgress) {
     const lv01Puzzle20Btn = this.add.image(1410, 1100, 'lv01Puzzle20').setScale(0.3).setInteractive().setDepth(999);
     lv01Puzzle20Btn.on('pointerdown', () => {
      // ✅ ADD GAME OVER PROTECTION:
-    if (this.isGameOver) {
+    //if (this.isGameOver) {
     // Show specific Game Over message
-    this.showGameOverPuzzleMessage();
-    return;
-  } 
+    //this.showGameOverPuzzleMessage();
+    //return;
+  //} 
 
      // Jika pesan sudah ada, klik akan menghilangkan
   if (this.comingSoonText && this.comingSoonText.visible) {
@@ -1630,7 +1630,7 @@ blur10PuzzleButton() {
   
   // Also blur the play button
   if (this.playBtn) {
-    this.playBtn.setAlpha(0.3);
+    this.playBtn.setAlpha(0.5);
     this.playBtn.disableInteractive();
   }
   
@@ -1660,7 +1660,7 @@ unblur10PuzzleButton() {
 lockAllGameplayButtons() {
   // Disable (blur) the play button
   if (this.playBtn) {
-    this.playBtn.setAlpha(0.3);
+    this.playBtn.setAlpha(0.5);
     this.playBtn.disableInteractive();
   }
   
@@ -1671,10 +1671,10 @@ lockAllGameplayButtons() {
   }
   
   // Disable 20 puzzle button 
-  if (this.lv01Puzzle20Btn) {
-    this.lv01Puzzle20Btn.disableInteractive();
-    this.lv01Puzzle20Btn.setAlpha(0.5);
-  }
+  //if (this.lv01Puzzle20Btn) {
+    //this.lv01Puzzle20Btn.disableInteractive();
+    //this.lv01Puzzle20Btn.setAlpha(0.5);
+  //}
   
   console.log('🔒 All gameplay buttons locked due to Game Over');
 }
@@ -1697,16 +1697,16 @@ unlockGameAfterPurchase() {
     this.lv01Puzzle10Btn.setAlpha(1);
   }
   
-  if (this.lv01Puzzle20Btn) {
-    this.lv01Puzzle20Btn.setInteractive();
-    this.lv01Puzzle20Btn.setAlpha(1);
-  }
-  
   if (this.playBtn) {
     this.playBtn.setInteractive();
     this.playBtn.setAlpha(1);
   }
 
+  //if (this.lv01Puzzle20Btn) {
+  //  this.lv01Puzzle20Btn.setInteractive();
+  //  this.lv01Puzzle20Btn.setAlpha(1);
+  //}
+  
   // Clear Game Over return message
   if (this.gameOverReturnElements) {
     this.gameOverReturnElements.forEach(element => {
