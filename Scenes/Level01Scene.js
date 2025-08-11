@@ -293,6 +293,15 @@ if (!userData.gameProgress) {
     console.log(`✅ Player has level01Score ${this.level01Score} - allowing 10 puzzle access`);
   }
 
+  // Aktifkan playBtn jika score > 0 dan tidak game over
+  if (this.playBtn && (this.level01Score || 0) > 0 && !this.isGameOver) {
+    this.playBtn.setInteractive({ useHandCursor: true });
+    this.playBtn.setAlpha(1);
+    this.playBtn.setVisible(true);
+    console.log('✅ PlayBtn diaktifkan oleh 10 Puzzle');
+  }
+
+
   // Toggle pesan: jika sudah ada, hilangkan; jika belum, tampilkan
   if (this.welcomeMsgRect && this.welcomeMsgRect.visible) {
     this.welcomeMsgRect.destroy();
@@ -1396,7 +1405,7 @@ async showGameOverReturnMessage() {
       const res = await axios.post(
         `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
         {},
-        { timeout: 90000 }
+        { timeout: 200000 }
       );
       progress = res.data.progress || {};
     } catch (err) {
@@ -2745,7 +2754,7 @@ async getUserProgress(email) {
     `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
     //'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/progress', {
       {}, // body kosong, karena email sudah di URL param
-    { timeout: 90000 }
+    { timeout: 200000 }
     );
     const progress = res.data.progress  || {};
     // ✅ CALCULATE USER TYPES AND RETURN THEM:
@@ -2787,7 +2796,7 @@ async updateUserProgress(email, progress) {
     const res = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
       { ...progress },
-      { timeout: 90000 }
+      { timeout: 200000 }
     );
     return res.data.success === true;
   } catch (err) {
@@ -2802,7 +2811,7 @@ async getUserStatus(email, level = 'Level01, Level01Scene') {
     const response = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/status',
       { email: email.toLowerCase().trim(), level },
-      { timeout: 90000 }
+      { timeout: 200000 }
     );
     return response.data;
   } catch (err) {
@@ -2897,7 +2906,7 @@ async setGameOver(email, isGameOver = true) {
     await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/set-gameover',
       { email, isGameOver },
-      { timeout: 90000 }
+      { timeout: 200000 }
     );
     return true;
   } catch (err) {
@@ -2914,7 +2923,7 @@ async checkGameOverStatusFromServer() {
   try {
     const response = await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/gameover', 
       { email },
-      { timeout: 90000 }  
+      { timeout: 200000 }  
     );
     const data = response.data;
     if (data.isGameOver) {
@@ -2943,7 +2952,7 @@ async lockLevel(email, level) {
     const res = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/lock',
       { email, level },
-      { timeout: 90000 }
+      { timeout: 200000 }
     );
     if (res.data.success) {
       this.isGameOver = true;
@@ -2990,7 +2999,7 @@ async  unlockedLevels(email, level) {
     const unlockRes = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/unlock',
       { email, level },
-      { timeout: 90000 }
+      { timeout: 200000 }
     );
 
     console.log('🔓 Unlock level response:', unlockRes.data);

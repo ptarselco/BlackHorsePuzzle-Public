@@ -158,7 +158,7 @@ async getUserProgress(email) {
     const response = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
       { email, level01Score },
-      { timeout: 90000 }
+      { timeout: 200000 }
     );
     //const progress = res.data.progress  || {};
     const progress = response.data.progress || {};
@@ -202,7 +202,7 @@ async updateUserProgress(email, progress) {
     const res = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
       { ...progress },
-      { timeout: 90000 }
+      { timeout: 200000 }
     );
     return res.data.success === true;
   } catch (err) {
@@ -217,7 +217,7 @@ async getUserStatus(email, level = 'Level01Scene') {
     const response = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/status',
       { email: email.toLowerCase().trim(), level },
-      { timeout: 90000 }
+      { timeout: 200000 }
     );
     return response.data;
   } catch (err) {
@@ -307,7 +307,7 @@ async setGameOver(email, isGameOver = true) {
     await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/set-gameover',
       { email, isGameOver },
-      { timeout: 90000 }
+      { timeout: 200000 }
     );
     return true;
   } catch (err) {
@@ -324,7 +324,7 @@ async checkGameOverStatusFromServer() {
   try {
     const response = await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/gameover', 
       { email },
-      { timeout: 90000 }  
+      { timeout: 200000 }  
     );
     const data = response.data;
     if (data.isGameOver) {
@@ -353,7 +353,7 @@ async lockLevel(email, level) {
     const res = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/lock',
       { email, level },
-      { timeout: 90000 }
+      { timeout: 200000 }
     );
     if (res.data.success) {
       this.isGameOver = true;
@@ -399,7 +399,7 @@ async  unlockedLevels(email, level) {
     const unlockRes = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/unlock',
       { email, level },
-      { timeout: 90000 }
+      { timeout: 200000 }
     );
 
     console.log('🔓 Unlock level response:', unlockRes.data);
