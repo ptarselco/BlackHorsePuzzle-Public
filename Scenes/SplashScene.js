@@ -154,7 +154,7 @@ unblur10PuzzleButton() {
 // 1. GET FUNCTION FOR USER PROGRESS
 async getUserProgress(email) {
   try {
-    //const res = await axios.post(
+    const level01Score = this.level01Score || 0;
     const response = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
       { email, level01Score },
