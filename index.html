@@ -261,6 +261,28 @@ if ('serviceWorker' in navigator) {
 } else {
   console.log('⚠️ Service Worker not supported in this browser');
 }
+//======================================================================================
+if (email) {
+  syncProgressFromBackend(email);
+}
+
+// Deklarasi variabel utama
+let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+
+// Panggil fungsi async tanpa await
+this.initUserData(email, userData);
+
+
+
+// Pastikan gameProgress selalu ada
+if (!userData.gameProgress) {
+  userData.gameProgress = {
+    level01Score: 0,
+    // tambahkan field lain jika perlu
+  };
+}
+//======================================================================================
+
 // Fungsi cek status pembayaran dari backend (lengkap)
 window.checkPaymentStatusFromBackend = async function(email) {
   try {

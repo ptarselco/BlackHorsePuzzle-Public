@@ -417,11 +417,29 @@ async  unlockedLevels(email, level) {
     if (logoutBtn) logoutBtn.style.display = "none";
   }
   
-    // Panggil sync progress dari backend di sini
+//======================================================================================
+// Panggil sync progress dari backend di sini
   if (email) {
-    syncProgressFromBackend(email); // ← panggil di sini
-  }
+  syncProgressFromBackend(email);
+}
 
+// Deklarasi variabel utama
+let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+
+// Panggil fungsi async tanpa await
+this.initUserData(email, userData);
+
+
+
+// Pastikan gameProgress selalu ada
+if (!userData.gameProgress) {
+  userData.gameProgress = {
+    level01Score: 0,
+    // tambahkan field lain jika perlu
+  };
+}
+//======================================================================================
+// Tambahkan event listener untuk menyimpan progress sebelum halaman ditutup
   window.addEventListener('beforeunload', () => {
   const email = localStorage.getItem("email");
   if (!email) return;
