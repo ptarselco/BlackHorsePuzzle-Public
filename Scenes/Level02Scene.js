@@ -55,7 +55,19 @@ class Level02Scene extends Phaser.Scene {
 
   const email = localStorage.getItem("email");
   let playerScore = 0;
+ // ✅ ENHANCED SAFETY CHECK in updateGameScore function:
+    if (email) {
+    const scoreStatus = checkPlayerScoreStatus(email); 
+    updateGameScore(email, scoreStatus.currentScore);
+    //updateGameScore(email,scoreStatus.currentScore);
+    console.log('✅ updateGameScore dipanggil:', email,scoreStatus.currentScore);
+    }
 
+  // Panggil sync progress dari backend di sini
+  if (email) {
+    syncProgressFromBackend(email); // ← panggil di sini
+  }
+  
   this.add.image(960, 640, "board");
 
   //if (data && data.showDonation) {
@@ -557,7 +569,7 @@ showExitPanelOnly() {
     this.scene.start('SplashScene');
   });
 }
-
-} // ✅ CLOSING for Level02Scene class
+}
+ // ✅ CLOSING for Level02Scene class
 window.Level02Scene = Level02Scene;
 

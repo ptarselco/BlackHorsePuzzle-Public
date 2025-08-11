@@ -492,6 +492,7 @@ async  unlockedLevels(email, level) {
   btnBlue.setVisible(true);
 
   const email = localStorage.getItem("email");
+  console.log('Email di localStorage:', email);
   if (!email) {
     document.getElementById("loginBox").style.display = "block";
     alert("Please Login with your email!");
