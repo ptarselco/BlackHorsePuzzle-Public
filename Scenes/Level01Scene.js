@@ -136,6 +136,50 @@ class Level01Scene extends Phaser.Scene {
     };
   }
 
+  // Contoh di getUserProgress dan checkUserStatusAndGameOver
+this.getUserProgress(email).then(progressRes => {
+const progress = progressRes.progress || {};
+const newUser = !progress || progress.totalPlays === 0;
+const winUser = progress && progress.totalPlays >= 1 && (progress.level01Score || 0) > 0;
+const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
+
+// Urutan cek: newUser dulu, baru winUser/lossUser
+if (newUser) {
+  // Aktifkan tombol Play & Puzzle, tidak game over
+  this.isGameOver = false;
+  this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+  if (this.playBtn) {
+    this.playBtn.setInteractive({ useHandCursor: true });
+    this.playBtn.setAlpha(1);
+    this.playBtn.setVisible(true);
+  }
+  console.log('✅ Deteksi: NEW USER - tombol Play & Puzzle diaktifkan');
+  return;
+}
+
+if (winUser) {
+  // User sudah main >= 3x dan punya score
+  this.isGameOver = false;
+  this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+  if (this.playBtn) {
+    this.playBtn.setInteractive({ useHandCursor: true });
+    this.playBtn.setAlpha(1);
+    this.playBtn.setVisible(true);
+  }
+  console.log('✅ Deteksi: WIN USER - tombol Play & Puzzle diaktifkan');
+  return;
+}
+
+if (lossUser) {
+  // User sudah main >= 3x dan score 0
+  this.isGameOver = true;
+  this.lockAllGameplayButtons();
+  this.showGameOverReturnMessage();
+  console.log('🔒 Deteksi: LOSS USER - Game Over panel ditampilkan');
+  return;
+}
+});
+   
   // Sync progress dari backend, update score di UI
   syncProgressFromBackend(email).then(progress => {
     if (progress && typeof progress.level01Score === 'number') {
@@ -190,49 +234,6 @@ if (!userData.gameProgress) {
     // tambahkan field lain jika perlu
   };
 }
-
-// Contoh di getUserProgress dan checkUserStatusAndGameOver
-const newUser = !progress || progress.totalPlays === 0;
-const winUser = progress && progress.totalPlays >= 1 && (progress.level01Score || 0) > 0;
-const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
-
-// Urutan cek: newUser dulu, baru winUser/lossUser
-if (newUser) {
-  // Aktifkan tombol Play & Puzzle, tidak game over
-  this.isGameOver = false;
-  this.unblur10PuzzleButton && this.unblur10PuzzleButton();
-  if (this.playBtn) {
-    this.playBtn.setInteractive({ useHandCursor: true });
-    this.playBtn.setAlpha(1);
-    this.playBtn.setVisible(true);
-  }
-  console.log('✅ Deteksi: NEW USER - tombol Play & Puzzle diaktifkan');
-  return;
-}
-
-if (winUser) {
-  // User sudah main >= 3x dan punya score
-  this.isGameOver = false;
-  this.unblur10PuzzleButton && this.unblur10PuzzleButton();
-  if (this.playBtn) {
-    this.playBtn.setInteractive({ useHandCursor: true });
-    this.playBtn.setAlpha(1);
-    this.playBtn.setVisible(true);
-  }
-  console.log('✅ Deteksi: WIN USER - tombol Play & Puzzle diaktifkan');
-  return;
-}
-
-if (lossUser) {
-  // User sudah main >= 3x dan score 0
-  this.isGameOver = true;
-  this.lockAllGameplayButtons();
-  this.showGameOverReturnMessage();
-  console.log('🔒 Deteksi: LOSS USER - Game Over panel ditampilkan');
-  return;
-}
-
-
 
   // Tambahkan validasi score di sini
  // if (typeof userData.gameProgress.level01Score !== 'number' || isNaN(userData.gameProgress.level01Score)) {
