@@ -191,16 +191,59 @@ if (!userData.gameProgress) {
   };
 }
 
-  // Tambahkan validasi score di sini
-  if (typeof userData.gameProgress.level01Score !== 'number' || isNaN(userData.gameProgress.level01Score)) {
-  userData.gameProgress.level01Score = 0;
-  }
-  this.level01Score = userData.gameProgress.level01Score;
+// Contoh di getUserProgress dan checkUserStatusAndGameOver
+const newUser = !progress || progress.totalPlays === 0;
+const winUser = progress && progress.totalPlays >= 1 && (progress.level01Score || 0) > 0;
+const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
 
-  const history = window.getPlayerGameHistory ? window.getPlayerGameHistory(email) : null;
-  const newUser = !history || !history.hasPlayedBefore || (history.totalGamesPlayed || 0) < 3;
-  const lossUser = localStorage.getItem(`gameOver_${email}`);
-  const winUser = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) >= 3 && (this.level01Score || 0) > 0;
+// Urutan cek: newUser dulu, baru winUser/lossUser
+if (newUser) {
+  // Aktifkan tombol Play & Puzzle, tidak game over
+  this.isGameOver = false;
+  this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+  if (this.playBtn) {
+    this.playBtn.setInteractive({ useHandCursor: true });
+    this.playBtn.setAlpha(1);
+    this.playBtn.setVisible(true);
+  }
+  console.log('✅ Deteksi: NEW USER - tombol Play & Puzzle diaktifkan');
+  return;
+}
+
+if (winUser) {
+  // User sudah main >= 3x dan punya score
+  this.isGameOver = false;
+  this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+  if (this.playBtn) {
+    this.playBtn.setInteractive({ useHandCursor: true });
+    this.playBtn.setAlpha(1);
+    this.playBtn.setVisible(true);
+  }
+  console.log('✅ Deteksi: WIN USER - tombol Play & Puzzle diaktifkan');
+  return;
+}
+
+if (lossUser) {
+  // User sudah main >= 3x dan score 0
+  this.isGameOver = true;
+  this.lockAllGameplayButtons();
+  this.showGameOverReturnMessage();
+  console.log('🔒 Deteksi: LOSS USER - Game Over panel ditampilkan');
+  return;
+}
+
+
+
+  // Tambahkan validasi score di sini
+ // if (typeof userData.gameProgress.level01Score !== 'number' || isNaN(userData.gameProgress.level01Score)) {
+ // userData.gameProgress.level01Score = 0;
+ // }
+ // this.level01Score = userData.gameProgress.level01Score;
+
+  //const history = window.getPlayerGameHistory ? window.getPlayerGameHistory(email) : null;
+  //const newUser = !history || !history.hasPlayedBefore || (history.totalGamesPlayed || 0) < 3;
+  //const lossUser = localStorage.getItem(`gameOver_${email}`);
+  //const winUser = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) >= 3 && (this.level01Score || 0) > 0;
   
   // ✅ SESSION-BASED WELCOME BACK FLAG:
   // Only check once per browser session, not per scene load
@@ -1465,8 +1508,9 @@ async showGameOverReturnMessage() {
 
   // Kalkulasi tipe user
   const newUser = !progress || progress.totalPlays === 0;
+  const winUser = progress && progress.totalPlays >= 1 && (progress.level01Score || 0) > 0;
   const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
-  const winUser = progress && progress.totalPlays > 0 && (progress.level01Score || 0) > 0;
+  
 
   // Jika bukan lossUser, tidak perlu tampilkan pesan Game Over
   if (!lossUser) {
@@ -2808,8 +2852,9 @@ async getUserProgress(email) {
     const progress = res.data.progress  || {};
     // ✅ CALCULATE USER TYPES AND RETURN THEM:
     const newUser = !progress || progress.totalPlays === 0;
+    const winUser = progress && progress.totalPlays >= 1 && (progress.level01Score || 0) > 0;
     const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
-    const winUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) > 0;
+    
     
     console.log(`👤 User classification: newUser=${newUser}, lossUser=${lossUser}, winUser=${winUser}`);
     console.log(`📊 Progress data: totalPlays=${progress.totalPlays}, level01Score=${progress.level01Score}`);
@@ -2881,8 +2926,9 @@ async checkUserStatusAndGameOver(email) {
   const progress = status.progress  || {};
     // ✅ CALCULATE USER TYPES AND RETURN THEM:
     const newUser = !progress || progress.totalPlays === 0;
+    const winUser = progress && progress.totalPlays >= 1 && (progress.level01Score || 0) > 0;
     const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
-    const winUser = progress && progress.totalPlays > 0 && (progress.level01Score || 0) > 0;
+    
 
   
 // Jika newUser, aktifkan tombol Play & Puzzle
@@ -3722,12 +3768,13 @@ this.showWaitingForPaymentMessage();
 
 // Cek setiap 1 detik apakah window PayPal sudah ditutup
 const checkPayPalClosed = setInterval(() => {
+  showPleaseWaitMessage('Please wait, unlocking in progress...');
   if (paypalWindow.closed) {
     clearInterval(checkPayPalClosed);
 
 // Polling ke backend setiap beberapa detik
 this.paymentCheckInterval = setInterval(async () => {
-  showPleaseWaitMessage('Please wait, unlocking in progress...');
+  //showPleaseWaitMessage('Please wait, unlocking in progress...');
   const waitStart = Date.now();
 
   console.log('🔍 Polling payment status...');
@@ -3738,7 +3785,7 @@ this.paymentCheckInterval = setInterval(async () => {
 
   // Pastikan pesan "Please wait" tampil minimal 3 detik
     const elapsed = Date.now() - waitStart;
-    const minWait = 3000;
+    const minWait = 4000;
     if (elapsed < minWait) {
       setTimeout(() => {
         hidePleaseWaitMessage();
@@ -4114,8 +4161,9 @@ return;
     const level01Score = progress.level01Score || 0;
 
     const newUser = !progress || progress.totalPlays === 0;
+    const winUser = progress && progress.totalPlays >= 1 && (progress.level01Score || 0) > 0;
     const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
-    const winUser = progress && progress.totalPlays > 0 && (progress.level01Score || 0) > 0;
+    
     
 
   // Hanya lock tombol jika lossUser dan belum bayar
