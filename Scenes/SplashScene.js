@@ -59,6 +59,42 @@ setupBoard(data) {
   // Atau, panggil logika reset/init board yang sudah ada
 }
 
+// Definisikan di luar create()
+initUserData(email, userData) {
+  // Jika belum ada data progress, ambil dari backend
+  if (!userData || !userData.gameProgress) {
+    this.getUserProgress(email).then(progressRes => {
+      if (progressRes && progressRes.progress) {
+        userData = { gameProgress: progressRes.progress };
+        localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+      } else {
+        // Jika backend juga kosong, inisialisasi default
+        userData = {
+          gameProgress: {
+            level01Completed: false,
+            level01Score: 0,
+            level01HighScore: 0,
+            totalPlays: 0,
+            bestTime: 0,
+            averageTime: 0,
+            completionRate: 0,
+            perfectGames: 0,
+            totalAttempts: 0,
+            completionTime: 0,
+            isPerfectGame: 0
+          }
+        };
+        localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+      }
+      // Update score di scene
+      this.level01Score = userData.gameProgress.level01Score || 0;
+    });
+  } else {
+    // Jika sudah ada, langsung pakai
+    this.level01Score = userData.gameProgress.level01Score || 0;
+  }
+}
+
 lockAllGameplayButtons() {
   // Implementasi logika mengunci semua tombol gameplay di splash scene
   // Contoh: nonaktifkan tombol, tambahkan efek blur, dsb
