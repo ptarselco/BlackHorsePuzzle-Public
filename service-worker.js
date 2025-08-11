@@ -243,8 +243,8 @@ async function clearAllCaches() {
     
     // Clear localStorage related to cache
     try {
-        localStorage.removeItem('cacheVersion');
-        localStorage.removeItem('lastCacheUpdate');
+        //localStorage.removeItem('cacheVersion');
+        //localStorage.removeItem('lastCacheUpdate');
         console.log('✅ Cache-related localStorage cleared');
     } catch (error) {
         console.log('❌ localStorage clear error:', error);
