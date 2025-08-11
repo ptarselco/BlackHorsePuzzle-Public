@@ -569,7 +569,7 @@ document.addEventListener('visibilitychange', () => {
 window.initUserData = async function(email, userData) {
   // Jika belum ada data progress, ambil dari backend
   if (!userData || !userData.gameProgress) {
-    this.getUserProgress(email).then(progressRes => {
+    window.getUserProgress(email).then(progressRes => {
       if (progressRes && progressRes.progress) {
         userData = { gameProgress: progressRes.progress };
         localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
@@ -593,13 +593,14 @@ window.initUserData = async function(email, userData) {
         localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
       }
       // Update score di scene
-      this.level01Score = userData.gameProgress.level01Score || 0;
+      window.level01Score = userData.gameProgress.level01Score || 0;
     });
   } else {
     // Jika sudah ada, langsung pakai
-    this.level01Score = userData.gameProgress.level01Score || 0;
+    window.level01Score = userData.gameProgress.level01Score || 0;
   }
 }
+
 // ========== ENHANCED SECURE LOGIN & PAYMENT SYSTEM ==========
 // ✅ GLOBAL VARIABLES:
 let loginInProgress = false;
