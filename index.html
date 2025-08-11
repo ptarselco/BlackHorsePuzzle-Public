@@ -1806,7 +1806,8 @@ function updateGameScore(email, newScore) {
   // Simpan ke backend setiap kali level01Score berubah
   axios.post(
     `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
-    { email, ...progress,
+    {
+      email,
       level01Score: newScore
       // Tambahkan data lain jika perlu nanti untuk level01ScoreSeri2 dan seri selanjutnya
     },
