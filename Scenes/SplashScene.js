@@ -59,42 +59,6 @@ setupBoard(data) {
   // Atau, panggil logika reset/init board yang sudah ada
 }
 
-// Definisikan di luar create()
-initUserData(email, userData) {
-  // Jika belum ada data progress, ambil dari backend
-  if (!userData || !userData.gameProgress) {
-    this.getUserProgress(email).then(progressRes => {
-      if (progressRes && progressRes.progress) {
-        userData = { gameProgress: progressRes.progress };
-        localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
-      } else {
-        // Jika backend juga kosong, inisialisasi default
-        userData = {
-          gameProgress: {
-            level01Completed: false,
-            level01Score: 0,
-            level01HighScore: 0,
-            totalPlays: 0,
-            bestTime: 0,
-            averageTime: 0,
-            completionRate: 0,
-            perfectGames: 0,
-            totalAttempts: 0,
-            completionTime: 0,
-            isPerfectGame: 0
-          }
-        };
-        localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
-      }
-      // Update score di scene
-      this.level01Score = userData.gameProgress.level01Score || 0;
-    });
-  } else {
-    // Jika sudah ada, langsung pakai
-    this.level01Score = userData.gameProgress.level01Score || 0;
-  }
-}
-
 lockAllGameplayButtons() {
   // Implementasi logika mengunci semua tombol gameplay di splash scene
   // Contoh: nonaktifkan tombol, tambahkan efek blur, dsb
@@ -425,65 +389,38 @@ async  unlockedLevels(email, level) {
   }
 }
 
-
-
   // ========== LAZY LOAD LEVEL01 ASSETS (Non-blocking) ==========
   
   create() {
    console.log('🎬 Creating cinematic splash scene...'); 
-    // Cek apakah email sudah ada di localStorage
+  // Cek apakah email sudah ada di localStorage
     const email = localStorage.getItem("email");
+    let playerScore = 0;
+    // ✅ ENHANCED SAFETY CHECK in updateGameScore function:
+    if (email) {
+    const scoreStatus = checkPlayerScoreStatus(email); 
+    updateGameScore(email, scoreStatus.currentScore);
+    //updateGameScore(email,scoreStatus.currentScore);
+    console.log('✅ updateGameScore dipanggil:', email,scoreStatus.currentScore);
+    
+    // Sembunyikan loginBox, tampilkan logoutBtn
     const loginBox = document.getElementById("loginBox");
     const logoutBtn = document.getElementById("logoutBtn");
-
-    if (!email) {
+    if (loginBox) loginBox.style.display = "none";
+    if (logoutBtn) logoutBtn.style.display = "inline-block";
+  } else {
     // Email tidak ditemukan, tampilkan loginBox dan sembunyikan logoutBtn
+    console.warn('❌ email tidak ditemukan - tidak bisa updateGameScore');
+    const loginBox = document.getElementById("loginBox");
+    const logoutBtn = document.getElementById("logoutBtn");
     if (loginBox) loginBox.style.display = "block";
     if (logoutBtn) logoutBtn.style.display = "none";
-    alert("Please Login with your email!");
-    console.warn('❌ email tidak ditemukan - tidak bisa updateGameScore');
-    return;
   }
-
-  // Email valid, lanjutkan proses
-  if (loginBox) loginBox.style.display = "none";
-  if (logoutBtn) logoutBtn.style.display = "inline-block";
-
-  // Sync score dari backend
-  window.syncProgressFromBackend(email).then(progress => {
-    if (progress && typeof progress.level01Score === 'number') {
-      updateGameScore(email, progress.level01Score);
-      console.log('✅ Score dari backend:', progress.level01Score);
-    } else {
-      // Fallback ke localStorage jika backend gagal
-      const scoreStatus = checkPlayerScoreStatus(email);
-      updateGameScore(email, scoreStatus.currentScore);
-      console.log('✅ Score fallback dari localStorage:', email, scoreStatus.currentScore);
-    }
-  });
-
-   
-//======================================================================================
-// Panggil sync progress dari backend di sini
+  
+    // Panggil sync progress dari backend di sini
   if (email) {
-  syncProgressFromBackend(email);
-}
-
-// Deklarasi variabel utama
-let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
-
-// Panggil fungsi async tanpa await
-this.initUserData(email, userData);
-
-
-
-// Pastikan gameProgress selalu ada
-if (!userData.gameProgress) {
-  userData.gameProgress = {
-    level01Score: 0,
-    // tambahkan field lain jika perlu
-  };
-}
+    syncProgressFromBackend(email); // ← panggil di sini
+  }
 //======================================================================================
 // Tambahkan event listener untuk menyimpan progress sebelum halaman ditutup
   window.addEventListener('beforeunload', () => {
