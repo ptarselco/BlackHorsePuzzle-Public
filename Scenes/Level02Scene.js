@@ -68,6 +68,32 @@ class Level02Scene extends Phaser.Scene {
     syncProgressFromBackend(email); // ← panggil di sini
   }
   
+   // Update progress ke backend saat tab ditutup atau pindah
+  window.addEventListener('beforeunload', () => {
+    if (!email) return;
+    const progress = {
+      level01Score: this.level01Score || 0,
+      totalPlays: this.totalPlays || 0,
+      isGameOver: this.isGameOver || false
+      // Tambahkan field lain sesuai kebutuhan
+    };
+    const url = `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`;
+    navigator.sendBeacon(url, JSON.stringify(progress));
+  });
+
+  // Tambahkan juga untuk visibilitychange (tab pindah/fokus hilang)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden' && email) {
+      const progress = {
+        level01Score: this.level01Score || 0,
+        totalPlays: this.totalPlays || 0,
+        isGameOver: this.isGameOver || false
+      };
+      const url = `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`;
+      navigator.sendBeacon(url, JSON.stringify(progress));
+    }
+  });
+
   this.add.image(960, 640, "board");
 
   //if (data && data.showDonation) {
@@ -177,7 +203,14 @@ this.input.keyboard.on('keydown-ESC', () => {
   }
 });
 
-    
+ const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.onclick = () => {
+      localStorage.removeItem('email');
+      this.scene.start('SplashScene');
+    };
+  }
+
 // Sound effects
     // Mainkan seluruh reaksi suara secara bertahap
    // this.time.addEvent({ delay: 3000, callback: () => this.sound.play("neigh"), loop: true });

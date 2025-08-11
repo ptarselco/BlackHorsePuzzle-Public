@@ -118,13 +118,31 @@ class Level01Scene extends Phaser.Scene {
 
  // create() {
  create(data = {}) {
-    console.log("Level01 create, login:", localStorage.getItem("email"));
-    const email = localStorage.getItem("email");
-    if (!localStorage.getItem("email")) {
+  console.log("Level01 create, login:", localStorage.getItem("email"));
+  const email = localStorage.getItem("email");
+
+  // Validasi login dulu
+  if (!email) {
     console.log("Belum login, kembali ke SplashScene"); 
     this.scene.start('SplashScene');
     return;
   }
+
+   const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.onclick = () => {
+      localStorage.removeItem('email');
+      this.scene.start('SplashScene');
+    };
+  }
+
+  // Sync progress dari backend, update score di UI
+  syncProgressFromBackend(email).then(progress => {
+    if (progress && typeof progress.level01Score === 'number') {
+      this.level01Score = progress.level01Score;
+      updateGameScore(email, progress.level01Score); // Update UI score
+    }
+  });
 
   window.addEventListener('beforeunload', () => {
   const email = localStorage.getItem("email");
@@ -138,11 +156,24 @@ class Level01Scene extends Phaser.Scene {
   navigator.sendBeacon(url, JSON.stringify(progress));
   });
 
+   // Tambahkan juga untuk visibilitychange (tab pindah/fokus hilang)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden' && email) {
+      const progress = {
+        level02Score: this.level02Score || 0,
+        totalPlays: this.totalPlays || 0,
+        isGameOver: this.isGameOver || false
+      };
+      const url = `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`;
+      navigator.sendBeacon(url, JSON.stringify(progress));
+    }
+  });
+
 
   // Di dalam create()
-if (email) {
-  syncProgressFromBackend(email);
-}
+//if (email) {
+  //syncProgressFromBackend(email);
+//}
 
 // Deklarasi variabel utama
 let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
@@ -274,33 +305,51 @@ if (!userData.gameProgress) {
     const lv01Puzzle10Btn = this.add.image(1270, 1100, 'lv01Puzzle10').setScale(0.3).setInteractive().setDepth(999);
     // Event handler untuk lv01Puzzle10Btn - Play 10 Puzzle
     
-     lv01Puzzle10Btn.on('pointerdown', () => {
-  // ✅ ENHANCED GAME OVER PROTECTION WITH SPECIFIC MESSAGE:
-    if (this.isGameOver && (this.level01Score || 0) <= 0) { 
-    // Show specific Game Over message for 10 puzzle button
-    this.showGameOverPuzzleMessage();
+lv01Puzzle10Btn.on('pointerdown', async () => {
+  const email = localStorage.getItem('email');
+  if (!email) {
+    alert('Please login first!');
+    return;
+  } 
+
+   // Ambil progress terbaru dari backend
+  const progressRes = await this.getUserProgress(email);
+  const { newUser, winUser, lossUser, level01Score } = progressRes;
+
+  // Jika newUser, aktifkan playBtn langsung
+  if (newUser) {
+    this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+    if (this.playBtn) {
+      this.playBtn.setInteractive({ useHandCursor: true });
+      this.playBtn.setAlpha(1);
+      this.playBtn.setVisible(true);
+    }
+    console.log('✅ PlayBtn diaktifkan untuk newUser');
+  }
+
+  // Update status di scene
+  this.level01Score = level01Score || 0;
+  this.isGameOver = lossUser;
+  this.isGameOverClosed = false;
+
+   // Hanya tampilkan satu panel Game Over
+  if (this.isGameOver && this.level01Score <= 0) {
+    if (!this.gameOverReturnPanel) {
+      this.showGameOverReturnMessage();
+    }
     return;
   }
 
-   // ✅ SPECIAL CHECK: If Game Over was closed but not cleared (level01Score = 0)
-  if (this.isGameOverClosed && (this.level01Score || 0) <= 0) {
-    this.showGameOverPuzzleMessage();
-    return;
+  // Jika winUser, pastikan playBtn aktif
+  if (winUser && this.level01Score > 0) {
+    this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+    if (this.playBtn) {
+      this.playBtn.setInteractive({ useHandCursor: true });
+      this.playBtn.setAlpha(1);
+      this.playBtn.setVisible(true);
+    }
+    console.log('✅ PlayBtn diaktifkan untuk winUser');
   }
-  
-  // ✅ If player has level01Score > 0, allow playing even after Game Over
-  if ((this.level01Score || 0) > 0) {
-    console.log(`✅ Player has level01Score ${this.level01Score} - allowing 10 puzzle access`);
-  }
-
-  // Aktifkan playBtn jika score > 0 dan tidak game over
-  if (this.playBtn && (this.level01Score || 0) > 0 && !this.isGameOver) {
-    this.playBtn.setInteractive({ useHandCursor: true });
-    this.playBtn.setAlpha(1);
-    this.playBtn.setVisible(true);
-    console.log('✅ PlayBtn diaktifkan oleh 10 Puzzle');
-  }
-
 
   // Toggle pesan: jika sudah ada, hilangkan; jika belum, tampilkan
   if (this.welcomeMsgRect && this.welcomeMsgRect.visible) {
@@ -2862,13 +2911,13 @@ async checkUserStatusAndGameOver(email) {
 
       console.log('✅ Game over status di-reset - tombol Play & Puzzle diaktifkan');
       // Lanjutkan main
-    //  return status;
-    //} else {
+      //return status;
+     //} else if (lossUser) { 
       // LOSS USER: Sudah main >= 3x, score = 0
-    //  this.isGameOver = true;
-    //  this.showGameOverReturnMessage();
-    //  this.lockAllGameplayButtons();
-    //  return status;
+      //this.isGameOver = true;
+      //this.showGameOverReturnMessage();
+      //this.lockAllGameplayButtons();
+     //return status;
     }
   }
 
@@ -2937,7 +2986,7 @@ async checkGameOverStatusFromServer() {
     // Fallback ke localStorage jika backend gagal
     const isLocked = localStorage.getItem(`gameOver_${email}`) === 'true';
     if (isLocked) {
-      //this.showGameOverReturnMessage();
+      this.showGameOverReturnMessage();
       //this.lockAllGameplayButtons();
       //await this.lockLevel(email, 'Level01');
       return;
@@ -3009,6 +3058,7 @@ async  unlockedLevels(email, level) {
      this.unlockGameAfterPurchase(); // Aktifkan tombol Play & Puzzle
     } 
 
+    // ✅ LOGIKA UNLOCK LEVEL:
     //return unlockRes.data.success || unlockRes.data.unlocked === true;
     const isUnlocked = unlockRes.data.success || unlockRes.data.unlocked === true;
     console.log('🎯 Final unlock result:', isUnlocked);

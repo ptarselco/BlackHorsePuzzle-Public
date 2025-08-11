@@ -215,7 +215,7 @@ async checkUserStatusAndGameOver(email) {
 
   // Cek status game over untuk lossUser or winUser
   if (status.isGameOver) {
-    if (winUser) {
+    if (status.level01Score > 0) {
       // WIN USER: Sudah main >= 1x, score > 0
       status.isGameOver = false;
       localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
@@ -232,12 +232,12 @@ async checkUserStatusAndGameOver(email) {
       console.log('✅ Game over status di-reset - tombol Play & Puzzle diaktifkan');
       // Lanjutkan main
       return status;
-    } else if (lossUser) {
+    //} else if (lossUser) {
       // LOSS USER: Sudah main >= 3x, score = 0
-      this.isGameOver = true;
-      this.showGameOverReturnMessage();
-      this.lockAllGameplayButtons();
-      return status;
+      //this.isGameOver = true;
+      //this.showGameOverReturnMessage();
+      //this.lockAllGameplayButtons();
+      //return status;
     }
   }
 
@@ -245,16 +245,20 @@ async checkUserStatusAndGameOver(email) {
   status.totalPlays = (status.totalPlays || 0) + 1;
 
   // Jika totalPlays >= 3 dan level01Score masih 0, set game over
- // if (status.totalPlays >= 3 && (status.level01Score || 0) === 0) {
-          //await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/set-gameover', { email, isGameOver: true });
- // await this.setGameOver(email, true); // gunakan fungsi async
- // status.isGameOver = true;
- // localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
- // this.isGameOver = true;
- // this.showGameOverReturnMessage();
- // this.lockAllGameplayButtons();
- // return status;
- // }
+  const isLossUser = (
+    (status.isGameOver && (status.level01Score || 0) === 0) || 
+    (status.totalPlays >= 3 && (status.level01Score || 0) === 0)
+  );
+  if (isLossUser) {
+    status.isGameOver = true;
+    await this.setGameOver(email, true); // gunakan fungsi async
+    status.isGameOver = true; // pastikan status di-set ke true
+    localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
+    this.isGameOver = true;
+    this.showGameOverReturnMessage();
+    this.lockAllGameplayButtons();
+    return status;
+  }
 
   // Simpan totalPlays terbaru ke localStorage
   localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
