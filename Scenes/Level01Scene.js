@@ -2889,7 +2889,7 @@ async updateUserProgress(email, progress) {
   try {
     const res = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
-      { ...progress },
+      { email, ...progress },
       { timeout: 200000 }
     );
     return res.data.success === true;

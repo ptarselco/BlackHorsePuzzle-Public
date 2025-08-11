@@ -1806,10 +1806,11 @@ function updateGameScore(email, newScore) {
   // Simpan ke backend setiap kali level01Score berubah
   axios.post(
     `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
-    {
+    { email, ...progress,
       level01Score: newScore
       // Tambahkan data lain jika perlu nanti untuk level01ScoreSeri2 dan seri selanjutnya
-    }
+    },
+    { timeout: 200000 }
   ).then(() => {
     console.log('✅ level01Score saved to backend');
   }).catch((err) => {
