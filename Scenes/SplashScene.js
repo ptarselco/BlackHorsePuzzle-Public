@@ -433,36 +433,36 @@ async  unlockedLevels(email, level) {
    console.log('🎬 Creating cinematic splash scene...'); 
     // Cek apakah email sudah ada di localStorage
     const email = localStorage.getItem("email");
-    let playerScore = 0;
-    // ✅ ENHANCED SAFETY CHECK in updateGameScore function:
-    if (email) {
-   // Sync score dari backend
-    window.syncProgressFromBackend(email).then(progress => {
+    const loginBox = document.getElementById("loginBox");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    if (!email) {
+    // Email tidak ditemukan, tampilkan loginBox dan sembunyikan logoutBtn
+    if (loginBox) loginBox.style.display = "block";
+    if (logoutBtn) logoutBtn.style.display = "none";
+    alert("Please Login with your email!");
+    console.warn('❌ email tidak ditemukan - tidak bisa updateGameScore');
+    return;
+  }
+
+  // Email valid, lanjutkan proses
+  if (loginBox) loginBox.style.display = "none";
+  if (logoutBtn) logoutBtn.style.display = "inline-block";
+
+  // Sync score dari backend
+  window.syncProgressFromBackend(email).then(progress => {
     if (progress && typeof progress.level01Score === 'number') {
       updateGameScore(email, progress.level01Score);
       console.log('✅ Score dari backend:', progress.level01Score);
-    } else {   
-     // Fallback ke localStorage jika backend gagal 
-    const scoreStatus = checkPlayerScoreStatus(email); 
-    updateGameScore(email, scoreStatus.currentScore);
-    //updateGameScore(email,scoreStatus.currentScore);
-    console.log('✅ Score fallback dari localStorage:', email,scoreStatus.currentScore);
+    } else {
+      // Fallback ke localStorage jika backend gagal
+      const scoreStatus = checkPlayerScoreStatus(email);
+      updateGameScore(email, scoreStatus.currentScore);
+      console.log('✅ Score fallback dari localStorage:', email, scoreStatus.currentScore);
     }
   });
-    // Sembunyikan loginBox, tampilkan logoutBtn
-    const loginBox = document.getElementById("loginBox");
-    const logoutBtn = document.getElementById("logoutBtn");
-    if (loginBox) loginBox.style.display = "none";
-    if (logoutBtn) logoutBtn.style.display = "inline-block";
-  } else {
-    // Email tidak ditemukan, tampilkan loginBox dan sembunyikan logoutBtn
-    console.warn('❌ email tidak ditemukan - tidak bisa updateGameScore');
-    const loginBox = document.getElementById("loginBox");
-    const logoutBtn = document.getElementById("logoutBtn");
-    if (loginBox) loginBox.style.display = "block";
-    if (logoutBtn) logoutBtn.style.display = "none";
-  }
- 
+
+   
 //======================================================================================
 // Panggil sync progress dari backend di sini
   if (email) {
