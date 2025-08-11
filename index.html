@@ -261,24 +261,25 @@ if ('serviceWorker' in navigator) {
 } else {
   console.log('⚠️ Service Worker not supported in this browser');
 }
-//======================================================================================
-const email = localStorage.getItem("email");
-if (email) {
-  syncProgressFromBackend(email);
-}
 
-// Deklarasi variabel utama
-let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
-
-
-// Pastikan gameProgress selalu ada
-if (!userData.gameProgress) {
-  userData.gameProgress = {
-    level01Score: 0,
-    // tambahkan field lain jika perlu
-  };
-}
-//======================================================================================
+window.syncProgressFromBackend = async function(email) {
+  try {
+    const res = await axios.post(
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
+      {},
+      { timeout: 200000 }
+    );
+    // Update localStorage jika perlu
+    if (res.data && res.data.progress) {
+      localStorage.setItem(`gameData-${email}`, JSON.stringify({ gameProgress: res.data.progress }));
+      window.level01Score = res.data.progress.level01Score || 0;
+    }
+    return res.data.progress;
+  } catch (err) {
+    console.error('syncProgressFromBackend error:', err);
+    return null;
+  }
+};
 
 // Fungsi cek status pembayaran dari backend (lengkap)
 window.checkPaymentStatusFromBackend = async function(email) {
@@ -288,7 +289,7 @@ window.checkPaymentStatusFromBackend = async function(email) {
     const res = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/${encodeURIComponent(email)}/payment-status`,
       { }, // Send email in POST body
-      {timeout: 30000}
+      {timeout: 200000}
     );
     const data = res.data;
     console.log('💳 Payment status response:', data);
@@ -325,6 +326,27 @@ window.checkPaymentStatusFromBackend = async function(email) {
     };
   }
 };
+
+//======================================================================================
+const email = localStorage.getItem("email");
+if (email) {
+  syncProgressFromBackend(email);
+}
+
+// Deklarasi variabel utama
+let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+
+
+// Pastikan gameProgress selalu ada
+if (!userData.gameProgress) {
+  userData.gameProgress = {
+    level01Score: 0,
+    // tambahkan field lain jika perlu
+  };
+}
+//======================================================================================
+
+
 //<!-- FIND function checkPaymentStatus around line 350 dan REPLACE dengan: -->
 window.checkPaymentStatus = async function(email) {
   let result = { paid: false, method: null };
@@ -1359,7 +1381,7 @@ async function verifyPayPalToken(token, payerID, email) {
     const response = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/verify-paypal-token',
       { token, payerID, email },
-      { timeout: 5000 } // timeout dalam ms
+      { timeout: 200000 } // timeout dalam ms
     );
 
     const data = response.data;
@@ -1389,7 +1411,7 @@ async function verifyPayPalOrder(orderId, email) {
     const response = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/verify-paypal',
       {paypalOrderId: orderId, email },
-      { timeout: 5000 }
+      { timeout: 200000 }
     );
 
     const data = response.data;

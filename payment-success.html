@@ -64,7 +64,7 @@
     token,
     payerID,
     email
-  }, { timeout: 5000 })
+  }, { timeout: 200000 })
     .then(res => {
       const data = res.data;
       if (data.emailVerified) {
@@ -134,7 +134,7 @@ window.checkPaymentStatusFromBackend = async function(email) {
 // ** VERIFY-PAYMENT**
 axios.get('https://backend-paypalblackhorsepuzzle.onrender.com/api/verify-payment', {
       params: { txnId, email },
-      timeout: 5000,
+      timeout: 200000,
       headers: { 'Accept': 'application/json' }
       })
       .then(res => {
@@ -171,7 +171,7 @@ axios.get('https://backend-paypalblackhorsepuzzle.onrender.com/api/verify-paymen
 axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/verify-paypal', {
   paypalOrderId,
   email
-}, { timeout: 5000 })
+}, { timeout: 200000 })
 .then(res => {
   const data = res.data;
   if (data.emailVerified&& data.status === 'COMPLETED') {
@@ -231,7 +231,7 @@ async function handlePaymentSuccess(email) {
     const response = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/verify-paypal',
       { paypalOrderId, email },
-      { timeout: 5000 }
+      { timeout: 200000 }
     );
 
     const data = response.data;
