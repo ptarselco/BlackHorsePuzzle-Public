@@ -3677,7 +3677,7 @@ this.paymentCheckInterval = setInterval(async () => {
   if (paymentData && paymentData.isPaid === true) {
     clearInterval(this.paymentCheckInterval);
 
-    // Pastikan pesan "Please wait" tampil minimal 3 detik
+  // Pastikan pesan "Please wait" tampil minimal 3 detik
     const elapsed = Date.now() - waitStart;
     const minWait = 3000;
     if (elapsed < minWait) {
@@ -3923,12 +3923,25 @@ return;
              
           // Polling ke backend setiap beberapa detik
   this.paymentCheckInterval = setInterval(async () => {
-  console.log('🔍 Polling payment status...');
-  
-  const paymentData = await checkPaymentStatusFromBackend(email);
+     showPleaseWaitMessage('Please wait, unlocking in progress...');
+     const waitStart = Date.now();
+
+     console.log('🔍 Polling payment status...');
+     const paymentData = await checkPaymentStatusFromBackend(email);
   
   if (paymentData && paymentData.isPaid === true) {
-    clearInterval(this.paymentCheckInterval);
+        clearInterval(this.paymentCheckInterval);
+
+   // Pastikan pesan "Please wait" tampil minimal 3 detik
+    const elapsed = Date.now() - waitStart;
+    const minWait = 3000;
+    if (elapsed < minWait) {
+      setTimeout(() => {
+        hidePleaseWaitMessage();
+      }, minWait - elapsed);
+    } else {
+      hidePleaseWaitMessage();
+    }    
 
    if (window.updateGamePaymentStatus) { 
     window.updateGamePaymentStatus(paymentData.isPaid, paymentData.method);
@@ -3936,9 +3949,13 @@ return;
       console.error('window.updateGamePaymentStatus is not defined!');
     }
 
-    console.log('✅ Payment confirmed! Processing unlock...');
-    const unlocked = await this.unlockedLevels(email, 'Level01Scene');
+    // 2. ✅ CLEAR GAME OVER STATE di backend & localStorage
+    await this.setGameOver(email, false); // clear game over di backend
+    localStorage.removeItem(`gameOver_${email}`); // clear di localStorage
     
+    console.log('✅ Payment confirmed! Processing unlock...');
+    
+    const unlocked = await this.unlockedLevels(email, 'Level01Scene');
     if (unlocked) {
       // Unlock UI
       this.unblur10PuzzleButton();
