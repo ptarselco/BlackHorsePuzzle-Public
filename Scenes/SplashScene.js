@@ -436,11 +436,19 @@ async  unlockedLevels(email, level) {
     let playerScore = 0;
     // ✅ ENHANCED SAFETY CHECK in updateGameScore function:
     if (email) {
+   // Sync score dari backend
+    window.syncProgressFromBackend(email).then(progress => {
+    if (progress && typeof progress.level01Score === 'number') {
+      updateGameScore(email, progress.level01Score);
+      console.log('✅ Score dari backend:', progress.level01Score);
+    } else {   
+     // Fallback ke localStorage jika backend gagal 
     const scoreStatus = checkPlayerScoreStatus(email); 
     updateGameScore(email, scoreStatus.currentScore);
     //updateGameScore(email,scoreStatus.currentScore);
-    console.log('✅ updateGameScore dipanggil:', email,scoreStatus.currentScore);
-    
+    console.log('✅ Score fallback dari localStorage:', email,scoreStatus.currentScore);
+    }
+  });
     // Sembunyikan loginBox, tampilkan logoutBtn
     const loginBox = document.getElementById("loginBox");
     const logoutBtn = document.getElementById("logoutBtn");
@@ -454,7 +462,7 @@ async  unlockedLevels(email, level) {
     if (loginBox) loginBox.style.display = "block";
     if (logoutBtn) logoutBtn.style.display = "none";
   }
-  
+ 
 //======================================================================================
 // Panggil sync progress dari backend di sini
   if (email) {
