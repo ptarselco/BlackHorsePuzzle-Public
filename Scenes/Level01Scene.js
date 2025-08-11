@@ -3943,6 +3943,7 @@ return;
       hidePleaseWaitMessage();
     }    
 
+  // 1. Update status payment ke window/UI
    if (window.updateGamePaymentStatus) { 
     window.updateGamePaymentStatus(paymentData.isPaid, paymentData.method);
     } else {
@@ -3955,6 +3956,7 @@ return;
     
     console.log('✅ Payment confirmed! Processing unlock...');
     
+    // 3. Unlock UI dan tampilkan pesan sukses
     const unlocked = await this.unlockedLevels(email, 'Level01Scene');
     if (unlocked) {
       // Unlock UI
