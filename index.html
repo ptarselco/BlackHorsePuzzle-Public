@@ -270,10 +270,6 @@ if (email) {
 // Deklarasi variabel utama
 let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
 
-// Panggil fungsi async tanpa await
-window.initUserData(email, userData);
-
-
 
 // Pastikan gameProgress selalu ada
 if (!userData.gameProgress) {
@@ -1111,7 +1107,12 @@ function showLoginForm() {
 //-------------------------------------------------------------------------------------------
 // ✅ ENHANCED DOMCONTENTLOADED WITH level01Score MANAGEMENT:
 window.addEventListener('DOMContentLoaded', async function() {
-  let email = localStorage.getItem("email"); 
+  const email = localStorage.getItem("email"); 
+   let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+  if (email) {
+    window.initUserData(email, userData);
+  }
+
   console.log('📄 Enhanced Black Horse Puzzle - Initializing secure system');
   
   if (email) {
