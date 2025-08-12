@@ -439,6 +439,11 @@ lv01Puzzle10Btn.on('pointerdown', async () => {
       this.playBtn.setAlpha(0.5);
       this.playBtn.setVisible(true);
     }
+    // ✅ SPECIAL CHECK: If Game Over was closed but not cleared (level01Score = 0)
+   if (this.isGameOverClosed && (this.level01Score || 0) === 0) {
+    this.showGameOverPuzzleMessage();
+    return;
+  }
    }
   }
 });
