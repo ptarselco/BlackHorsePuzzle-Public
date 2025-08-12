@@ -366,6 +366,16 @@ lv01Puzzle10Btn.on('pointerdown', async () => {
         ease: 'Sine.easeInOut'
       });
 
+      // Toggle pesan: jika sudah ada, hilangkan; jika belum, tampilkan
+  if (this.welcomeMsgRect && this.welcomeMsgRect.visible) {
+    this.welcomeMsgRect.destroy();
+    this.welcomeMsgText.destroy();
+    this.welcomeMsgRect = null;
+    this.welcomeMsgText = null;
+    if (this.welcomeMsgTimer) this.welcomeMsgTimer.remove();
+    return;
+  }
+
       // Rectangle pesan
      this.welcomeMsgRect = this.add.rectangle(960, 350, 1200, 500, 0x023d3f, 0.95)
     .setStrokeStyle(4, 0x00eaff)
@@ -378,10 +388,6 @@ lv01Puzzle10Btn.on('pointerdown', async () => {
       if (this.welcomeMsgTimer) this.welcomeMsgTimer.remove();
     });
   
-  // Tampilkan pesan welcome
-  this.showWelcomeMessage();
- 
-
     // Pesan bilingual
     const pesanEN = "Welcome, Conquerors!\nUse 5 seconds to observe the Puzzle and arrange Black Horse's face.\n3 consecutive mistakes will trigger a reaction Black Horse. Read Help before Click Play!";
     const pesanID = "Selamat datang para Penakluk!\nGunakan 5 detik untuk memperhatikan Puzzle dan susun wajah Black Horse.\n3 kesalahan berturut-turut akan memicu reaksi Black Horse. Baca Bantuan sebelum Klik Play!";
@@ -447,6 +453,7 @@ lv01Puzzle10Btn.on('pointerdown', async () => {
     //return;
   //} 
 
+  
      // Jika pesan sudah ada, klik akan menghilangkan
   if (this.comingSoonText && this.comingSoonText.visible) {
     this.comingSoonText.destroy();
