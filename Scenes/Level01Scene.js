@@ -356,6 +356,16 @@ lv01Puzzle10Btn.on('pointerdown', async () => {
     return;
   } 
      
+    // Toggle pesan: jika sudah ada, hilangkan; jika belum, tampilkan
+    if (this.welcomeMsgRect && this.welcomeMsgRect.visible) {
+      this.welcomeMsgRect.destroy();
+      this.welcomeMsgText.destroy();
+      this.welcomeMsgRect = null;
+      this.welcomeMsgText = null;
+      if (this.welcomeMsgTimer) this.welcomeMsgTimer.remove();
+      return;
+    }
+  
       // Efek sinar (glow/scale)
       this.tweens.add({
         targets: lv01Puzzle10Btn,
@@ -366,15 +376,7 @@ lv01Puzzle10Btn.on('pointerdown', async () => {
         ease: 'Sine.easeInOut'
       });
 
-      // Toggle pesan: jika sudah ada, hilangkan; jika belum, tampilkan
-  if (this.welcomeMsgRect && this.welcomeMsgRect.visible) {
-    this.welcomeMsgRect.destroy();
-    this.welcomeMsgText.destroy();
-    this.welcomeMsgRect = null;
-    this.welcomeMsgText = null;
-    if (this.welcomeMsgTimer) this.welcomeMsgTimer.remove();
-    return;
-  }
+ 
 
       // Rectangle pesan
      this.welcomeMsgRect = this.add.rectangle(960, 350, 1200, 500, 0x023d3f, 0.95)
