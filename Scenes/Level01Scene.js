@@ -415,7 +415,7 @@ lv01Puzzle10Btn.on('pointerdown', async () => {
     const { newUser, winUser, lossUser, level01Score } = progressRes;
 
     // Update nilai ke property scene
-    this.level01Score = level01Score || 0;
+    //this.level01Score = level01Score || 0;
 
     // Mulai game 10 puzzle
     // Misal: reset ronde, level01Score, timer, dan tampilkan puzzle
