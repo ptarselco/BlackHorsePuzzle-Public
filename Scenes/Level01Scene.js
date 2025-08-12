@@ -355,57 +355,7 @@ lv01Puzzle10Btn.on('pointerdown', async () => {
     alert('Please login first!');
     return;
   } 
-
-   // Ambil progress terbaru dari backend
-  const progressRes = await this.getUserProgress(email);
-  const { newUser, winUser, lossUser, level01Score } = progressRes;
-
-  // Jika newUser, aktifkan playBtn langsung
-  if (newUser) {
-    this.unblur10PuzzleButton && this.unblur10PuzzleButton();
-    if (this.playBtn) {
-      this.playBtn.setInteractive({ useHandCursor: true });
-      this.playBtn.setAlpha(1);
-      this.playBtn.setVisible(true);
-    }
-    console.log('✅ PlayBtn diaktifkan untuk newUser');
-  }
-
-  // Update status di scene
-  this.level01Score = level01Score || 0;
-  this.isGameOver = lossUser;
-  this.isGameOverClosed = false;
-
-   // Hanya tampilkan satu panel Game Over
-  if (this.isGameOver && this.level01Score <= 0) {
-    if (!this.gameOverReturnPanel) {
-      this.showGameOverReturnMessage();
-    }
-    return;
-  }
-
-  // Jika winUser, pastikan playBtn aktif
-  if (winUser && this.level01Score > 0) {
-    this.unblur10PuzzleButton && this.unblur10PuzzleButton();
-    if (this.playBtn) {
-      this.playBtn.setInteractive({ useHandCursor: true });
-      this.playBtn.setAlpha(1);
-      this.playBtn.setVisible(true);
-    }
-    console.log('✅ PlayBtn diaktifkan untuk winUser');
-  }
-
-  // Toggle pesan: jika sudah ada, hilangkan; jika belum, tampilkan
-  if (this.welcomeMsgRect && this.welcomeMsgRect.visible) {
-    this.welcomeMsgRect.destroy();
-    this.welcomeMsgText.destroy();
-    this.welcomeMsgRect = null;
-    this.welcomeMsgText = null;
-    if (this.welcomeMsgTimer) this.welcomeMsgTimer.remove();
-    return;
-  }
-  
-      
+     
       // Efek sinar (glow/scale)
       this.tweens.add({
         targets: lv01Puzzle10Btn,
@@ -428,6 +378,9 @@ lv01Puzzle10Btn.on('pointerdown', async () => {
       if (this.welcomeMsgTimer) this.welcomeMsgTimer.remove();
     });
   
+  // Tampilkan pesan welcome
+  this.showWelcomeMessage();
+ 
 
     // Pesan bilingual
     const pesanEN = "Welcome, Conquerors!\nUse 5 seconds to observe the Puzzle and arrange Black Horse's face.\n3 consecutive mistakes will trigger a reaction Black Horse. Read Help before Click Play!";
@@ -450,33 +403,36 @@ lv01Puzzle10Btn.on('pointerdown', async () => {
     this.welcomeMsgText = null;
   });
 
+    const progressRes = await this.getUserProgress(email);
+    const { newUser, winUser, lossUser, level01Score } = progressRes;
 
-      // Mulai game 10 puzzle
-      // Misal: reset ronde, level01Score, timer, dan tampilkan puzzle
-      this.round = 1;
-      this.scoreText.setText(this.level01Score.toString().padStart(5, '0'));
+    // Update nilai ke property scene
+    this.level01Score = level01Score || 0;
 
-      // Tambahkan pengecekan login sebelum mengaktifkan tombol Play saat logout
-      if (localStorage.getItem("email")) {
-      // Panggil fungsi mulai game, misal:
-      if (this.isPaid || newUser ) {
-      if (this.playBtn) {
-        this.playBtn.setTexture('playSheriffL');
-        this.playBtn.setInteractive({ useHandCursor: true });
-        this.playBtn.setAlpha(1);
-        this.playBtn.setVisible(true);
-      }
-    } else {
-  // Belum bayar dan bukan user baru/masih gratis: Play tetap burem
-  if (this.playBtn) {
-    this.playBtn.disableInteractive();
-    this.playBtn.setAlpha(0.5);
-    this.playBtn.setVisible(true);
+    // Mulai game 10 puzzle
+    // Misal: reset ronde, level01Score, timer, dan tampilkan puzzle
+    this.round = 1;
+    this.scoreText.setText(this.level01Score.toString().padStart(5, '0'));
+
+    // FILTER USER: Tambahkan pengecekan login user sebelum mengaktifkan tombol Play
+    if (localStorage.getItem("email")) {
+    // Panggil fungsi mulai game, misal:
+    if (this.isPaid === true || newUser === true || winUser === true || this.hasClaimedHat === true) {
+    if (this.playBtn) {
+      this.playBtn.setTexture('playSheriffL');
+      this.playBtn.setInteractive({ useHandCursor: true });
+      this.playBtn.setAlpha(1);
+      this.playBtn.setVisible(true);
+    }
+    } else if (lossUser === true) {
+     // lossUser Belum bayar Play tetap burem
+    if (this.playBtn) {
+      this.playBtn.disableInteractive();
+      this.playBtn.setAlpha(0.5);
+      this.playBtn.setVisible(true);
+    }
   }
-  // (Opsional) Tampilkan pesan game lock
- // this.showGameOverReturnMessage && this.showGameOverReturnMessage();
- }
-}
+  }
 });
 //-----------------------------BATAS 10 PUZZLE-------------------------------------
    
