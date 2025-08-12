@@ -266,7 +266,7 @@ window.syncProgressFromBackend = async function(email) {
   try {
     const res = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
-      {},
+       { email },
       { timeout: 200000 }
     );
     // Update localStorage jika perlu
@@ -734,7 +734,9 @@ try {
   async function syncProgressFromBackend(email) {
   try {
     const res = await axios.post(
-      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
+      { email },
+      { timeout: 200000 }
     );
     const progress = res.data?.progress || {};
 
