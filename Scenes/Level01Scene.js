@@ -2449,9 +2449,15 @@ initUserData(email, userData) {
 
        // Ambil level01Score dari localStorage jika ada (data lama)
       let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+      userData = userData || {};
       userData.gameProgress = userData.gameProgress || {};
+
+      // Pastikan level01HighScore selalu angka
+      if (typeof userData.gameProgress.level01HighScore !== 'number' || isNaN(userData.gameProgress.level01HighScore)) {
+      userData.gameProgress.level01HighScore = 0;
+      }
      
-     // Simpan level01Score terbaru ke localStorage
+      // Simpan level01Score terbaru ke localStorage
      userData.gameProgress.level01Score = this.level01Score;
    
      // Update localStorage dengan semua progress terbaru
@@ -2474,7 +2480,8 @@ initUserData(email, userData) {
 
 
     // Update ke backend juga
-    const progress = await this.getUserProgress(email);    
+    const progress = await this.getUserProgress(email);   
+
     this.updateUserProgress(email, {
       level01Completed: true,
       level01Score: this.level01Score,
@@ -2533,7 +2540,13 @@ initUserData(email, userData) {
     
     const email = localStorage.getItem('email');
     let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+    userData = userData || {};
     userData.gameProgress = userData.gameProgress || {};
+
+    // Pastikan level01HighScore selalu angka
+   if (typeof userData.gameProgress.level01HighScore !== 'number' || isNaN(userData.gameProgress.level01HighScore)) {
+     userData.gameProgress.level01HighScore = 0;
+   }
    
    // Simpan level01Score terbaru ke localStorage
     userData.gameProgress.level01Score = this.level01Score;
