@@ -2856,10 +2856,26 @@ async updateUserProgress(email, progress) {
       { email, ...progress },
       { timeout: 200000 }
     );
-    return res.data.success === true;
+  // Kembalikan seluruh response, termasuk newUser, winUser, lossUser
+    return {
+      success: res.data.success,
+      user: res.data.user,
+      newUser: res.data.newUser,
+      winUser: res.data.winUser,
+      lossUser: res.data.lossUser,
+      message: res.data.message,
+      gameProgress: res.data.user?.gameProgress || {}
+    };
   } catch (err) {
     console.error('❌ Update user progress error:', err);
-    return false;
+    return {
+      success: false,
+      error: err.message,
+      newUser: false,
+      winUser: false,
+      lossUser: false,
+      gameProgress: {}
+    };
   }
 }
 
