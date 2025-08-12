@@ -2456,7 +2456,7 @@ initUserData(email, userData) {
 
        // Ambil level01Score dari localStorage jika ada (data lama)
       let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
-      userData = userData || {};
+      //userData = userData || {};
       userData.gameProgress = userData.gameProgress || {};
 
       // Pastikan level01HighScore selalu angka
@@ -2547,7 +2547,7 @@ initUserData(email, userData) {
     
     const email = localStorage.getItem('email');
     let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
-    userData = userData || {};
+    //userData = userData || {};
     userData.gameProgress = userData.gameProgress || {};
 
     // Pastikan level01HighScore selalu angka
