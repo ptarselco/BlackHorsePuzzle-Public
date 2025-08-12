@@ -2535,6 +2535,66 @@ initUserData(email, userData) {
     }
   }
 
+   // filepath: [Level01Scene.js](http://_vscodecontentref_/2)
+  showClaimHat(callback) {
+    // Hapus claimHatBtn dan downloadHat jika ada
+    if (this.claimHatBtn) {
+      this.claimHatBtn.destroy();
+      this.claimHatBtn = null;
+    }
+    if (this.downloadHat) {
+      this.downloadHat.destroy();
+      this.downloadHat = null;
+    }
+
+    // Selalu mainkan win music dan ringkikan kuda setiap menang
+    if (this.winMusic) this.winMusic.play();
+    if (this.horseNeigh) this.horseNeigh.play();
+
+    // Pause main music/fav music saat win
+    if (this.mainMusic && this.mainMusic.isPlaying) this.mainMusic.pause();
+    if (this.currentFavMusic && this.currentFavMusic.isPlaying) this.currentFavMusic.pause();
+
+    // Setelah win music selesai, resume music favorit/main
+    this.winMusic.once('complete', () => {
+      if (this.currentFavMusic && this.isFavMusicActive) {
+        this.currentFavMusic.resume();
+      } else if (this.mainMusic) {
+        this.mainMusic.resume();
+      }
+    });
+    
+   
+    // Topi biru di tengah hanya muncul saat kemenangan pertama
+    if (!this.hasWonOnce) {
+      this.hasWonOnce = true;
+      this.claimHatBtn = this.add.image(1100, 650, 'claimHat').setScale(0.7).setInteractive();
+      this.claimHatBtn.on('pointerdown', () => {
+        // Hilangkan topi biru tengah setelah diklik
+        if (this.claimHatBtn) {
+          this.claimHatBtn.destroy();
+          this.claimHatBtn = null;
+        }
+        // (Opsional) Pesan info
+        if (this.claimHatMsg) this.claimHatMsg.destroy();
+        this.claimHatMsg = this.add.text(1100, 600, "Claim your hat below!", {
+          font: "bold 24px Segoe UI",
+          fill: "#00eaff",
+          backgroundColor: "#fff",
+          padding: { left: 20, right: 20, top: 10, bottom: 10 }
+        }).setOrigin(0.5).setDepth(2100);
+        this.time.delayedCall(1200, () => {
+          if (this.claimHatMsg) this.claimHatMsg.destroy();
+        });
+        if (callback) callback();
+      });
+    } else {
+      // Jika sudah pernah menang, langsung callback (tanpa topi biru tengah)
+      if (callback) callback();
+    }
+  }
+
+
   // filepath: [Level01Scene.js](https://_vscodecontentref_/2)
   async onTimeUp() {
     this.sound.play('horseSnort');
