@@ -414,7 +414,7 @@ lv01Puzzle10Btn.on('pointerdown', async () => {
     const progressRes = await this.getUserProgress(email);
     const { newUser, winUser, lossUser, level01Score } = progressRes;
 
-    // Update nilai ke property scene
+    // Update nilai ke property scene >>> ini menghapus score setiap x klik start (10 puzzle)
     //this.level01Score = level01Score || 0;
 
     // Mulai game 10 puzzle
@@ -2505,8 +2505,8 @@ initUserData(email, userData) {
       //if (this.level01Score >= 1000 && !this.blackHorseSprite) {
       //this.transformPuzzleToHorse();
       //}
-      this.showClaimHat(() => {
-       });
+      //this.showClaimHat(() => {
+      // });
 
       this.showClaimHat(() => {  
       if (this.playBtn) {
@@ -2567,33 +2567,33 @@ initUserData(email, userData) {
     
    
     // Topi biru di tengah hanya muncul saat kemenangan pertama
-    if (!this.hasWonOnce) {
-      this.hasWonOnce = true;
-      this.claimHatBtn = this.add.image(1100, 650, 'claimHat').setScale(0.7).setInteractive();
-      this.claimHatBtn.on('pointerdown', () => {
+  //  if (!this.hasWonOnce) {
+    //  this.hasWonOnce = true;
+    //  this.claimHatBtn = this.add.image(1100, 650, 'claimHat').setScale(0.7).setInteractive();
+    //  this.claimHatBtn.on('pointerdown', () => {
         // Hilangkan topi biru tengah setelah diklik
-        if (this.claimHatBtn) {
-          this.claimHatBtn.destroy();
-          this.claimHatBtn = null;
-        }
+    //    if (this.claimHatBtn) {
+    //      this.claimHatBtn.destroy();
+    //      this.claimHatBtn = null;
+      //  }
         // (Opsional) Pesan info
-        if (this.claimHatMsg) this.claimHatMsg.destroy();
-        this.claimHatMsg = this.add.text(1100, 600, "Claim your hat below!", {
-          font: "bold 24px Segoe UI",
-          fill: "#00eaff",
-          backgroundColor: "#fff",
-          padding: { left: 20, right: 20, top: 10, bottom: 10 }
-        }).setOrigin(0.5).setDepth(2100);
-        this.time.delayedCall(1200, () => {
-          if (this.claimHatMsg) this.claimHatMsg.destroy();
-        });
-        if (callback) callback();
-      });
-    } else {
+      //  if (this.claimHatMsg) this.claimHatMsg.destroy();
+      //  this.claimHatMsg = this.add.text(1100, 600, "Claim your hat below!", {
+      //    font: "bold 24px Segoe UI",
+      //    fill: "#00eaff",
+      //    backgroundColor: "#fff",
+      //    padding: { left: 20, right: 20, top: 10, bottom: 10 }
+      //  }).setOrigin(0.5).setDepth(2100);
+      //  this.time.delayedCall(1200, () => {
+      //    if (this.claimHatMsg) this.claimHatMsg.destroy();
+      //  });
+      //  if (callback) callback();
+      //});
+    //} else {
       // Jika sudah pernah menang, langsung callback (tanpa topi biru tengah)
       if (callback) callback();
     }
-  }
+  //}
 
 
   // filepath: [Level01Scene.js](https://_vscodecontentref_/2)
