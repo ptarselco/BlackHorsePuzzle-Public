@@ -431,7 +431,7 @@ lv01Puzzle10Btn.on('pointerdown', async () => {
       this.playBtn.setAlpha(0.5);
       this.playBtn.setVisible(true);
     }
-  }
+   }
   }
 });
 //-----------------------------BATAS 10 PUZZLE-------------------------------------
