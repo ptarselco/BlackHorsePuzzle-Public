@@ -2507,6 +2507,7 @@ initUserData(email, userData) {
       //}
       this.showClaimHat(() => {
        });
+
       this.showClaimHat(() => {  
       if (this.playBtn) {
           this.playBtn.setInteractive();
@@ -2596,291 +2597,161 @@ initUserData(email, userData) {
 
 
   // filepath: [Level01Scene.js](https://_vscodecontentref_/2)
-  async onTimeUp() {
-    this.sound.play('horseSnort');
+// onTimeUp
+ async onTimeUp() {
+  this.sound.play('horseSnort');
 
-    // Kurangi level01Score jika gagal, minimal 0 --> saat kalah, saat menang di checkpuzzle
-    this.level01Score = Math.max(0, (this.level01Score || 0) - 100);
-    this.scoreText.setText(this.level01Score.toString().padStart(5, '0'));
-    this.registry.set('level01Score', this.level01Score);
-    // Simpan level01Score ke localStorage saat mongodb offline
-    
-    const email = localStorage.getItem('email');
-    let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
-    //userData = userData || {};
-    userData.gameProgress = userData.gameProgress || {};
+  // Kurangi score jika gagal, minimal 0
+  this.level01Score = Math.max(0, (this.level01Score || 0) - 100);
+  this.scoreText.setText(this.level01Score.toString().padStart(5, '0'));
+  this.registry.set('level01Score', this.level01Score);
 
-    // Pastikan level01HighScore selalu angka
-   if (typeof userData.gameProgress.level01HighScore !== 'number' || isNaN(userData.gameProgress.level01HighScore)) {
-     userData.gameProgress.level01HighScore = 0;
-   }
-   
-   // Simpan level01Score terbaru ke localStorage
-    userData.gameProgress.level01Score = this.level01Score;
-    userData.gameProgress.level01HighScore = Math.max(userData.gameProgress.level01HighScore || 0, this.level01Score);
-    userData.gameProgress.totalPlays = (userData.gameProgress.totalPlays || 0) + 1;
-    userData.gameProgress.bestTime = this.timeElapsed;
-    userData.gameProgress.averageTime = typeof this.timeElapsed === 'number' ? this.timeElapsed : 0;
-    userData.gameProgress.completionRate = 100; // Atur sesuai logic kamu
-    userData.gameProgress.perfectGames = false; // Atur sesuai logic kamu
-    userData.gameProgress.totalAttempts = (userData.gameProgress.totalAttempts || 0) + 1;
+  // Sync ke localStorage
+  const email = localStorage.getItem('email');
+  let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+  userData.gameProgress = userData.gameProgress || {};
+  if (typeof userData.gameProgress.level01HighScore !== 'number' || isNaN(userData.gameProgress.level01HighScore)) {
+    userData.gameProgress.level01HighScore = 0;
+  }
+  userData.gameProgress.level01Score = this.level01Score;
+  userData.gameProgress.level01HighScore = Math.max(userData.gameProgress.level01HighScore, this.level01Score);
+  userData.gameProgress.totalPlays = (userData.gameProgress.totalPlays || 0) + 1;
+  userData.gameProgress.bestTime = this.timeElapsed;
+  userData.gameProgress.averageTime = typeof this.timeElapsed === 'number' ? this.timeElapsed : 0;
+  userData.gameProgress.completionRate = 100;
+  userData.gameProgress.perfectGames = false;
+  userData.gameProgress.totalAttempts = (userData.gameProgress.totalAttempts || 0) + 1;
+  localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
 
-   localStorage.setItem(`gameData-${email}`, JSON.stringify(userData)); 
-    
-    //if (email) this.saveScoreToBackend(email, this.level01Score);
-    //const completionTime = this.timeElapsed;
+  // Ambil progress terbaru dari backend
+  const progressRes = await this.getUserProgress(email);
+  const progress = progressRes.progress || {};
+  const newUser = progressRes.newUser;
+  const winUser = progressRes.winUser;
+  const lossUser = progressRes.lossUser;
 
+  // Update ke backend
+  await this.updateUserProgress(email, {
+    level01Completed: true,
+    level01Score: this.level01Score,
+    level01HighScore: Math.max(this.level01Score, progress.level01HighScore || 0),
+    totalPlays: userData.gameProgress.totalPlays,
+    bestTime: this.timeElapsed,
+    averageTime: userData.gameProgress.averageTime,
+    completionRate: userData.gameProgress.completionRate,
+    perfectGames: false,
+    totalAttempts: userData.gameProgress.totalAttempts
+  });
 
-  const progress = await this.getUserProgress(email);
-    // Pastikan semua variabel sudah ada nilainya
-  const newAverageTime = typeof this.timeElapsed === 'number' ? this.timeElapsed : 0;
-  const newCompletionRate = 100; // Atau hitung sesuai logic kamu
-  const isPerfectGame = true; // Atau false jika ada salah
-
-  this.updateUserProgress(email, {
-   level01Completed: true,
-   level01Score: this.level01Score,
-   level01HighScore: Math.max(this.level01Score, progress.progress.level01HighScore || 0),
-   totalPlays: (progress.progress.totalPlays || 0) + 1,
-   bestTime: this.timeElapsed,
-   averageTime: newAverageTime,
-   completionRate: newCompletionRate,
-   perfectGames: isPerfectGame,
-   totalAttempts: (progress.progress.totalAttempts || 0) + 1
-    }).then(() => {
-    // ⬇️ Tambahkan pengecekan ini setelah safeUpdateGameScore tambah 08/07/25
-    // Cek apakah sudah 3x main extra setelah beli menu favorit dan level01Score sudah 0
-    const history = window.getPlayerGameHistory ? window.getPlayerGameHistory(email) : null;
-    if (
-        this.level01Score === 0 &&
-        history &&
-        history.hasPlayedBefore &&
-       // history.favoriteGiven && // sudah pernah beli menu favorit
-        (history.totalGamesPlayed || 0) >= 3 // sudah main 3x extra
-    ) {
-        if (window.lockPlayAndShowGameOver) {
-            window.lockPlayAndShowGameOver();
-        }
-    }
-    
-    // ✅ ADD THIS SIMPLE CHECK - Destroy air if level01Score > 0:
+  // === UI & Game Logic ===
+  // Destroy air jika masih ada dan score > 0
   if (this.level01Score > 0 && this.currentAboveHorse) {
     this.currentAboveHorse.destroy();
     this.currentAboveHorse = null;
     console.log('💧 Air destroyed - Player still has level01Score');
-  } 
+  }
 
-    // === Tambahkan kode ini untuk menghentikan musik favorit saat waktu habis ===
-    if (this.currentFavMusic && this.currentFavMusic.isPlaying) {
-      this.currentFavMusic.stop();
-      this.isFavMusicActive = false;
-      this.isFavoritActive = false; // Tambahkan ini
-    }
+  // Hentikan musik favorit jika waktu habis
+  if (this.currentFavMusic && this.currentFavMusic.isPlaying) {
+    this.currentFavMusic.stop();
+    this.isFavMusicActive = false;
+    this.isFavoritActive = false;
+  }
 
-    // Kembalikan tombol Play ke kondisi off
-    if (this.playBtn) {
-      this.playBtn.setTexture('playSheriff');
-      this.playBtn.setScale(0.3);
-    }
+  // Kembalikan tombol Play ke kondisi off
+  if (this.playBtn) {
+    this.playBtn.setTexture('playSheriff');
+    this.playBtn.setScale(0.3);
+  }
 
-    this.round = (this.round || 1) + 1;
-    this.showRoundMessage("");
+  // Ronde dan timer
+  this.round = (this.round || 1) + 1;
+  this.showRoundMessage("");
+  this.showHorseShakeHead();
 
-    // Panggil di onTimeUp() sebelum showRoundMessage: Geleng kepala kuda
-    this.showHorseShakeHead();
-
-    // 3 Ronde dan atur timer 00:00
-    if (this.round === 2) {
-     this.isGameOver = true;
-      this.timeElapsed = 0; //untuk mulai menu favorit saat timer over 00:00 19/06/25
-      if (this.timerText) this.timerText.setText("00:00"); 
-      this.showRoundMessage("");
-
-    } else if (this.round === 3) {
-       this.isGameOver = true;
-      this.timeElapsed = 0; //untuk mulai menu favorit saat timer over 00:00 19/06/25
-      if (this.timerText) this.timerText.setText("00:00"); 
-      this.isGameOver = true;
-      this.showRoundMessage("");
-
-    } else if (this.round > 3) {
-      // ✅ CHECK level01Score BEFORE APPLYING GAME OVER:
-  if ((this.level01Score || 0) <= 0) {
-    // Only apply Game Over if level01Score is 0 or negative
+  // Logika ronde dan Game Over
+  if (this.round === 2 || this.round === 3) {
     this.isGameOver = true;
-
-     // ⬇️ Tambahkan di sini (setelah set isGameOver = true dan simpan localStorage):
-    if (this.playBtn) {
-      this.playBtn.disableInteractive();
-      this.playBtn.setAlpha(0.5);
-    }
-    if (this.lv01Puzzle10Btn) {
-      this.lv01Puzzle10Btn.disableInteractive();
-      this.lv01Puzzle10Btn.setAlpha(0.5);
-    }
-    
-    console.log('🔒 Play & Puzzle buttons locked - Game Over triggered');
-  
-   
-   // ✅ SAVE GAME OVER STATE TO LOCALSTORAGE:
-       const email = localStorage.getItem('email');
-       if (email) {
-       localStorage.setItem(`gameOver_${email}`, 'true');
-       console.log('💾 Game Over state saved - level01Score is 0');
-     }
-    } else {
-    // Player still has level01Score - don't apply full Game Over
-    console.log(`✅ Round > 3 but player has level01Score ${this.level01Score} - no Game Over saved`);
-    this.isGameOver = false;
-    // Just show low level01Score warning but allow playing
-    this.showLowScoreWarning();
-    }
-      this.timeElapsed = 0; //untuk mulai menu favorit saat timer over 00:00 19/06/25
-      if (this.timerText) this.timerText.setText("00:00"); 
-      // 1. Reset semua puzzle ke grid kiri, sembunyikan puzzle
-      for (let i = 0; i < 10; i++) {
-        let piece = this.puzzlePieces[i];
-        piece.setVisible(false);
-        this.puzzlePieceNumbers[i].setVisible(false);
-      }
-
-
-      // 2. Panel favorit muncul air
-      this.showFavoritPanel();
-
-      //Reset semua slot kanan
-      this.rightBoardSlots = Array(10).fill(null);
-    }
-  
-      // 2. Puzzle berubah jadi Black Horse utuh & animasi keliling grid kiri
-      // this.transformPuzzleToHorse();
-
-      // 3. Tampilkan gambar Game Over di tengah layar
-     // if (this.gameOverImg) this.gameOverImg.destroy();
-     // this.gameOverImg = this.add.image(960, 400, 'gameOver')
-       // .setOrigin(0.5)
-       // .setDepth(200)
-       // .setScale(0.7);
-      
-      // Emergency fix - paste in console:
-    console.log('🔧 Fixing showGameOver function...');
-    // Simple air destruction - paste in console:
-    console.log('💧 Destroying air above horse...');
-
-if (window.game && window.game.scene) {
-  const level01 = window.game.scene.getScene('Level01Scene');
-  
-  if (level01) {
-    // Override showGameOver function with level01Score check
-    level01.showGameOver = function() {
-      // ✅ CHECK level01Score FIRST
-      if ((this.level01Score || 0) > 0) {
-        console.log(`✅ level01Score ${this.level01Score} > 0 - Game Over NOT shown`);
-        
-        // ✅ DESTROY AIR DI KEPALA if exists
-        if (level01 && level01.level01Score > 0) {
-        // Destroy air above horse if player has level01Score
-        if (this.currentAboveHorse) {
-          this.currentAboveHorse.destroy();
-          this.currentAboveHorse = null;
-          console.log('💧 Air above horse destroyed - Player has level01Score');
-        }
-      } 
-        return; // Don't show Game Over if player has level01Score
-      }
-      
-      console.log(`💀 level01Score ${this.level01Score} <= 0 - Showing Game Over`);
-      
-      // ✅ DESTROY AIR DI KEPALA BEFORE SHOW GAME OVER
-      if (this.currentAboveHorse) {
-        this.currentAboveHorse.destroy();
-        this.currentAboveHorse = null;
-        console.log('💧 Air above horse destroyed before Game Over');
-      }
-      
-      // Show Game Over only if level01Score <= 0
-      //if (!this.gameOverImg) {
-        //this.gameOverImg = this.add.image(960, 400, 'gameOver')
-          //.setOrigin(0.5)
-          //.setDepth(200)
-          //.setScale(0.7);
-      //}
-      
-      // Lock play button
+    this.timeElapsed = 0;
+    if (this.timerText) this.timerText.setText("00:00");
+    this.showRoundMessage("");
+  } else if (this.round > 3) {
+    if ((this.level01Score || 0) <= 0) {
+      this.isGameOver = true;
       if (this.playBtn) {
         this.playBtn.disableInteractive();
         this.playBtn.setAlpha(0.5);
       }
-    };
-    
-    // ✅ IMMEDIATE CLEANUP if level01Score > 0
-    if (level01.level01Score > 0) {
-      // Remove Game Over image
-     // if (level01.gameOverImg) {
-       // level01.gameOverImg.destroy();
-       // level01.gameOverImg = null;
-       // console.log('🗑️ Game Over image removed - Player has level01Score');
-      //}
-      
-      // Remove air above horse
-      if (level01.currentAboveHorse) {
-        level01.currentAboveHorse.destroy();
-        level01.currentAboveHorse = null;
-        console.log('💧 Air above horse removed - Player has level01Score');
+      if (this.lv01Puzzle10Btn) {
+        this.lv01Puzzle10Btn.disableInteractive();
+        this.lv01Puzzle10Btn.setAlpha(0.5);
       }
-      
-      // Restore play button
-      if (level01.playBtn) {
-        level01.playBtn.setInteractive();
-        level01.playBtn.setAlpha(1);
-      }
+      localStorage.setItem(`gameOver_${email}`, 'true');
+      console.log('💾 Game Over state saved - level01Score is 0');
+    } else {
+      this.isGameOver = false;
+      this.showLowScoreWarning();
     }
-    
-    console.log('✅ showGameOver function fixed');
-  }
-}
-
-          // 4. Nonaktifkan tombol Play ---> Aktifkan kembali jika ada favorit aktif
-      //if (this.playBtn) {
-      //this.playBtn.disableInteractive();
-         //this.playBtn.setInteractive({ useHandCursor: true }); //sudah non aktif duluan
-      //this.playBtn.setAlpha(0.5); // opsional, biar kelihatan tidak aktif
-      //}
-
-      // 5. Not music diaktifkan (Tambahkan kode ini agar not musik bisa di klik lagi setelah Game Over)
-      if (this.musicNotes) {
-        this.musicNotes.forEach(note => note.setInteractive({ useHandCursor: true }));
-      }
-
-      // Tampilkan panel air HANYA jika belum ada favorit aktif
-      if (!this.isFavMusicActive && !this.isFavoritActive) {
-        this.time.delayedCall(1500, () => {
-          this.showFavoritPanel();
-        });         
-      }
-      return; 
-    });
-
-
-    this.order = Phaser.Utils.Array.NumberArray(0, 9);
-    Phaser.Utils.Array.Shuffle(this.order);
-
+    this.timeElapsed = 0;
+    if (this.timerText) this.timerText.setText("00:00");
     for (let i = 0; i < 10; i++) {
-      let piece = this.puzzlePieces[this.order[i]];
-      let gridIdx = this.order[i];
-      piece.x = this.puzzlePositions[gridIdx].x;
-      piece.y = this.puzzlePositions[gridIdx].y;
-      piece.setAlpha(0.01);
-      piece.setVisible(true);
-      piece.setInteractive();
-      piece.setData('gridIdx', gridIdx);
+      let piece = this.puzzlePieces[i];
+      piece.setVisible(false);
+      this.puzzlePieceNumbers[i].setVisible(false);
+    }
+    this.showFavoritPanel();
+    this.rightBoardSlots = Array(10).fill(null);
+  }
 
-      this.puzzlePieceNumbers[i].x = this.puzzlePositions[gridIdx].x;
-      this.puzzlePieceNumbers[i].y = this.puzzlePositions[gridIdx].y;
-      this.puzzlePieceNumbers[i].setAlpha(0.01);
-      this.puzzlePieceNumbers[i].setVisible(true);
+  // Logika 3 user (newUser, winUser, lossUser)
+  if (lossUser) {
+    this.isGameOver = true;
+    this.lockAllGameplayButtons();
+    this.showGameOverReturnMessage();
+    return;
+  }
+  if (winUser || newUser) {
+    this.isGameOver = false;
+    this.unblur10PuzzleButton();
+    if (this.playBtn) {
+      this.playBtn.setInteractive({ useHandCursor: true });
+      this.playBtn.setAlpha(1);
+      this.playBtn.setVisible(true);
     }
   }
+
+  // Aktifkan not musik setelah Game Over
+  if (this.musicNotes) {
+    this.musicNotes.forEach(note => note.setInteractive({ useHandCursor: true }));
+  }
+
+  // Tampilkan panel air jika belum ada favorit aktif
+  if (!this.isFavMusicActive && !this.isFavoritActive) {
+    this.time.delayedCall(1500, () => {
+      this.showFavoritPanel();
+    });
+  }
+
+  // Reset posisi puzzle pieces dan nomor puzzle
+  this.order = Phaser.Utils.Array.NumberArray(0, 9);
+  Phaser.Utils.Array.Shuffle(this.order);
+
+  for (let i = 0; i < 10; i++) {
+    let piece = this.puzzlePieces[this.order[i]];
+    let gridIdx = this.order[i];
+    piece.x = this.puzzlePositions[gridIdx].x;
+    piece.y = this.puzzlePositions[gridIdx].y;
+    piece.setAlpha(0.01);
+    piece.setVisible(true);
+    piece.setInteractive();
+    piece.setData('gridIdx', gridIdx);
+
+    this.puzzlePieceNumbers[i].x = this.puzzlePositions[gridIdx].x;
+    this.puzzlePieceNumbers[i].y = this.puzzlePositions[gridIdx].y;
+    this.puzzlePieceNumbers[i].setAlpha(0.01);
+    this.puzzlePieceNumbers[i].setVisible(true);
+  }
+} 
 // ========== GAME OVER RETURN MESSAGE ==========
 //Versi Co 4.1 
 // ==== 7 FUNCTIONS FOR SplashScene CONNECTED TO BACKEND ====
@@ -3180,66 +3051,6 @@ async  unlockedLevels(email, level) {
   }
 }
 //=================================================================================================
-
-  // filepath: [Level01Scene.js](http://_vscodecontentref_/2)
-  showClaimHat(callback) {
-    // Hapus claimHatBtn dan downloadHat jika ada
-    if (this.claimHatBtn) {
-      this.claimHatBtn.destroy();
-      this.claimHatBtn = null;
-    }
-    if (this.downloadHat) {
-      this.downloadHat.destroy();
-      this.downloadHat = null;
-    }
-
-    // Selalu mainkan win music dan ringkikan kuda setiap menang
-    if (this.winMusic) this.winMusic.play();
-    if (this.horseNeigh) this.horseNeigh.play();
-
-    // Pause main music/fav music saat win
-    if (this.mainMusic && this.mainMusic.isPlaying) this.mainMusic.pause();
-    if (this.currentFavMusic && this.currentFavMusic.isPlaying) this.currentFavMusic.pause();
-
-    // Setelah win music selesai, resume music favorit/main
-    this.winMusic.once('complete', () => {
-      if (this.currentFavMusic && this.isFavMusicActive) {
-        this.currentFavMusic.resume();
-      } else if (this.mainMusic) {
-        this.mainMusic.resume();
-      }
-    });
-    
-   
-    // Topi biru di tengah hanya muncul saat kemenangan pertama
-    if (!this.hasWonOnce) {
-      this.hasWonOnce = true;
-      this.claimHatBtn = this.add.image(1100, 650, 'claimHat').setScale(0.7).setInteractive();
-      this.claimHatBtn.on('pointerdown', () => {
-        // Hilangkan topi biru tengah setelah diklik
-        if (this.claimHatBtn) {
-          this.claimHatBtn.destroy();
-          this.claimHatBtn = null;
-        }
-        // (Opsional) Pesan info
-        if (this.claimHatMsg) this.claimHatMsg.destroy();
-        this.claimHatMsg = this.add.text(1100, 600, "Claim your hat below!", {
-          font: "bold 24px Segoe UI",
-          fill: "#00eaff",
-          backgroundColor: "#fff",
-          padding: { left: 20, right: 20, top: 10, bottom: 10 }
-        }).setOrigin(0.5).setDepth(2100);
-        this.time.delayedCall(1200, () => {
-          if (this.claimHatMsg) this.claimHatMsg.destroy();
-        });
-        if (callback) callback();
-      });
-    } else {
-      // Jika sudah pernah menang, langsung callback (tanpa topi biru tengah)
-      if (callback) callback();
-    }
-  }
-
 
   // ...fungsi-fungsi lain...
   // Mengeleng kepala
