@@ -701,7 +701,7 @@ async function registerUser(email) {
   const response = await axios.post(
     'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/register',
     { email: email.toLowerCase().trim() },
-    { timeout: 8000 }
+    { timeout: 30000 }
   );
   const data = response.data;
   console.log('✅ Backend email verification successful:', data.message);
@@ -779,7 +779,7 @@ document.getElementById("verifyBtn").onclick = async function() {
     const response = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/verify-email',
       { email, verificationCode: code },
-      { timeout: 8000 }
+      { timeout: 30000 }
     );
     const data = response.data;
     console.log('✅ Email verification response:', data);
@@ -822,7 +822,7 @@ async function checkEmailVerifiedFromBackend(email) {
     const response = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/check-email',
       { email: email},
-      { timeout: 8000 }
+      { timeout: 30000 }
     );
     return response.data && response.data.emailVerified === true;
   } catch (error) {
@@ -853,7 +853,7 @@ window.resendVerificationEmail = async function(email) {
     const response = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/resend-verification',
       { email },
-      { timeout: 8000 }
+      { timeout: 30000 }
     );
     const data = response.data;
     if (data.success) {
@@ -1328,7 +1328,7 @@ async function createPayPalOrder(email, amount, message = 'Black Horse Puzzle Su
         amount,
         message
       },
-      { timeout: 8000 }
+      { timeout: 30000 }
     );
     const data = response.data;
     if (data.success && data.paypalOrderId && data.approvalUrl) {
@@ -1354,7 +1354,7 @@ async function capturePayPalOrder(paypalOrderId, email) {
     const response = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/capture-order/${paypalOrderId}`,
       { email },
-      { timeout: 8000 }
+      { timeout: 30000 }
     );
     const data = response.data;
     if (data.success && data.paypalOrderId === paypalOrderId) {
