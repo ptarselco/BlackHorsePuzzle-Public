@@ -1465,32 +1465,40 @@ async showGameOverReturnMessage() {
   let progress = {};
   if (email) {
     try {
-      const res = await axios.post(
-        `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
-        {},
-        { timeout: 200000 }
-      );
-      progress = res.data.progress || {};
+    const level01Score = this.level01Score || 0;
+    const response = await axios.post(
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
+      { email, level01Score },
+      { timeout: 200000 }
+    );
+      progress = response.data.progress || {};
     } catch (err) {
       console.error('❌ Gagal ambil progress user:', err);
       progress = {};
     }
   }
 
-  // Kalkulasi tipe user
+   // ✅ CALCULATE USER TYPES AND RETURN THEM:
   const newUser = !progress || progress.totalPlays === 0;
   const winUser = progress && progress.totalPlays >= 1 && (progress.level01Score || 0) > 0;
   const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
-  
+
+  console.log('🔒 Game Over state detected - newUser:', newUser, 'winUser:', winUser, 'lossUser:', lossUser);
 
   // Jika bukan lossUser, tidak perlu tampilkan pesan Game Over
-  if (!lossUser) {
+  if (newUser || winUser) {
     this.isGameOver = false;
     this.unblur10PuzzleButton && this.unblur10PuzzleButton();
     return;
   }
 
   // Jika lossUser, tampilkan panel Game Over
+  if (lossUser) {
+    this.isGameOver = true;
+    this.blur10PuzzleButton && this.blur10PuzzleButton();
+    return;
+  }
+  console.log('🔒 Game Over state detected - showing message panel');
   // Background overlay
   const overlay = this.add.rectangle(960, 640, 1200, 600, 0x000000, 0.01)
     .setDepth(9998);
@@ -2505,8 +2513,8 @@ initUserData(email, userData) {
       //if (this.level01Score >= 1000 && !this.blackHorseSprite) {
       //this.transformPuzzleToHorse();
       //}
-      //this.showClaimHat(() => {
-      // });
+      this.showClaimHat(() => {
+       });
 
       this.showClaimHat(() => {  
       if (this.playBtn) {
@@ -2758,13 +2766,14 @@ initUserData(email, userData) {
 // 1. GET FUNCTION FOR USER PROGRESS
 async getUserProgress(email) {
   try {
-    const res = await axios.post(
-    `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
-    //'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/progress', {
-      {}, // body kosong, karena email sudah di URL param
-    { timeout: 200000 }
+    const level01Score = this.level01Score || 0;
+    const response = await axios.post(
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
+      { email, level01Score },
+      { timeout: 200000 }
     );
-    const progress = res.data.progress  || {};
+    //const progress = res.data.progress  || {};
+    const progress = response.data.progress || {};
     // ✅ CALCULATE USER TYPES AND RETURN THEM:
     const newUser = !progress || progress.totalPlays === 0;
     const winUser = progress && progress.totalPlays >= 1 && (progress.level01Score || 0) > 0;
@@ -2775,9 +2784,9 @@ async getUserProgress(email) {
     console.log(`📊 Progress data: totalPlays=${progress.totalPlays}, level01Score=${progress.level01Score}`);
     // Response: { success, progress, user }  
     return {
-    success: res.data.success,
+    success: response.data.success,
       progress: progress,
-      user: res.data.user,
+      user: response.data.user,
       // ✅ ADD USER TYPES:
       newUser: newUser,
       lossUser: lossUser,
@@ -2785,19 +2794,21 @@ async getUserProgress(email) {
       totalPlays: progress.totalPlays || 0,
       level01Score: progress.level01Score || 0
     };
+     
   } catch (err) {
     console.error('❌ Get user progress error:', err);
-    return {
-      newUser: true,
-      lossUser: false,
-      winUser: false,
+    return { 
+      newUser: true, 
+      lossUser: false, 
+      winUser: false, 
       progress: null,
       success: false,
       totalPlays: 0,
       level01Score: 0
-    };
+     };
   }
 }
+
 
 // 2. UPDATE FUNCTION FOR USER PROGRESS
 async updateUserProgress(email, progress) {
