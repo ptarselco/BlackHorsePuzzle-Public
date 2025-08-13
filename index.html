@@ -267,7 +267,16 @@ async function syncProgressFromBackend(email) {
     const level01Score = this.level01Score || 0;
     const res = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
-      { email, level01Score },
+      { email, 
+        level: Level01Scene,
+        level01Score,
+        totalPlays,
+        level01HighScore,
+        level01Completed: progress.level01Completed || false,
+        newUser,
+        winUser,
+        lossUser
+       },
       { timeout: 200000 }
     );
     const progress = res.data?.progress || {};
@@ -1819,7 +1828,17 @@ async function updateGameScore(email, newScore) {
     `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
     {
       email,
-      level01Score: newScore
+      level01Completed,
+      level01Score: newScore,
+      level01HighScore,
+      totalPlays,
+      bestTime,
+      averageTime,
+      completionRate,
+      perfectGames,
+      totalAttempts,
+      completionTime,
+      isPerfectGame
       // Tambahkan data lain jika perlu nanti untuk level01ScoreSeri2 dan seri selanjutnya
     },
     { timeout: 200000 }

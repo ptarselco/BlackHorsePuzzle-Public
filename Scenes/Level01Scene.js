@@ -1468,7 +1468,16 @@ async showGameOverReturnMessage() {
     const level01Score = this.level01Score || 0;
     const response = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
-      { email, level01Score },
+      { email, 
+        level: Level01Scene,
+        level01Score,
+        totalPlays,
+        level01HighScore,
+        level01Completed: progress.level01Completed || false,
+        newUser,
+        winUser,
+        lossUser
+       },
       { timeout: 200000 }
     );
       progress = response.data.progress || {};
@@ -2769,7 +2778,16 @@ async getUserProgress(email) {
     const level01Score = this.level01Score || 0;
     const response = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
-      { email, level01Score },
+      { email, 
+        level: 'Level01Scene',
+        level01Score,
+        totalPlays,
+        level01HighScore,
+        level01Completed: progress.level01Completed || false,
+        newUser,
+        winUser,
+        lossUser
+       },
       { timeout: 200000 }
     );
     //const progress = res.data.progress  || {};
@@ -2789,8 +2807,8 @@ async getUserProgress(email) {
       user: response.data.user,
       // ✅ ADD USER TYPES:
       newUser: newUser,
-      lossUser: lossUser,
       winUser: winUser,
+      lossUser: lossUser,
       totalPlays: progress.totalPlays || 0,
       level01Score: progress.level01Score || 0
     };
@@ -2798,13 +2816,16 @@ async getUserProgress(email) {
   } catch (err) {
     console.error('❌ Get user progress error:', err);
     return { 
-      newUser: true, 
-      lossUser: false, 
-      winUser: false, 
-      progress: null,
+      progress: null, 
       success: false,
+      level01Score: 0,
+      level01HighScore: 0,
+      level01Completed: false,
       totalPlays: 0,
-      level01Score: 0
+      newUser: true, 
+      winUser: false, 
+      lossUser: false, 
+      progress: null,
      };
   }
 }
@@ -2815,7 +2836,19 @@ async updateUserProgress(email, progress) {
   try {
     const res = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
-      { email, ...progress },
+      { email, 
+        level01Completed,
+        level01Score: newScore, // ✅ cukup satu kali
+        level01HighScore,
+        totalPlays,
+        bestTime,
+        averageTime,
+        completionRate,
+        perfectGames,
+        totalAttempts,
+        completionTime,
+        isPerfectGame
+         },
       { timeout: 200000 }
     );
   // Kembalikan seluruh response, termasuk newUser, winUser, lossUser
@@ -2899,7 +2932,7 @@ async checkUserStatusAndGameOver(email) {
 
       console.log('✅ Game over status di-reset - tombol Play & Puzzle diaktifkan');
       // Lanjutkan main
-      //return status;
+      return status;
      //} else if (lossUser) { 
       // LOSS USER: Sudah main >= 3x, score = 0
       //this.isGameOver = true;
@@ -2938,11 +2971,11 @@ async checkUserStatusAndGameOver(email) {
 }
 
 // 4. Fungsi SET GAME OVER (async)
-async setGameOver(email, isGameOver = true) {
+async setGameOver(email, isGameOver = true, userStatus = { newUser: false, winUser: false, lossUser: true }) {
   try {
     await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/set-gameover',
-      { email, isGameOver },
+      { email, isGameOver, userStatus },
       { timeout: 200000 }
     );
     return true;
@@ -2965,10 +2998,26 @@ async checkGameOverStatusFromServer() {
     const data = response.data;
     if (data.isGameOver) {
       this.isGameOver = true;
-      //this.showGameOverReturnMessage();
-      //await this.lockLevel(email, 'Level01');
-      //this.lockAllGameplayButtons();
+    // Tampilkan pesan sesuai tipe user
+      if (data.userStatus.lossUser) {
+        this.showGameOverReturnMessage && this.showGameOverReturnMessage();
+        this.lockAllGameplayButtons && this.lockAllGameplayButtons();
+      } else if (data.userStatus.winUser) {
+        // WIN USER: Sudah main >= 1x, score > 0
+        this.isGameOver = false;
+        this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+        // Bisa tambahkan pesan kemenangan jika perlu
+      } else if (data.userStatus.newUser) {
+        // NEW USER: Belum pernah main
+        this.isGameOver = false;
+        this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+        // Bisa tambahkan pesan selamat datang jika perlu  
+      } 
       return;
+    } else {
+      // Jika tidak game over, pastikan tombol aktif
+      this.isGameOver = false;
+      this.unblur10PuzzleButton && this.unblur10PuzzleButton();  
     }
     } catch (err) {
     // Fallback ke localStorage jika backend gagal
@@ -2984,7 +3033,7 @@ async checkGameOverStatusFromServer() {
 }
 
 // 6. LOCK LEVEL (mengunci akses level untuk user)
-async lockLevel(email, level) {
+async lockLevel(email, level, userStatus = { newUser: false, winUser: false, lossUser: true }) {
   try {
     const res = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/lock',
@@ -2993,9 +3042,9 @@ async lockLevel(email, level) {
     );
     if (res.data.success) {
       this.isGameOver = true;
-      this.blur10PuzzleButton();
-      this.lockAllGameplayButtons();
-      this.showGameOverReturnMessage();
+      this.blur10PuzzleButton && this.blur10PuzzleButton();
+      this.lockAllGameplayButtons && this.lockAllGameplayButtons();
+      this.showGameOverReturnMessage && this.showGameOverReturnMessage();
       return true;
     }
     return false;
@@ -3004,9 +3053,9 @@ async lockLevel(email, level) {
     const isLocked = localStorage.getItem(`gameOver_${email}`) === 'true';
     if (isLocked) {
       this.isGameOver = true;
-      this.blur10PuzzleButton();
-      this.lockAllGameplayButtons();
-      this.showGameOverReturnMessage();
+      this.blur10PuzzleButton && this.blur10PuzzleButton();
+      this.lockAllGameplayButtons && this.lockAllGameplayButtons();
+      this.showGameOverReturnMessage && this.showGameOverReturnMessage();
       return true;
     }
     // Jika tidak game over, tidak perlu lock
@@ -3906,12 +3955,13 @@ return;
 
   // Cek setiap 1 detik apakah window PayPal sudah ditutup
   const checkPayPalClosed = setInterval(() => {
+    showPleaseWaitMessage('Please wait, unlocking in progress...'); 
     if (paypalWindow.closed) {
       clearInterval(checkPayPalClosed);
              
           // Polling ke backend setiap beberapa detik
   this.paymentCheckInterval = setInterval(async () => {
-     showPleaseWaitMessage('Please wait, unlocking in progress...');
+     //showPleaseWaitMessage('Please wait, unlocking in progress...');
      const waitStart = Date.now();
 
      console.log('🔍 Polling payment status...');
