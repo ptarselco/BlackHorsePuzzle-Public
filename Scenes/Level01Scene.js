@@ -2506,6 +2506,10 @@ initUserData(email, userData) {
     // Update ke backend juga
     const progress = await this.getUserProgress(email);   
 
+    const prevHighScore = (progress.progress && typeof progress.progress.level01HighScore === 'number')
+    ? progress.progress.level01HighScore
+    : 0;  
+
     this.updateUserProgress(email, {
       level01Completed: true,
       level01Score: this.level01Score,
