@@ -175,6 +175,18 @@ async getUserProgress(email) {
 // 2. UPDATE FUNCTION FOR USER PROGRESS
 async updateUserProgress(email, progress) {
   try {
+    // Tambahkan inisialisasi variabel dari parameter progress atau default value
+    const level01Completed = progress.level01Completed ?? false;
+    const level01Score = progress.level01Score ?? 0;
+    const level01HighScore = progress.level01HighScore ?? 0;
+    const totalPlays = progress.totalPlays ?? 0;
+    const bestTime = progress.bestTime ?? 0;
+    const averageTime = progress.averageTime ?? 0;
+    const completionRate = progress.completionRate ?? 0;
+    const perfectGames = progress.perfectGames ?? false;
+    const totalAttempts = progress.totalAttempts ?? 0;
+    const completionTime = progress.completionTime ?? 0;
+    const isPerfectGame = progress.isPerfectGame ?? false;
     const res = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
       //{ email, ...progress },
