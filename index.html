@@ -1797,17 +1797,25 @@ function waitForGameReady(callback, maxAttempts = 10) {
 }
 
 // ✅ SAFE GAME UPDATE SCOREFUNCTIONS:
-function updateGameScore(email, newScore) {
-   if (!email) {
+async function updateGameScore(email, newScore) {
+  if (!email) {
     console.error('❌ Email is null or undefined in updateGameScore');
-    return;
-  }
+    return {
+      success: false,
+      error: 'Email is null or undefined',
+      newUser: false,
+      winUser: false,
+      lossUser: false,
+      gameProgress: {}
+    };
+  } 
   localStorage.setItem(`score_${email}`, newScore.toString());
   window.level01Score = newScore;
   window.playerScore = newScore;
 
   // Simpan ke backend setiap kali level01Score berubah
-  axios.post(
+  try { 
+    const res = await axios.post(
     `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
     {
       email,
@@ -1815,19 +1823,36 @@ function updateGameScore(email, newScore) {
       // Tambahkan data lain jika perlu nanti untuk level01ScoreSeri2 dan seri selanjutnya
     },
     { timeout: 200000 }
-  ).then(() => {
-    console.log('✅ level01Score saved to backend');
-  }).catch((err) => {
-    console.error('❌ Failed to save level01Score to backend:', err);
-  });
-
+  );
+// Update history di localStorage
   const history = getPlayerGameHistory(email);
   updatePlayerGameHistory(email, {
     highestScore: Math.max(history.highestScore, newScore),
     lastPlayedDate: new Date().toISOString()
   });
+// Return struktur lengkap seperti SplashScene
+    return {
+      success: res.data.success,
+      user: res.data.user,
+      newUser: res.data.newUser,
+      winUser: res.data.winUser,
+      lossUser: res.data.lossUser,
+      message: res.data.message,
+      gameProgress: res.data.user?.gameProgress || {}
+    };
+  } catch (err) {
+    console.error('❌ Update user progress error:', err);
+    return {
+      success: false,
+      error: err.message,
+      newUser: false,
+      winUser: false,
+      lossUser: false,
+      gameProgress: {}
+    };
+  }  
 }
-  
+
 // ✅ SAFE PAYMENT STATUS UPDATE FUNCTION:
 function safeUpdatePaymentStatus(email) {
   waitForGameReady(async () => {
