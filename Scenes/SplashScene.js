@@ -450,10 +450,11 @@ async  unlockedLevels(email, level) {
 // FUNGSI UNTUK SYNC DATA DARI BACKEND KE LOCAL STORAGE DAN WINDOW SETIAP KALI LOGIN ATAU RELOAD
   async syncProgressFromBackend(email) {
     try {
-    const progress = JSON.parse(localStorage.getItem(`gameData-${email}`))?.gameProgress || {};
+    const localProgress = JSON.parse(localStorage.getItem(`gameData-${email}`))?.gameProgress || {};
     const level01Score = this.level01Score || 0;
     const totalPlays = progress.totalPlays || 0;
     const level01HighScore = progress.level01HighScore || 0;
+
     const res = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
       {
@@ -462,7 +463,7 @@ async  unlockedLevels(email, level) {
         level01Score,
         totalPlays,
         level01HighScore,
-        level01Completed: progress.level01Completed || false,
+        level01Completed: localProgress.level01Completed || false,
         newUser,
         winUser,
         lossUser
@@ -470,7 +471,7 @@ async  unlockedLevels(email, level) {
       { timeout: 200000 }
     );
   
-    //const progress = res.data?.progress || {};
+    const progress = res.data?.progress || {};
     // Sync level01Score
     localStorage.setItem(`score_${email}`, progress.level01Score || 0);
     window.level01Score = progress.level01Score || 0;

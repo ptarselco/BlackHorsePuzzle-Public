@@ -2854,6 +2854,7 @@ async getUserStatus(email, level = 'Level01, Level01Scene') {
 async checkUserStatusAndGameOver(email) {
   // Ambil status user dari backend (POST)
   const status = await this.getUserStatus(email, 'Level01, Level01Scene');
+  const data = await someAsyncFunction();
   if (!status) {
     console.error('Gagal ambil status user');
     return null;
@@ -2876,7 +2877,7 @@ async checkUserStatusAndGameOver(email) {
   }
 
   // Cek status game over untuk lossUser or winUser
-  if (status.isGameOver) {
+  if (winUser) {
     if (status.level01Score > 0) { // winUser
       // WIN USER: Sudah main >= 3x, score > 0
       status.isGameOver = false;
@@ -2894,14 +2895,14 @@ async checkUserStatusAndGameOver(email) {
       console.log('✅ Game over status di-reset - tombol Play & Puzzle diaktifkan');
       // Lanjutkan main
       return status;
-     //} else if (lossUser) { 
+     } else if (lossUser) { 
       // LOSS USER: Sudah main >= 3x, score = 0
-      //this.isGameOver = true;
-      //this.showGameOverReturnMessage();
-      //this.lockAllGameplayButtons();
-     //return status;
-    }
-  }
+      this.isGameOver = true;
+      this.showGameOverReturnMessage();
+      this.lockAllGameplayButtons();
+      return status;
+     }
+   }
 
   // Tambah totalPlays setiap kali fungsi ini dipanggil (untuk user lama)
   //status.totalPlays = (status.totalPlays || 0) + 1; // bisa hapus score pindah 3x scene

@@ -264,7 +264,7 @@ if ('serviceWorker' in navigator) {
 
 async function syncProgressFromBackend(email) {
   try {
-    const progress = JSON.parse(localStorage.getItem(`gameData-${email}`))?.gameProgress || {};
+    const localProgress = JSON.parse(localStorage.getItem(`gameData-${email}`))?.gameProgress || {};
     const level01Score = this.level01Score || 0;
     const totalPlays = progress.totalPlays || 0;
     const level01HighScore = progress.level01HighScore || 0;
@@ -276,14 +276,14 @@ async function syncProgressFromBackend(email) {
         level01Score,
         totalPlays,
         level01HighScore,
-        level01Completed: progress.level01Completed || false,
+        level01Completed: localProgress.level01Completed || false,
         newUser,
         winUser,
         lossUser
        },
       { timeout: 200000 }
     );
-    //const progress = res.data?.progress || {}; // ada diatas line 267
+    const progress = res.data?.progress || {}; // ada diatas line 267
 
     // Kalkulasi status 3 user
     const newUser = !progress || progress.totalPlays === 0;
