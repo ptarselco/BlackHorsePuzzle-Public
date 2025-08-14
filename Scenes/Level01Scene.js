@@ -184,14 +184,22 @@ if (lossUser) {
 }
 });
    
-  // Sync progress dari backend, update score di UI
-  syncProgressFromBackend(email).then(progress => {
-    if (progress && typeof progress.level01Score === 'number') {
-      this.level01Score = progress.level01Score;
-      updateGameScore(email, progress.level01Score); // Update UI score
-    }
-  });
-
+ syncProgressFromBackend(email).then(progressRes => {
+  const {
+    progress = {},
+    level01HighScore = 0,
+    level01Completed = false,
+    newUser = false,
+    winUser = false,
+    lossUser = false,
+    totalPlays = 0,
+    level01Score = 0
+  } = progressRes;
+  if (typeof level01Score === 'number') {
+    this.level01Score = level01Score;
+    updateGameScore(email, level01Score); // Update UI score
+  }
+});
 
   window.addEventListener('beforeunload', () => {
   const email = localStorage.getItem("email");
