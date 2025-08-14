@@ -2016,6 +2016,19 @@ async updateTaxInBackground(musicTitle, x, y) {
       playBtn.setTexture('playSheriffL');
       playBtn.setScale(0.4);
 
+      // Tambah totalPlays di sini!
+    const email = localStorage.getItem('email');
+    let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+    userData.gameProgress = userData.gameProgress || {};
+    userData.gameProgress.totalPlays = (userData.gameProgress.totalPlays || 0) + 1;
+    localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+
+    // Jika ingin update ke backend juga:
+    await this.updateUserProgress(email, {
+    ...userData.gameProgress,
+    // field lain jika perlu
+    });
+
       if (this.claimHatBtn) {
         this.claimHatBtn.destroy();
         this.claimHatBtn = null;
@@ -2893,7 +2906,7 @@ async checkUserStatusAndGameOver(email) {
   }
 
   // Tambah totalPlays setiap kali fungsi ini dipanggil (untuk user lama)
-  //status.totalPlays = (status.totalPlays || 0) + 1;
+  //status.totalPlays = (status.totalPlays || 0) + 1; // bisa hapus score pindah 3x scene
     this.level01Score = data.level01Score || 0;
 
   // Jika totalPlays >= 3 dan level01Score masih 0, set game over
