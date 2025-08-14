@@ -136,6 +136,62 @@ class Level01Scene extends Phaser.Scene {
     };
   }
 
+  // Contoh di getUserProgress dan checkUserStatusAndGameOver
+this.getUserProgress(email).then(progressRes => {
+// Destructure langsung dari hasil return getUserProgress
+  const {
+    progress = {},
+    level01HighScore = 0,
+    level01Completed = false,
+    newUser = false,
+    winUser = false,
+    lossUser = false,
+    totalPlays = 0,
+    level01Score = 0
+  } = progressRes;
+// Urutan cek: newUser dulu, baru winUser/lossUser
+if (newUser) {
+  // Aktifkan tombol Play & Puzzle, tidak game over
+  this.isGameOver = false;
+  this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+  if (this.playBtn) {
+    this.playBtn.setInteractive({ useHandCursor: true });
+    this.playBtn.setAlpha(1);
+    this.playBtn.setVisible(true);
+  }
+  console.log('✅ Deteksi: NEW USER - tombol Play & Puzzle diaktifkan');
+  return;
+}
+if (winUser) {
+  // User sudah main >= 3x dan punya score
+  this.isGameOver = false;
+  this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+  if (this.playBtn) {
+    this.playBtn.setInteractive({ useHandCursor: true });
+    this.playBtn.setAlpha(1);
+    this.playBtn.setVisible(true);
+  }
+  console.log('✅ Deteksi: WIN USER - tombol Play & Puzzle diaktifkan');
+  return;
+}
+if (lossUser) {
+  // User sudah main >= 3x dan score 0
+  this.isGameOver = true;
+  this.lockAllGameplayButtons();
+  this.showGameOverReturnMessage();
+  console.log('🔒 Deteksi: LOSS USER - Game Over panel ditampilkan');
+  return;
+}
+});
+   
+  // Sync progress dari backend, update score di UI
+  syncProgressFromBackend(email).then(progress => {
+    if (progress && typeof progress.level01Score === 'number') {
+      this.level01Score = progress.level01Score;
+      updateGameScore(email, progress.level01Score); // Update UI score
+    }
+  });
+
 
   window.addEventListener('beforeunload', () => {
   const email = localStorage.getItem("email");
