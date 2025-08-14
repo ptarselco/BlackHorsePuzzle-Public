@@ -2893,8 +2893,9 @@ async checkUserStatusAndGameOver(email) {
   }
 
   // Tambah totalPlays setiap kali fungsi ini dipanggil (untuk user lama)
-  status.totalPlays = (status.totalPlays || 0) + 1;
-  
+  //status.totalPlays = (status.totalPlays || 0) + 1;
+    this.level01Score = data.level01Score || 0;
+
   // Jika totalPlays >= 3 dan level01Score masih 0, set game over
   const isLossUser = (
     (status.isGameOver && (status.level01Score || 0) === 0) || 

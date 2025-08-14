@@ -252,7 +252,7 @@ async checkUserStatusAndGameOver(email) {
 
   // Cek status game over untuk lossUser or winUser
   if (status.isGameOver) {
-    if (status.level01Score > 0) {
+    if (winUser > 0) {
       // WIN USER: Sudah main >= 1x, score > 0
       status.isGameOver = false;
       localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
@@ -269,17 +269,18 @@ async checkUserStatusAndGameOver(email) {
       console.log('✅ Game over status di-reset - tombol Play & Puzzle diaktifkan');
       // Lanjutkan main
       return status;
-    //} else if (lossUser) {
+    } else if (lossUser) {
       // LOSS USER: Sudah main >= 3x, score = 0
-      //this.isGameOver = true;
-      //this.showGameOverReturnMessage();
-      //this.lockAllGameplayButtons();
-      //return status;
+      this.isGameOver = true;
+      this.showGameOverReturnMessage();
+      this.lockAllGameplayButtons();
+      return status;
     }
   }
 
   // Tambah totalPlays setiap kali fungsi ini dipanggil (untuk user lama)
-  status.totalPlays = (status.totalPlays || 0) + 1;
+  //status.totalPlays = (status.totalPlays || 0) + 1;
+    this.level01Score = data.level01Score || 0;
 
   // Jika totalPlays >= 3 dan level01Score masih 0, set game over
   const isLossUser = (
