@@ -118,44 +118,28 @@ unblur10PuzzleButton() {
 // 1. GET FUNCTION FOR USER PROGRESS
 async getUserProgress(email) {
   try {
-    const level01Score = this.level01Score || 0;
     const response = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
-      { email, 
-        level: 'Level01Scene',
-        level01Score,
-        totalPlays,
-        level01HighScore,
-        level01Completed: progress.level01Completed || false,
-        newUser,
-        winUser,
-        lossUser
-       },
+      { email, level: 'Level01Scene' },
       { timeout: 200000 }
     );
-    //const progress = res.data.progress  || {};
     const progress = response.data.progress || {};
-    // ✅ CALCULATE USER TYPES AND RETURN THEM:
     const newUser = !progress || progress.totalPlays === 0;
     const winUser = progress && progress.totalPlays >= 1 && (progress.level01Score || 0) > 0;
     const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
-    
-    
+
     console.log(`👤 User classification: newUser=${newUser}, lossUser=${lossUser}, winUser=${winUser}`);
     console.log(`📊 Progress data: totalPlays=${progress.totalPlays}, level01Score=${progress.level01Score}`);
-    // Response: { success, progress, user }  
     return {
-    success: response.data.success,
+      success: response.data.success,
       progress: progress,
       user: response.data.user,
-      // ✅ ADD USER TYPES:
-      newUser: newUser,
-      winUser: winUser,
-      lossUser: lossUser,
+      newUser,
+      winUser,
+      lossUser,
       totalPlays: progress.totalPlays || 0,
       level01Score: progress.level01Score || 0
     };
-     
   } catch (err) {
     console.error('❌ Get user progress error:', err);
     return { 
@@ -168,10 +152,9 @@ async getUserProgress(email) {
       newUser: true, 
       lossUser: false, 
       winUser: false, 
-      };
+    };
   }
-} 
-
+}
 // 2. UPDATE FUNCTION FOR USER PROGRESS
 async updateUserProgress(email, progress) {
   try {
@@ -698,7 +681,7 @@ async  unlockedLevels(email, level) {
       this.isGameOver = false;
       this.unblur10PuzzleButton();
       // Tampilkan pesan selamat datang jika perlu
-      this.scene.start("Level01Scene", { isGameOver: false, level01Score: 0 });
+      this.scene.start("Level01Scene", { isGameOver: false });
       return;
     }
     if (lossUser || (status && status.isGameOver && (status.level01Score || 0) === 0)) {
@@ -706,7 +689,7 @@ async  unlockedLevels(email, level) {
       this.isGameOver = true;
       this.showGameOverReturnMessage();
       this.lockAllGameplayButtons();
-      this.scene.start("Level01Scene", { isGameOver: true, level01Score: 0 });
+      this.scene.start("Level01Scene", { isGameOver: true });
       return;
     }
     if (winUser || (status && status.level01Score > 0)) {

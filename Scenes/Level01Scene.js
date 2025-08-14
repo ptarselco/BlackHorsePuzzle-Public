@@ -136,70 +136,7 @@ class Level01Scene extends Phaser.Scene {
     };
   }
 
-  // Contoh di getUserProgress dan checkUserStatusAndGameOver
-this.getUserProgress(email).then(progressRes => {
-// Destructure langsung dari hasil return getUserProgress
-  const {
-    progress = {},
-    level01HighScore = 0,
-    level01Completed = false,
-    newUser = false,
-    winUser = false,
-    lossUser = false,
-    totalPlays = 0,
-    level01Score = 0
-  } = progressRes;
-// Urutan cek: newUser dulu, baru winUser/lossUser
-if (newUser) {
-  // Aktifkan tombol Play & Puzzle, tidak game over
-  this.isGameOver = false;
-  this.unblur10PuzzleButton && this.unblur10PuzzleButton();
-  if (this.playBtn) {
-    this.playBtn.setInteractive({ useHandCursor: true });
-    this.playBtn.setAlpha(1);
-    this.playBtn.setVisible(true);
-  }
-  console.log('✅ Deteksi: NEW USER - tombol Play & Puzzle diaktifkan');
-  return;
-}
-if (winUser) {
-  // User sudah main >= 3x dan punya score
-  this.isGameOver = false;
-  this.unblur10PuzzleButton && this.unblur10PuzzleButton();
-  if (this.playBtn) {
-    this.playBtn.setInteractive({ useHandCursor: true });
-    this.playBtn.setAlpha(1);
-    this.playBtn.setVisible(true);
-  }
-  console.log('✅ Deteksi: WIN USER - tombol Play & Puzzle diaktifkan');
-  return;
-}
-if (lossUser) {
-  // User sudah main >= 3x dan score 0
-  this.isGameOver = true;
-  this.lockAllGameplayButtons();
-  this.showGameOverReturnMessage();
-  console.log('🔒 Deteksi: LOSS USER - Game Over panel ditampilkan');
-  return;
-}
-});
-   
- syncProgressFromBackend(email).then(progressRes => {
-  const {
-    progress = {},
-    level01HighScore = 0,
-    level01Completed = false,
-    newUser = false,
-    winUser = false,
-    lossUser = false,
-    totalPlays = 0,
-    level01Score = 0
-  } = progressRes;
-  if (typeof level01Score === 'number') {
-    this.level01Score = level01Score;
-    updateGameScore(email, level01Score); // Update UI score
-  }
-});
+ 
 
   window.addEventListener('beforeunload', () => {
   const email = localStorage.getItem("email");
@@ -2795,44 +2732,28 @@ initUserData(email, userData) {
 // 1. GET FUNCTION FOR USER PROGRESS
 async getUserProgress(email) {
   try {
-    const level01Score = this.level01Score || 0;
     const response = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
-      { email, 
-        level: 'Level01Scene',
-        level01Score,
-        totalPlays,
-        level01HighScore,
-        level01Completed: progress.level01Completed || false,
-        newUser,
-        winUser,
-        lossUser
-       },
+      { email, level: 'Level01Scene' },
       { timeout: 200000 }
     );
-    //const progress = res.data.progress  || {};
     const progress = response.data.progress || {};
-    // ✅ CALCULATE USER TYPES AND RETURN THEM:
     const newUser = !progress || progress.totalPlays === 0;
     const winUser = progress && progress.totalPlays >= 1 && (progress.level01Score || 0) > 0;
     const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
-    
-    
+
     console.log(`👤 User classification: newUser=${newUser}, lossUser=${lossUser}, winUser=${winUser}`);
     console.log(`📊 Progress data: totalPlays=${progress.totalPlays}, level01Score=${progress.level01Score}`);
-    // Response: { success, progress, user }  
     return {
-    success: response.data.success,
+      success: response.data.success,
       progress: progress,
       user: response.data.user,
-      // ✅ ADD USER TYPES:
-      newUser: newUser,
-      winUser: winUser,
-      lossUser: lossUser,
+      newUser,
+      winUser,
+      lossUser,
       totalPlays: progress.totalPlays || 0,
       level01Score: progress.level01Score || 0
     };
-     
   } catch (err) {
     console.error('❌ Get user progress error:', err);
     return { 
@@ -2843,14 +2764,11 @@ async getUserProgress(email) {
       level01Completed: false,
       totalPlays: 0,
       newUser: true, 
-      winUser: false, 
       lossUser: false, 
-      progress: null,
-     };
+      winUser: false, 
+    };
   }
 }
-
-
 // 2. UPDATE FUNCTION FOR USER PROGRESS
 async updateUserProgress(email, progress) {
   try {
