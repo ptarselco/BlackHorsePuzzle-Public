@@ -175,7 +175,7 @@ async updateUserProgress(email, progress) {
       //{ email, ...progress },
       { email, 
         level01Completed,
-        level01Score: newScore, // ✅ cukup satu kali
+        level01Score, // ✅ cukup satu kali
         level01HighScore,
         totalPlays,
         bestTime,
