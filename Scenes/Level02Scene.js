@@ -165,7 +165,7 @@ backBtn.on('pointerdown', () => {
   
 
   // ✅ PREVENT DOUBLE CLICKS
-  backBtn.removeInteractive();
+  //backBtn.removeInteractive();
   
   // ✅ STOP ALL SOUNDS
   this.sound.stopAll();
