@@ -653,14 +653,17 @@ async  unlockedLevels(email, level) {
     const averageTime = progress.averageTime ?? 0;
     const completionRate = progress.completionRate ?? 0;
     const perfectGames = progress.perfectGames ?? 0;
+   
+    // Tambahkan inisialisasi variabel di sini:
+    const level01Completed = progress.level01Completed ?? false;
+    const level01HighScore = progress.level01HighScore ?? 0;
 
-    
     await this.updateUserProgress(email, {
-     level01Completed: true,
+     level01Completed,
      level01Score: this.level01Score,
-     level01HighScore: Math.max(this.level01Score, this.highScore),
+     level01HighScore: Math.max(this.level01Score, level01HighScore),
      totalPlays: (progress.totalPlays || 0) + 1,
-     bestTime: this.timeElapsed,
+     bestTime: Math.max(bestTime, this.timeElapsed || 0),
      averageTime: newAverageTime,
      completionRate: newCompletionRate,
      perfectGames: isPerfectGame,
