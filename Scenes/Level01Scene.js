@@ -136,8 +136,6 @@ class Level01Scene extends Phaser.Scene {
     };
   }
 
- 
-
   window.addEventListener('beforeunload', () => {
   const email = localStorage.getItem("email");
   if (!email) return;
@@ -165,9 +163,9 @@ class Level01Scene extends Phaser.Scene {
 
 
   // Di dalam create()
-//if (email) {
-  //syncProgressFromBackend(email);
-//}
+  if (email) {
+    syncProgressFromBackend(email);
+  }
 
 // Deklarasi variabel utama
 let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
