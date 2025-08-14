@@ -627,7 +627,10 @@ window.initUserData = async function(email, userData) {
   if (!userData || !userData.gameProgress) {
     window.getUserProgress(email).then(progressRes => {
       if (progressRes && progressRes.progress) {
-        userData = { gameProgress: progressRes.progress };
+        // Tambahkan inisialisasi level01HighScore
+        const progress = progressRes.progress;
+        const level01HighScore = progress.level01HighScore ?? 0;
+        userData = { gameProgress: progressRes.progress, level01HighScore: level01HighScore };
         localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
       } else {
         // Jika backend juga kosong, inisialisasi default
