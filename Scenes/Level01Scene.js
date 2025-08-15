@@ -526,8 +526,8 @@ lv01Puzzle10Btn.on('pointerdown', async () => {
         // --- TAMPILKAN TEKS JIKA OTHER ---
         //Jika OTHER, tambahkan teks di atas gambar / Fallback ke bahasa lain
     //    if (getHelpImageKey(currentLang) === 'other') {
-    //    let t1 = window.helpText1[currentLang] || window.helpText1['other'] || window.helpText1['en'];
-    //    let t2 = window.helpText2[currentLang] || window.helpText2['other'] || window.helpText2['en'];
+    //    let t1 = window.helpText1[currentLang] || window.helpText1['other'];
+    //    let t2 = window.helpText2[currentLang] || window.helpText2['other'];
         
         // Pilih data sesuai halaman aktif
     //    let title = currentPage === 0 ? t1.title : t2.title;
@@ -649,11 +649,11 @@ lv01Puzzle10Btn.on('pointerdown', async () => {
       
 //------------------------------------------------------------------------------      
  // Setelah clear panel dan sebelum updateHelpPanel()
-if (!helpImg) {
-  let key = getHelpImageKey(currentLang);
-  helpImg = this.add.image(960, 640, helpImages[key][currentPage]).setDepth(3001);
-  this.helpPanelGroup.add(helpImg);
-}
+//if (!helpImg) {
+  //let key = getHelpImageKey(currentLang);
+  //helpImg = this.add.image(960, 640, helpImages[key][currentPage]).setDepth(3001);
+  //this.helpPanelGroup.add(helpImg);
+//}
 
 
 // --- FUNGSI UPDATE HELP PANEL ---
@@ -663,8 +663,8 @@ if (!helpImg) {
   helpImg.setTexture(helpImages[getHelpImageKey(currentLang)][currentPage]);
 
   if (getHelpImageKey(currentLang) === 'other') {
-    let t1 = window.helpText1[currentLang] || window.helpText1['other'] || window.helpText1['en'];
-    let t2 = window.helpText2[currentLang] || window.helpText2['other'] || window.helpText2['en'];
+    let t1 = window.helpText1[currentLang] || window.helpText1['other'];
+    let t2 = window.helpText2[currentLang] || window.helpText2['other'];
     title = currentPage === 0 ? t1.title : t2.title;
     menu = currentPage === 0 ? t1.menu : t2.menu;
 
