@@ -2012,6 +2012,11 @@ async updateTaxInBackground(musicTitle, x, y) {
 
     this.playBtn = playBtn; // Simpan referensi tombol Play
 
+    if (this.playBtn) {
+      this.playBtn.setAlpha(0.5);
+      this.playBtn.disableInteractive();
+      this.playBtn.setVisible(true); 
+    } 
 
     // --- LOGIKA GAME MULAI DI SINI ---
     playBtn.on('pointerdown', async () => { //(TIDAK MUNCUL PUZZLE)
