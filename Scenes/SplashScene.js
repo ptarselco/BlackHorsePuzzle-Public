@@ -452,8 +452,8 @@ async  unlockedLevels(email, level) {
     try {
     const localProgress = JSON.parse(localStorage.getItem(`gameData-${email}`))?.gameProgress || {};
     const level01Score = this.level01Score || 0;
-    const totalPlays = progress.totalPlays || 0;
-    const level01HighScore = progress.level01HighScore || 0;
+    const totalPlays = localProgress.totalPlays || 0;
+    const level01HighScore = localProgress.level01HighScore || 0;
 
     const res = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
