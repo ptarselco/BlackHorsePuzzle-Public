@@ -456,9 +456,9 @@ async  unlockedLevels(email, level) {
     const level01HighScore = localProgress.level01HighScore || 0;
 
       // Kalkulasi status 3 user
-    const newUser = !progress || progress.totalPlays === 0;
-    const winUser = progress && progress.totalPlays >= 1 && (progress.level01Score || 0) > 0;
-    const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
+    const newUser = !localProgress || localProgress.totalPlays === 0;
+    const winUser = localProgress && localProgress.totalPlays >= 1 && (localProgress.level01Score || 0) > 0;
+    const lossUser = localProgress && localProgress.totalPlays >= 3 && (localProgress.level01Score || 0) === 0;
     console.log(`👤 User classification: newUser=${newUser}, winUser=${winUser}, lossUser=${lossUser}`);
 
     const res = await axios.post(
