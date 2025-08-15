@@ -459,14 +459,7 @@ lv01Puzzle10Btn.on('pointerdown', async () => {
 // Di dalam create()
 //--------------------------------------------------------------------------------------
     // Deklarasi Title dan Menu Text--> Mulai Help
-    const lang = localStorage.getItem('lang') || 'en';
-    const help1 = window.helpText1[lang] || window.helpText1['en'];
-    const help2 = window.helpText2[lang] || window.helpText2['en'];
-    const title1 = help1.title;
-    const menu1 = help1.menu;
-    const title2 = help2.title;
-    const menu2 = help2.menu;
-
+   
     let helpTitle, menuText;
     
     this.helpBtn = this.add.image(240, 1010, 'helpBtn').setScale(0.9).setDepth(3100).setInteractive({ useHandCursor: true }); 
@@ -531,17 +524,17 @@ lv01Puzzle10Btn.on('pointerdown', async () => {
        this.helpPanelGroup.add(helpImg);
 
         // --- TAMPILKAN TEKS JIKA OTHER ---
-        //Jika OTHER, tambahkan teks di atas gambar
-        if (getHelpImageKey(currentLang) === 'other') {
-        let t1 = window.helpText1[currentLang] || window.helpText1['other'];
-        let t2 = window.helpText2[currentLang] || window.helpText2['other'];
-        //let t1 = window.helpText1[currentLang] || window.helpText1['other'] || { title: '', menu: '' };
-        //let t2 = window.helpText2[currentLang] || window.helpText2['other'] || { title: '', menu: '' };
+        //Jika OTHER, tambahkan teks di atas gambar / Fallback ke bahasa lain
+    //    if (getHelpImageKey(currentLang) === 'other') {
+    //    let t1 = window.helpText1[currentLang] || window.helpText1['other'] || window.helpText1['en'];
+    //    let t2 = window.helpText2[currentLang] || window.helpText2['other'] || window.helpText2['en'];
+        
         // Pilih data sesuai halaman aktif
-        let title = currentPage === 0 ? t1.title : t2.title;
-        let menu = currentPage === 0 ? t1.menu : t2.menu;
-       }
+    //    let title = currentPage === 0 ? t1.title : t2.title;
+    //    let menu = currentPage === 0 ? t1.menu : t2.menu;
+    //   }
       
+
       
        // Buat rectangle di samping template
        let rect = this.add.rectangle(1707, 503, 450, 1600, 0x023d3f, 0.7)
@@ -662,8 +655,8 @@ lv01Puzzle10Btn.on('pointerdown', async () => {
   helpImg.setTexture(helpImages[getHelpImageKey(currentLang)][currentPage]);
 
   if (getHelpImageKey(currentLang) === 'other') {
-    let t1 = window.helpText1[currentLang] || window.helpText1['other'];
-    let t2 = window.helpText2[currentLang] || window.helpText2['other'];
+    let t1 = window.helpText1[currentLang] || window.helpText1['other'] || window.helpText1['en'];
+    let t2 = window.helpText2[currentLang] || window.helpText2['other'] || window.helpText2['en'];
     title = currentPage === 0 ? t1.title : t2.title;
     menu = currentPage === 0 ? t1.menu : t2.menu;
 
