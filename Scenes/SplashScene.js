@@ -449,40 +449,28 @@ async  unlockedLevels(email, level) {
 
 // FUNGSI UNTUK SYNC DATA DARI BACKEND KE LOCAL STORAGE DAN WINDOW SETIAP KALI LOGIN ATAU RELOAD
   async syncProgressFromBackend(email) {
-    try {
-      //const localProgress = JSON.parse(localStorage.getItem(`gameData-${email}`))?.gameProgress || {};
-      const level01Score = this.level01Score || 0;
-      const totalPlays = this.totalPlays || 0;
-      const level01HighScore = this.level01HighScore || 0;
-
-      // Kalkulasi status 3 user
-      const newUser = !progress || progress.totalPlays === 0;
-      const winUser = progress && progress.totalPlays >= 1 && (progress.level01Score || 0) > 0;
-      const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
-      console.log(`👤 User classification: newUser=${newUser}, winUser=${winUser}, lossUser=${lossUser}`);
-
+  try {
+    // Ambil progress terbaru dari backend
     const res = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
-      {
-        email,
-        level: 'Level01Scene',
-        level01Score,
-        totalPlays,
-        level01HighScore,
-        level01Completed: localProgress.level01Completed || false,
-        newUser,
-        winUser,
-        lossUser
-       },
+      { email, level: 'Level01Scene' },
       { timeout: 200000 }
     );
-  
     const progress = res.data?.progress || {};
-    // Sync level01Score
+
+    // Update localStorage dan window dengan data backend
     localStorage.setItem(`score_${email}`, progress.level01Score || 0);
     window.level01Score = progress.level01Score || 0;
     window.playerScore = progress.level01Score || 0;
-    // Sync history (if you store it in backend)
+
+    // Simpan seluruh progress ke localStorage (jika perlu)
+    localStorage.setItem(`gameData-${email}`, JSON.stringify({
+      ...progress,
+      hasPlayedBefore: true,
+      lastPlayedDate: new Date().toISOString(),
+    }));
+
+    // (Opsional) Simpan history
     localStorage.setItem(`gameHistory_${email}`, JSON.stringify({
       hasPlayedBefore: true,
       totalGamesPlayed: progress.totalPlays || 1,
@@ -491,6 +479,7 @@ async  unlockedLevels(email, level) {
       lastPlayedDate: new Date().toISOString(),
       favoriteGiven: progress.favoriteGiven || false
     }));
+
     console.log('✅ Synced progress from backend:', progress);
   } catch (err) {
     console.error('❌ Failed to sync progress from backend:', err);
