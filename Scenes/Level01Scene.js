@@ -1420,7 +1420,11 @@ async showGameOverReturnMessage() {
   let progress = {};
   if (email) {
     try {
-    const level01Score = this.level01Score || 0;
+      const level01Score = this.level01Score || 0;
+      const level01HighScore = progress.level01HighScore || 0;
+      const totalPlays = progress.totalPlays || 0;
+      
+      // Ambil data progress dari backend
     const response = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
       { email, 
