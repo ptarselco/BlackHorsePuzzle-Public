@@ -1833,7 +1833,16 @@ async function updateGameScore(email, newScore) {
   const userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
   const progress = userData.gameProgress || {};
   const level01Completed = progress.level01Completed ?? false;
-
+  const level01HighScore = progress.level01HighScore ?? 0;
+  const totalPlays = progress.totalPlays ?? 0;
+  const bestTime = progress.bestTime ?? 0;  
+  const averageTime = progress.averageTime ?? 0;
+  const completionRate = progress.completionRate ?? 0;  
+  const perfectGames = progress.perfectGames ?? 0;
+  const totalAttempts = progress.totalAttempts ?? 0;
+  const completionTime = progress.completionTime ?? 0;
+  const isPerfectGame = newScore >= level01HighScore && newScore > 0
+  
   // Simpan ke backend setiap kali level01Score berubah
   try { 
     const res = await axios.post(
