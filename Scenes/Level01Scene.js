@@ -1457,7 +1457,7 @@ async showGameOverReturnMessage() {
    // ✅ CALCULATE USER TYPES AND RETURN THEM:
   const newUser = !progress || progress.totalPlays === 0;
   const winUser = progress && progress.totalPlays >= 1 && (progress.level01Score || 0) > 0;
-  const lossUser = progress && progress.totalPlays === 3 && (progress.level01Score || 0) === 0;
+  const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
 
   console.log('🔒 Game Over state detected - newUser:', newUser, 'winUser:', winUser, 'lossUser:', lossUser);
 
@@ -2772,7 +2772,7 @@ async getUserProgress(email) {
     const progress = response.data.progress || {};
     const newUser = !progress || progress.totalPlays === 0;
     const winUser = progress && progress.totalPlays >= 1 && (progress.level01Score || 0) > 0;
-    const lossUser = progress && progress.totalPlays === 3 && (progress.level01Score || 0) === 0;
+    const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
 
     console.log(`👤 User classification: newUser=${newUser}, lossUser=${lossUser}, winUser=${winUser}`);
     console.log(`📊 Progress data: totalPlays=${progress.totalPlays}, level01Score=${progress.level01Score}`);
@@ -2885,7 +2885,7 @@ async checkUserStatusAndGameOver(email) {
     // ✅ CALCULATE USER TYPES AND RETURN THEM:
     const newUser = !progress || progress.totalPlays === 0;
     const winUser = progress && progress.totalPlays >= 1 && (progress.level01Score || 0) > 0;
-    const lossUser = progress && progress.totalPlays === 3 && (progress.level01Score || 0) === 0;
+    const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
     
 
   
@@ -2929,10 +2929,10 @@ async checkUserStatusAndGameOver(email) {
   //status.totalPlays = (status.totalPlays || 0) + 1; // bisa hapus score pindah 3x scene
     this.level01Score = status.level01Score || 0;
 
-  // Jika totalPlays === 3 dan level01Score masih 0, set game over
+  // Jika totalPlays >= 3 dan level01Score masih 0, set game over
   const isLossUser = (
     (status.isGameOver && (status.level01Score || 0) === 0) || 
-    (status.totalPlays === 3 && (status.level01Score || 0) === 0)
+    (status.totalPlays >= 3 && (status.level01Score || 0) === 0)
   );
   if (isLossUser) {
     status.isGameOver = true;
@@ -4078,7 +4078,7 @@ return;
 
     const newUser = !progress || progress.totalPlays === 0;
     const winUser = progress && progress.totalPlays >= 1 && (progress.level01Score || 0) > 0;
-    const lossUser = progress && progress.totalPlays === 3 && (progress.level01Score || 0) === 0;
+    const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
     
     
 
