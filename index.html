@@ -272,7 +272,7 @@ async function syncProgressFromBackend(email) {
       // Kalkulasi status 3 user
     const newUser = !localProgress || localProgress.totalPlays === 0;
     const winUser = localProgress && localProgress.totalPlays >= 1 && (localProgress.level01Score || 0) > 0;
-    const lossUser = localProgress && localProgress.totalPlays >= 3 && (localProgress.level01Score || 0) === 0;
+    const lossUser = localProgress && localProgress.totalPlays === 3 && (localProgress.level01Score || 0) === 0;
     console.log(`👤 User classification: newUser=${newUser}, winUser=${winUser}, lossUser=${lossUser}`);
 
     const res = await axios.post(
@@ -1001,7 +1001,7 @@ console.log('✅ REAL BACKEND VERIFICATION READY - CONNECT TO RENDER.COM');
     // ✅ PROPER USER CLASSIFICATION:
     const newUser = totalPlays === 0;  // Only 0 plays = new user
     const winUser = totalPlays >= 1 && currentScore > 0;  // 1 dst plays = active user
-    const lossUser = totalPlays >= 3 && currentScore === 0 && !isPaid;  // 3+ plays, no score, no payment
+    const lossUser = totalPlays === 3 && currentScore === 0 && !isPaid;  // 3+ plays, no score, no payment
     
     console.log('👤 User classification:', { 
       newUser, 
@@ -1842,7 +1842,7 @@ async function updateGameScore(email, newScore) {
   const totalAttempts = progress.totalAttempts ?? 0;
   const completionTime = progress.completionTime ?? 0;
   const isPerfectGame = newScore >= level01HighScore && newScore > 0
-  
+
   // Simpan ke backend setiap kali level01Score berubah
   try { 
     const res = await axios.post(
