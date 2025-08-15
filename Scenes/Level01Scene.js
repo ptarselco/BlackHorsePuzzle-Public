@@ -525,14 +525,14 @@ lv01Puzzle10Btn.on('pointerdown', async () => {
 
         // --- TAMPILKAN TEKS JIKA OTHER ---
         //Jika OTHER, tambahkan teks di atas gambar / Fallback ke bahasa lain
-    //    if (getHelpImageKey(currentLang) === 'other') {
-    //    let t1 = window.helpText1[currentLang] || window.helpText1['other'] || window.helpText1['en'];
-    //    let t2 = window.helpText2[currentLang] || window.helpText2['other'] || window.helpText2['en'];
+        if (getHelpImageKey(currentLang) === 'other') {
+        let t1 = window.helpText1[currentLang] || window.helpText1['other'] || window.helpText1['en'];
+        let t2 = window.helpText2[currentLang] || window.helpText2['other'] || window.helpText2['en'];
         
         // Pilih data sesuai halaman aktif
-    //    let title = currentPage === 0 ? t1.title : t2.title;
-    //    let menu = currentPage === 0 ? t1.menu : t2.menu;
-    //   }
+        let title = currentPage === 0 ? t1.title : t2.title;
+        let menu = currentPage === 0 ? t1.menu : t2.menu;
+       }
       
 
       
