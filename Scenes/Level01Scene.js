@@ -459,7 +459,14 @@ lv01Puzzle10Btn.on('pointerdown', async () => {
 // Di dalam create()
 //--------------------------------------------------------------------------------------
     // Deklarasi Title dan Menu Text--> Mulai Help
-   
+    const lang = localStorage.getItem('lang') || 'en';
+    const help1 = window.helpText1[lang] || window.helpText1['en'];
+    const help2 = window.helpText2[lang] || window.helpText2['en'];
+    const title1 = help1.title;
+    const menu1 = help1.menu;
+    const title2 = help2.title;
+    const menu2 = help2.menu;
+
     let helpTitle, menuText;
     
     this.helpBtn = this.add.image(240, 1010, 'helpBtn').setScale(0.9).setDepth(3100).setInteractive({ useHandCursor: true }); 
