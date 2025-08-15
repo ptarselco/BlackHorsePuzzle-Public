@@ -216,9 +216,13 @@ if (!userData.gameProgress) {
     const email = localStorage.getItem('email');
     if (!email) return;
 
-    const level01Completed = progress.level01Completed ?? false;
+   // Ambil progress dari localStorage
+  const userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+  const progress = userData.gameProgress || {}; 
 
-    this.updateUserProgress(email, {
+  const level01Completed = progress.level01Completed ?? false;
+
+  this.updateUserProgress(email, {
       level01Completed: level01Completed,
       level01Score: this.level01Score,
       completionTime: this.timeElapsed,
@@ -2854,7 +2858,7 @@ async getUserStatus(email, level = 'Level01, Level01Scene') {
 async checkUserStatusAndGameOver(email) {
   // Ambil status user dari backend (POST)
   const status = await this.getUserStatus(email, 'Level01, Level01Scene');
-  const data = await someAsyncFunction();
+  // Jika gagal ambil status, tampilkan error dan return null
   if (!status) {
     console.error('Gagal ambil status user');
     return null;

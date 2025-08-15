@@ -269,6 +269,12 @@ async function syncProgressFromBackend(email) {
     const totalPlays = localProgress.totalPlays || 0;
     const level01HighScore = localProgress.level01HighScore || 0;
 
+      // Kalkulasi status 3 user
+    const newUser = !progress || progress.totalPlays === 0;
+    const winUser = progress && progress.totalPlays >= 1 && (progress.level01Score || 0) > 0;
+    const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
+    console.log(`👤 User classification: newUser=${newUser}, winUser=${winUser}, lossUser=${lossUser}`);
+
     const res = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
       { email, 
@@ -284,11 +290,6 @@ async function syncProgressFromBackend(email) {
       { timeout: 200000 }
     );
     const progress = res.data?.progress || {}; // ada diatas line 267
-
-    // Kalkulasi status 3 user
-    const newUser = !progress || progress.totalPlays === 0;
-    const winUser = progress && progress.totalPlays >= 1 && (progress.level01Score || 0) > 0;
-    const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
 
     // Sync level01Score
     localStorage.setItem(`score_${email}`, progress.level01Score || 0);
