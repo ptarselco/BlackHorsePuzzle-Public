@@ -264,7 +264,7 @@ if ('serviceWorker' in navigator) {
 
 async function syncProgressFromBackend(email) {
   try {
-      const localProgress = JSON.parse(localStorage.getItem(`gameData-${email}`))?.gameProgress || {};
+      //const localProgress = JSON.parse(localStorage.getItem(`gameData-${email}`))?.gameProgress || {};
       const level01Score = localProgress.level01Score || 0;
       const totalPlays = localProgress.totalPlays || 0;
       const level01HighScore = localProgress.level01HighScore || 0;

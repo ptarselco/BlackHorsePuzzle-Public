@@ -450,7 +450,7 @@ async  unlockedLevels(email, level) {
 // FUNGSI UNTUK SYNC DATA DARI BACKEND KE LOCAL STORAGE DAN WINDOW SETIAP KALI LOGIN ATAU RELOAD
   async syncProgressFromBackend(email) {
     try {
-      const localProgress = JSON.parse(localStorage.getItem(`gameData-${email}`))?.gameProgress || {};
+      //const localProgress = JSON.parse(localStorage.getItem(`gameData-${email}`))?.gameProgress || {};
       const level01Score = this.level01Score || 0;
       const totalPlays = this.totalPlays || 0;
       const level01HighScore = this.level01HighScore || 0;
