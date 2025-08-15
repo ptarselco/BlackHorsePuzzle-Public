@@ -648,7 +648,15 @@ lv01Puzzle10Btn.on('pointerdown', async () => {
         }
       
 //------------------------------------------------------------------------------      
-        // --- FUNGSI UPDATE HELP PANEL ---
+ // Setelah clear panel dan sebelum updateHelpPanel()
+if (!helpImg) {
+  let key = getHelpImageKey(currentLang);
+  helpImg = this.add.image(960, 640, helpImages[key][currentPage]).setDepth(3001);
+  this.helpPanelGroup.add(helpImg);
+}
+
+
+// --- FUNGSI UPDATE HELP PANEL ---
   const updateHelpPanel = () => {
   let menu = '';
   let title = '';
