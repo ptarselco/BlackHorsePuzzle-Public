@@ -2803,7 +2803,7 @@ async updateUserProgress(email, progress) {
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
       { email, 
         level01Completed,
-        level01Score: newScore, // ✅ cukup satu kali
+        level01Score,
         level01HighScore,
         totalPlays,
         bestTime,
@@ -2910,7 +2910,7 @@ async checkUserStatusAndGameOver(email) {
 
   // Tambah totalPlays setiap kali fungsi ini dipanggil (untuk user lama)
   //status.totalPlays = (status.totalPlays || 0) + 1; // bisa hapus score pindah 3x scene
-    this.level01Score = data.level01Score || 0;
+    this.level01Score = status.level01Score || 0;
 
   // Jika totalPlays >= 3 dan level01Score masih 0, set game over
   const isLossUser = (
