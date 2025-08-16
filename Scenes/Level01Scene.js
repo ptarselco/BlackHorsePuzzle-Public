@@ -147,11 +147,13 @@ const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score 
 if (newUser) {
   // Aktifkan tombol Play & Puzzle, tidak game over
   this.isGameOver = false;
-  this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+  //this.unblur10PuzzleButton && this.unblur10PuzzleButton();
   if (this.playBtn) {
-    this.playBtn.setInteractive({ useHandCursor: true });
-    this.playBtn.setAlpha(1);
-    this.playBtn.setVisible(true);
+     this.playBtn.disableInteractive();
+     this.playBtn.setAlpha(0.5);
+    //this.playBtn.setInteractive({ useHandCursor: true });
+    //this.playBtn.setAlpha(1);
+    //this.playBtn.setVisible(true);
   }
   console.log('✅ Deteksi: NEW USER - tombol Play & Puzzle diaktifkan');
   return;
@@ -160,11 +162,13 @@ if (newUser) {
 if (winUser) {
   // User sudah main >= 3x dan punya score
   this.isGameOver = false;
-  this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+  //this.unblur10PuzzleButton && this.unblur10PuzzleButton();
   if (this.playBtn) {
-    this.playBtn.setInteractive({ useHandCursor: true });
-    this.playBtn.setAlpha(1);
-    this.playBtn.setVisible(true);
+    this.playBtn.disableInteractive();
+    this.playBtn.setAlpha(0.5);
+    //this.playBtn.setInteractive({ useHandCursor: true });
+    //this.playBtn.setAlpha(1);
+    //this.playBtn.setVisible(true);
   }
   console.log('✅ Deteksi: WIN USER - tombol Play & Puzzle diaktifkan');
   return;
@@ -181,12 +185,13 @@ if (lossUser) {
 });
    
   // Sync progress dari backend, update score di UI
-  syncProgressFromBackend(email).then(progress => {
-    if (progress && typeof progress.level01Score === 'number') {
-      this.level01Score = progress.level01Score;
-      updateGameScore(email, progress.level01Score); // Update UI score
-    }
-  });
+  //syncProgressFromBackend(email).then(progress => {
+    //if (progress && typeof progress.level01Score === 'number') {
+      //this.level01Score = progress.level01Score;
+      //updateGameScore(email, progress.level01Score); // Update UI score
+    //}
+  //});
+
   // Pastikan level01Score diinisialisasi
   this.level01Score = data.level01Score || 0;
 
@@ -370,11 +375,13 @@ lv01Puzzle10Btn.on('pointerdown', async () => {
     return;
   } 
     
-  // Setelah user klik tombol 10 Puzzle (lv01Puzzle10Btn), baru aktifkan playBtn:
+ // ✅ SETELAH USER KLIK 10 PUZZLE, BARU AKTIFKAN playBtn:
+  console.log('🎮 User mengklik 10 Puzzle - Mengaktifkan playBtn...'); 
   if (this.playBtn) {
     this.playBtn.setInteractive({ useHandCursor: true });
     this.playBtn.setAlpha(1);
     this.playBtn.setVisible(true);
+    console.log('✅ PlayBtn telah diaktifkan setelah klik 10 Puzzle');
   }
   // Toggle pesan: jika sudah ada, hilangkan; jika belum, tampilkan
   if (this.welcomeMsgRect && this.welcomeMsgRect.visible) {
@@ -398,8 +405,8 @@ lv01Puzzle10Btn.on('pointerdown', async () => {
 
  
 
-      // Rectangle pesan
-     this.welcomeMsgRect = this.add.rectangle(960, 350, 1200, 500, 0x023d3f, 0.95)
+  // Rectangle pesan
+  this.welcomeMsgRect = this.add.rectangle(960, 350, 1200, 500, 0x023d3f, 0.95)
     .setStrokeStyle(4, 0x00eaff)
     .setDepth(2001).setInteractive()
     .on('pointerdown', () => {
@@ -446,12 +453,13 @@ lv01Puzzle10Btn.on('pointerdown', async () => {
     if (localStorage.getItem("email")) {
     // Panggil fungsi mulai game, misal:
     if (this.isPaid === true || newUser === true || winUser === true || this.hasClaimedHat === true) {
-    if (this.playBtn) {
-      this.playBtn.setTexture('playSheriffL');
-      this.playBtn.setInteractive({ useHandCursor: true });
-      this.playBtn.setAlpha(1);
-      this.playBtn.setVisible(true);
-    }
+    //if (this.playBtn) {
+      //this.playBtn.setTexture('playSheriffL');
+      //this.playBtn.setInteractive({ useHandCursor: true });
+      //this.playBtn.setAlpha(1);
+      //this.playBtn.setVisible(true);
+    //}
+    console.log('✅ User valid - PlayBtn sudah aktif');
     } else if (lossUser === true) {
      // lossUser Belum bayar Play tetap burem
     if (this.playBtn) {
@@ -463,7 +471,7 @@ lv01Puzzle10Btn.on('pointerdown', async () => {
    if (this.isGameOverClosed && (this.level01Score || 0) === 0) {
     this.showGameOverPuzzleMessage();
     return;
-  }
+    }
    }
   }
 });
@@ -1459,7 +1467,7 @@ startIntroSequence() {
 
 //Fungsi di kosongkan dulu dengan TODO ini
 setupBoard(data) {
-  // Contoh: playBtn selalu burem dan nonaktif di awal
+  // // ✅ PLAYBTN SELALU BUREM DAN NONAKTIF DI AWAL
   if (this.playBtn) {
     this.playBtn.setAlpha(0.5);
     this.playBtn.disableInteractive();
@@ -1474,8 +1482,8 @@ setupBoard(data) {
       this.playBtn.setVisible(true);
     }
   }
-  console.log('setupBoard dipanggil dengan:', data);
-  // Atau, panggil logika reset/init board yang sudah ada
+ // Jika ingin aktifkan playBtn setelah kondisi tertentu, masih perlu klik 10 Puzzle dulu
+  console.log('setupBoard dipanggil - PlayBtn tetap burem, klik 10 Puzzle untuk aktifkan');
 }
 
 async showGameOverReturnMessage() {
@@ -1812,10 +1820,10 @@ unlockGameAfterPurchase() {
     this.lv01Puzzle10Btn.setAlpha(1);
   }
   
-  if (this.playBtn) {
-    this.playBtn.setInteractive();
-    this.playBtn.setAlpha(1);
-  }
+  //if (this.playBtn) {
+    //this.playBtn.setInteractive();
+    //this.playBtn.setAlpha(1);
+  //}
 
   //if (this.lv01Puzzle20Btn) {
   //  this.lv01Puzzle20Btn.setInteractive();
@@ -2082,15 +2090,17 @@ async updateTaxInBackground(musicTitle, x, y) {
 
     this.playBtn = playBtn; // Simpan referensi tombol Play
 
+    // ✅ PASTIKAN DIMULAI DALAM KONDISI BUREM
+    this.playBtn.setAlpha(0.5);
+    this.playBtn.disableInteractive();
+    this.playBtn.setVisible(true);
+    console.log('🎮 PlayBtn dibuat dalam kondisi burem - menunggu klik 10 Puzzle');
+
     // --- LOGIKA GAME MULAI DI SINI ---
     playBtn.on('pointerdown', async () => { //(TIDAK MUNCUL PUZZLE)
       playBtn.setTexture('playSheriffL');
       playBtn.setScale(0.4);
-      if (this.playBtn) {
-        this.playBtn.setAlpha(0.5);
-        this.playBtn.disableInteractive();
-        this.playBtn.setVisible(true);  
-        }
+      
 
       if (this.claimHatBtn) {
         this.claimHatBtn.destroy();
@@ -2502,7 +2512,7 @@ startNextRound() {
 
 // ====== CEK PUZZLE ======
 async checkPuzzle() {
-  // ...cek benar/salah...
+  console.log('rightBoardSlots:', this.rightBoardSlots);
   let isCorrect = true;
   for (let i = 0; i < 10; i++) {
     if (this.rightBoardSlots[i] !== i + 1) {
@@ -2520,13 +2530,60 @@ async checkPuzzle() {
     this.level01Score = (this.level01Score || 0) + 100;
     this.scoreText.setText(this.level01Score.toString().padStart(5, '0'));
     this.registry.set('level01Score', this.level01Score);
+    const email = localStorage.getItem('email');
 
     // Reset ke R1 setelah menang di ronde manapun
     this.currentRound = 1;
     this.timeElapsed = 0;
     this.startNextRound();
 
-    // ...update localStorage/backend, animasi, dsb...
+     // Ambil level01Score dari localStorage jika ada (data lama)
+      let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+      //userData = userData || {};
+      userData.gameProgress = userData.gameProgress || {};
+
+      // Pastikan level01HighScore selalu angka
+      if (typeof userData.gameProgress.level01HighScore !== 'number' || isNaN(userData.gameProgress.level01HighScore)) {
+      userData.gameProgress.level01HighScore = 0;
+      }
+     
+      // Simpan level01Score terbaru ke localStorage
+     userData.gameProgress.level01Score = this.level01Score;
+   
+     // Update localStorage dengan semua progress terbaru
+    userData.gameProgress.level01Score = this.level01Score;
+    userData.gameProgress.level01HighScore = Math.max(userData.gameProgress.level01HighScore || 0, this.level01Score);
+    userData.gameProgress.totalPlays = (userData.gameProgress.totalPlays || 0) + 1;
+    userData.gameProgress.bestTime = this.timeElapsed;
+    userData.gameProgress.averageTime = typeof this.timeElapsed === 'number' ? this.timeElapsed : 0;
+    userData.gameProgress.completionRate = 100; // Atur sesuai logic kamu
+    userData.gameProgress.perfectGames = true; // Atur sesuai logic kamu
+    userData.gameProgress.totalAttempts = (userData.gameProgress.totalAttempts || 0)  
+
+    
+    localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+  
+    // Setelah update localStorage
+    const newAverageTime = typeof this.timeElapsed === 'number' ? this.timeElapsed : 0;
+    const newCompletionRate = 100; // Atau hitung sesuai logic kamu
+    const isPerfectGame = true; // Atur sesuai logic kamu
+
+
+    // Update ke backend juga
+    const progress = await this.getUserProgress(email);   
+
+    this.updateUserProgress(email, {
+      level01Completed: true,
+      level01Score: this.level01Score,
+      level01HighScore: Math.max(this.level01Score, progress.progress.level01HighScore || 0),
+      totalPlays: (progress.progress.totalPlays || 0) + 1,
+      bestTime: this.timeElapsed,
+      averageTime: newAverageTime,
+      completionRate: newCompletionRate,
+      perfectGames: isPerfectGame,
+      totalAttempts: (progress.progress.totalAttempts || 0) + 1
+    });
+
     this.sound.play('horseNeigh');
     this.showClaimHat(() => {
       if (this.playBtn) {
@@ -2638,6 +2695,13 @@ async onTimeUp() {
   userData.gameProgress.totalAttempts = (userData.gameProgress.totalAttempts || 0) + 1;
   localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
 
+  // Ambil progress terbaru dari backend
+  const progressRes = await this.getUserProgress(email);
+  const progress = progressRes.progress || {};
+  const newUser = progressRes.newUser;
+  const winUser = progressRes.winUser;
+  const lossUser = progressRes.lossUser;
+
   // Update ke backend
   await this.updateUserProgress(email, {
     level01Completed: true,
@@ -2667,7 +2731,7 @@ async onTimeUp() {
   // Kembalikan tombol Play ke kondisi off
   if (this.playBtn) {
     this.playBtn.setTexture('playSheriff');
-    this.playBtn.setScale(0.3);
+    this.playBtn.setScale(0.5);
   }
 
   // === LOGIKA RONDE ===
@@ -2862,7 +2926,11 @@ async checkUserStatusAndGameOver(email) {
 // Jika newUser, aktifkan tombol Play & Puzzle
   if (newUser) {
     this.isGameOver = false;
-    this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+    //this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+    if (this.playBtn) {
+      this.playBtn.disableInteractive(); // Tetap nonaktif
+      this.playBtn.setAlpha(0.5); // Tetap burem
+    }
     console.log('✅ User baru - tombol Play & Puzzle diaktifkan');
     return status;
   }
@@ -2874,13 +2942,15 @@ async checkUserStatusAndGameOver(email) {
       status.isGameOver = false;
       localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
       this.isGameOver = false;
-      this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+      //this.unblur10PuzzleButton && this.unblur10PuzzleButton();
 
       // ✅ Aktifkan playBtn untuk winUser
       if (this.playBtn) {
-      this.playBtn.setInteractive({ useHandCursor: true });
-      this.playBtn.setAlpha(1);
-      this.playBtn.setVisible(true);
+      this.playBtn.disableInteractive(); // Tetap nonaktif
+      this.playBtn.setAlpha(0.5); 
+      //this.playBtn.setInteractive({ useHandCursor: true });
+      //this.playBtn.setAlpha(1);
+      //this.playBtn.setVisible(true);
       }
 
       console.log('✅ Game over status di-reset - tombol Play & Puzzle diaktifkan');
@@ -3654,13 +3724,12 @@ this.showWaitingForPaymentMessage();
 
 // Cek setiap 1 detik apakah window PayPal sudah ditutup
 const checkPayPalClosed = setInterval(() => {
-  showPleaseWaitMessage('Please wait, unlocking in progress...');
-  if (paypalWindow.closed) {
+if (paypalWindow.closed) {
     clearInterval(checkPayPalClosed);
 
 // Polling ke backend setiap beberapa detik
 this.paymentCheckInterval = setInterval(async () => {
-  //showPleaseWaitMessage('Please wait, unlocking in progress...');
+  showPleaseWaitMessage('Please wait, unlocking in progress...');
   const waitStart = Date.now();
 
   console.log('🔍 Polling payment status...');
@@ -3910,13 +3979,12 @@ return;
 
   // Cek setiap 1 detik apakah window PayPal sudah ditutup
   const checkPayPalClosed = setInterval(() => {
-    showPleaseWaitMessage('Please wait, unlocking in progress...'); 
-    if (paypalWindow.closed) {
+  if (paypalWindow.closed) {
       clearInterval(checkPayPalClosed);
              
           // Polling ke backend setiap beberapa detik
   this.paymentCheckInterval = setInterval(async () => {
-     //showPleaseWaitMessage('Please wait, unlocking in progress...');
+     showPleaseWaitMessage('Please wait, unlocking in progress...');
      const waitStart = Date.now();
 
      console.log('🔍 Polling payment status...');
