@@ -448,41 +448,135 @@ async  unlockedLevels(email, level) {
 }
 
 // FUNGSI UNTUK SYNC DATA DARI BACKEND KE LOCAL STORAGE DAN WINDOW SETIAP KALI LOGIN ATAU RELOAD
-  async syncProgressFromBackend(email) {
+  // ✅ PERBAIKAN LENGKAP: syncProgressFromBackend function sekitar line 265-320
+async  syncProgressFromBackend(email) {
   try {
-    // Ambil progress terbaru dari backend
-    const res = await axios.post(
+    console.log('🔄 Syncing progress from backend for:', email);
+    
+    // ✅ STEP 1: Ambil data dari localStorage sebagai fallback
+    const localData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+    const localProgress = localData.gameProgress || {};
+    
+    console.log('📱 Local data:', localProgress);
+    
+    // ✅ STEP 2: Kirim request ke backend dengan data lokal sebagai konteks
+    const response = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
-      { email, level: 'Level01Scene' },
-      { timeout: 200000 }
+      { 
+        email, 
+        level: 'Level01Scene',
+        // Kirim data lokal untuk perbandingan
+        localProgress: localProgress
+      },
+      { timeout: 30000 }
     );
-    const progress = res.data?.progress || {};
+    
+    // ✅ STEP 3: Ambil data dari backend (PRIORITAS UTAMA)
+    const backendData = response.data;
+    const progress = backendData.progress || {};
+    
+    console.log('🌐 Backend data:', progress);
 
-    // Update localStorage dan window dengan data backend
-    localStorage.setItem(`score_${email}`, progress.level01Score || 0);
-    window.level01Score = progress.level01Score || 0;
-    window.playerScore = progress.level01Score || 0;
-
-    // Simpan seluruh progress ke localStorage (jika perlu)
-    localStorage.setItem(`gameData-${email}`, JSON.stringify({
-      ...progress,
-      hasPlayedBefore: true,
-      lastPlayedDate: new Date().toISOString(),
-    }));
-
-    // (Opsional) Simpan history
-    localStorage.setItem(`gameHistory_${email}`, JSON.stringify({
-      hasPlayedBefore: true,
-      totalGamesPlayed: progress.totalPlays || 1,
-      highestScore: progress.level01HighScore || progress.level01Score || 0,
+    // ✅ STEP 4: SELALU GUNAKAN DATA BACKEND sebagai sumber truth
+    const finalData = {
+      level01Score: progress.level01Score || 0,
+      level01HighScore: progress.level01HighScore || 0,
+      totalPlays: progress.totalPlays || 0,
+      level01Completed: progress.level01Completed || false,
+      bestTime: progress.bestTime || 0,
+      averageTime: progress.averageTime || 0,
+      completionRate: progress.completionRate || 0,
+      perfectGames: progress.perfectGames || 0,
+      totalAttempts: progress.totalAttempts || 0,
       gameOvers: progress.gameOvers || 0,
-      lastPlayedDate: new Date().toISOString(),
-      favoriteGiven: progress.favoriteGiven || false
-    }));
+      favoriteGiven: progress.favoriteGiven || false,
+      lastPlayedDate: progress.lastPlayedDate || new Date().toISOString()
+    };
+    
+    // ✅ STEP 5: Hitung user classification berdasarkan data backend
+    const newUser = !progress || (progress.totalPlays || 0) === 0;
+    const winUser = progress && (progress.totalPlays || 0) >= 1 && (progress.level01Score || 0) > 0;
+    const lossUser = progress && (progress.totalPlays || 0) >= 3 && (progress.level01Score || 0) === 0;
+    
+    console.log(`👤 Backend user classification: newUser=${newUser}, winUser=${winUser}, lossUser=${lossUser}`);
+    
+    // ✅ STEP 6: UPDATE localStorage dengan data backend (FORCE UPDATE)
+    const updatedUserData = {
+      gameProgress: finalData,
+      newUser,
+      winUser,
+      lossUser,
+      lastSyncTime: new Date().toISOString(),
+      syncedFromBackend: true
+    };
 
-    console.log('✅ Synced progress from backend:', progress);
+    // Update gameData
+    localStorage.setItem(`gameData-${email}`, JSON.stringify(updatedUserData));
+    
+    // Update score
+    localStorage.setItem(`score_${email}`, (finalData.level01Score || 0).toString());
+    
+    // Update game history
+    localStorage.setItem(`gameHistory_${email}`, JSON.stringify({
+      hasPlayedBefore: (finalData.totalPlays || 0) > 0,
+      totalGamesPlayed: finalData.totalPlays || 0,
+      highestScore: finalData.level01HighScore || 0,
+      gameOvers: finalData.gameOvers || 0,
+      lastPlayedDate: finalData.lastPlayedDate,
+      favoriteGiven: finalData.favoriteGiven || false,
+      newUser,
+      winUser,
+      lossUser
+    }));
+    
+    // ✅ STEP 7: UPDATE global variables
+    window.level01Score = finalData.level01Score || 0;
+    window.playerScore = finalData.level01Score || 0;
+    
+    // ✅ STEP 8: UPDATE UI jika scene sudah aktif
+    if (window.Phaser && window.game && window.game.scene) {
+      const level01 = window.game.scene.getScene('Level01Scene');
+      if (level01 && level01.scene && level01.scene.isActive()) {
+        // Update score di scene
+        if (level01.level01Score !== undefined) {
+          level01.level01Score = finalData.level01Score || 0;
+        }
+        // Update scoreText
+        if (level01.scoreText && typeof level01.scoreText.setText === 'function') {
+          level01.scoreText.setText((finalData.level01Score || 0).toString().padStart(5, '0'));
+        }
+        console.log('🎮 Scene updated with backend data');
+      }
+    }
+
+    console.log('✅ Synced progress from backend - Final data:', finalData);
+    console.log('✅ User status:', { newUser, winUser, lossUser });
+    
+    return {
+      progress: finalData,
+      newUser,
+      winUser,
+      lossUser,
+      success: true
+    };
+    
   } catch (err) {
     console.error('❌ Failed to sync progress from backend:', err);
+    
+    // ✅ FALLBACK: Jika backend gagal, gunakan data lokal
+    const localData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+    const localProgress = localData.gameProgress || {};
+    
+    console.log('🔄 Using local fallback data:', localProgress);
+    
+    return {
+      progress: localProgress,
+      newUser: localData.newUser || false,
+      winUser: localData.winUser || false,  
+      lossUser: localData.lossUser || false,
+      success: false,
+      error: err.message
+    };
   }
 }
 

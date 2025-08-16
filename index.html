@@ -264,66 +264,132 @@ if ('serviceWorker' in navigator) {
 
 async function syncProgressFromBackend(email) {
   try {
-      const localProgress = JSON.parse(localStorage.getItem(`gameData-${email}`))?.gameProgress || {};
-      const level01Score = localProgress.level01Score || 0;
-      const totalPlays = localProgress.totalPlays || 0;
-      const level01HighScore = localProgress.level01HighScore || 0;
-      // Kalkulasi status 3 user
-      const newUser = !progress || progress.totalPlays === 0;
-      const winUser = progress && progress.totalPlays >= 1 && (progress.level01Score || 0) > 0;
-      const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
-      console.log(`👤 User classification: newUser=${newUser}, winUser=${winUser}, lossUser=${lossUser}`);
-    //const localProgress = JSON.parse(localStorage.getItem(`gameData-${email}`))?.gameProgress || {};
-    //const level01Score = this.level01Score || 0;
-    //const totalPlays = localProgress.totalPlays || 0;
-    //const level01HighScore = localProgress.level01HighScore || 0;
-      // Kalkulasi status 3 user
-    //const newUser = !localProgress || localProgress.totalPlays === 0;
-    //const winUser = localProgress && localProgress.totalPlays >= 1 && (localProgress.level01Score || 0) > 0;
-    //const lossUser = localProgress && localProgress.totalPlays >= 3 && (localProgress.level01Score || 0) === 0;
-    //console.log(`👤 User classification: newUser=${newUser}, winUser=${winUser}, lossUser=${lossUser}`);
-    const res = await axios.post(
+      console.log('🔄 Syncing progress from backend for:', email);
+
+      // ✅ STEP 1: Ambil data dari localStorage sebagai fallback
+      const localData = JSON.parse(localStorage.getItem(`gameData-${email}`))?.gameProgress || {};
+      const localProgress = localData.gameProgress || {};
+
+      console.log('📱 Local data:', localProgress);
+
+      // ✅ STEP 2: Kirim request ke backend dengan data lokal sebagai konteks
+    const response = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
-      { email, 
-        level: Level01Scene,
-        level01Score,
-        totalPlays,
-        level01HighScore,
-        level01Completed: localProgress.level01Completed || false,
-        newUser,
-        winUser,
-        lossUser
-       },
+      { 
+        email, 
+        level: 'Level01Scene',
+        // Kirim data lokal untuk perbandingan
+        localProgress: localProgress
+      },
       { timeout: 200000 }
     );
-    const progress = res.data?.progress || {}; // ada diatas line 267
-    // Sync level01Score
-    localStorage.setItem(`score_${email}`, progress.level01Score || 0);
-    window.level01Score = progress.level01Score || 0;
-    window.playerScore = progress.level01Score || 0;
-    // Sync history (if you store it in backend)
-    localStorage.setItem(`gameHistory_${email}`, JSON.stringify({
-      hasPlayedBefore: true,
-      totalGamesPlayed: progress.totalPlays || 1,
-      highestScore: progress.level01HighScore || progress.level01Score || 0,
+
+     // ✅ STEP 3: Ambil data dari backend (PRIORITAS UTAMA)
+    const backendData = response.data;
+    const progress = backendData.progress || {};
+    
+    console.log('🌐 Backend data:', progress);
+
+     // ✅ STEP 4: SELALU GUNAKAN DATA BACKEND sebagai sumber truth
+    const finalData = {
+      level01Score: progress.level01Score || 0,
+      level01HighScore: progress.level01HighScore || 0,
+      totalPlays: progress.totalPlays || 0,
+      level01Completed: progress.level01Completed || false,
+      bestTime: progress.bestTime || 0,
+      averageTime: progress.averageTime || 0,
+      completionRate: progress.completionRate || 0,
+      perfectGames: progress.perfectGames || 0,
+      totalAttempts: progress.totalAttempts || 0,
       gameOvers: progress.gameOvers || 0,
-      lastPlayedDate: new Date().toISOString(),
       favoriteGiven: progress.favoriteGiven || false,
-      // Tambahkan status 3 user
+      lastPlayedDate: progress.lastPlayedDate || new Date().toISOString()
+    }; 
+
+    // ✅ STEP 5: Hitung user classification berdasarkan data backend
+    const newUser = !progress || (progress.totalPlays || 0) === 0;
+    const winUser = progress && (progress.totalPlays || 0) >= 1 && (progress.level01Score || 0) > 0;
+    const lossUser = progress && (progress.totalPlays || 0) >= 3 && (progress.level01Score || 0) === 0;
+    
+    console.log(`👤 Backend user classification: newUser=${newUser}, winUser=${winUser}, lossUser=${lossUser}`);
+    
+    // ✅ STEP 6: UPDATE localStorage dengan data backend (FORCE UPDATE)
+    const updatedUserData = {
+      gameProgress: finalData,
+      newUser,
+      winUser,
+      lossUser,
+      lastSyncTime: new Date().toISOString(),
+      syncedFromBackend: true
+    };
+
+    // Update gameData - Simpan data pengguna yang diperbarui ke localStorage
+    localStorage.setItem(`gameData-${email}`, JSON.stringify(updatedUserData));
+
+    // Update score
+    localStorage.setItem(`score_${email}`, (finalData.level01Score || 0).toString());
+   
+    // Update game history
+    localStorage.setItem(`gameHistory_${email}`, JSON.stringify({
+      hasPlayedBefore: (finalData.totalPlays || 0) > 0,
+      totalGamesPlayed: finalData.totalPlays || 0,
+      highestScore: finalData.level01HighScore || 0,
+      gameOvers: finalData.gameOvers || 0,
+      lastPlayedDate: finalData.lastPlayedDate,
+      favoriteGiven: finalData.favoriteGiven || false,
       newUser,
       winUser,
       lossUser
     }));
-    // Simpan juga ke gameData agar bisa diakses global
-    localStorage.setItem(`gameData-${email}`, JSON.stringify({
-      gameProgress: progress,
+    
+     // ✅ STEP 7: UPDATE global variables
+    window.level01Score = finalData.level01Score || 0;
+    window.playerScore = finalData.level01Score || 0;
+    
+    // ✅ STEP 8: UPDATE UI jika scene sudah aktif
+    if (window.Phaser && window.game && window.game.scene) {
+      const level01 = window.game.scene.getScene('Level01Scene');
+      if (level01 && level01.scene && level01.scene.isActive()) {
+        // Update score di scene
+        if (level01.level01Score !== undefined) {
+          level01.level01Score = finalData.level01Score || 0;
+        }
+        // Update scoreText
+        if (level01.scoreText && typeof level01.scoreText.setText === 'function') {
+          level01.scoreText.setText((finalData.level01Score || 0).toString().padStart(5, '0'));
+        }
+        console.log('🎮 Scene updated with backend data');
+      }
+    }
+
+    console.log('✅ Synced progress from backend - Final data:', finalData);
+    console.log('✅ User status:', { newUser, winUser, lossUser });
+    
+    return {
+      progress: finalData,
       newUser,
       winUser,
-      lossUser
-    }));
-    console.log('✅ Synced progress from backend:', progress, { newUser, winUser, lossUser });
+      lossUser,
+      success: true
+    };
+    
   } catch (err) {
     console.error('❌ Failed to sync progress from backend:', err);
+    
+    // ✅ FALLBACK: Jika backend gagal, gunakan data lokal
+    const localData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+    const localProgress = localData.gameProgress || {};
+    
+    console.log('🔄 Using local fallback data:', localProgress);
+    
+    return {
+      progress: localProgress,
+      newUser: localData.newUser || false,
+      winUser: localData.winUser || false,  
+      lossUser: localData.lossUser || false,
+      success: false,
+      error: err.message
+    };
   }
 }
 
@@ -1154,27 +1220,55 @@ function showLoginForm() {
 window.addEventListener('DOMContentLoaded', async function() {
   const email = localStorage.getItem("email"); 
    let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
-  if (email) {
-    window.initUserData(email, userData);
-  }
-
+ 
   console.log('📄 Enhanced Black Horse Puzzle - Initializing secure system');
   
   if (email) {
+    // ✅ TAMBAH: Auto-sync dengan backend saat page load
+    try {
+      console.log('🔄 Starting initial backend sync...');
+      const syncResult = await syncProgressFromBackend(email);
+      
+      if (syncResult.success) {
+        console.log('✅ Initial backend sync successful');
+        
+        // ✅ TAMBAH: Update userData dengan data dari backend
+        userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+        
+        // ✅ TAMBAH: Check payment status juga
+        const paymentData = await checkPaymentStatusFromBackend(email);
+        console.log('💳 Initial payment check:', paymentData);
+        window.updateGamePaymentStatus(paymentData.isPaid, paymentData.method);
+        
+        // ✅ TAMBAH: Start auto-sync setelah initial sync berhasil
+        window.startAutoSync(email);
+        
+      } else {
+        console.log('⚠️ Backend sync failed, using local data');
+      }
+    } catch (syncError) {
+      console.error('❌ Initial sync error:', syncError);
+    }
+
     const isValidEmail = verifyEmailFormat(email);
     if (isValidEmail) {
+      // ✅ UBAH: Gunakan data yang sudah di-sync dari backend
       const scoreStatus = checkPlayerScoreStatus(email);
       
       // ✅ CHECK PAYMENT STATUS FIRST BEFORE SHOWING WARNING:
       try {
         const paymentData = await checkPaymentStatusFromBackend(email);
-        console.log('💳 Initial payment check:', paymentData);
+        console.log('💳 Payment status check:', paymentData);
         
         if (paymentData && paymentData.isPaid === true) {
           console.log('✅ Payment detected - user can play normally');
           // Clear game over state
           localStorage.removeItem(`gameOver_${email}`);
           
+          // ✅ TAMBAH: Update payment status in userData
+          userData.isPaid = true;
+          localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+
           // Don't show warning - user already paid
         } else if (scoreStatus.needsFavorite) {
           console.log('⚠️ User needs to give favorite to continue');
@@ -1201,6 +1295,14 @@ window.addEventListener('DOMContentLoaded', async function() {
     document.getElementById("verificationBox").style.display = "none";
     document.getElementById("logoutBtn").style.display = "none";
   }
+  // ✅ TAMBAH: Hide loader setelah semua initialization selesai
+  const loader = document.getElementById('loader');
+  if (loader) {
+    setTimeout(() => {
+      loader.style.display = 'none';
+    }, 1000);
+  }
+
 });
 
 

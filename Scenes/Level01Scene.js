@@ -1768,11 +1768,16 @@ unblur10PuzzleButton() {
     this.lv01Puzzle10Btn.setInteractive();
   }
   
-  // Restore play button  
   if (this.playBtn) {
-    this.playBtn.setAlpha(1);
-    this.playBtn.setInteractive();
+    this.playBtn.disableInteractive();
+    this.playBtn.setAlpha(0.5);
+    this.playBtn.setVisible(true);
   }
+  // Restore play button  
+  //if (this.playBtn) {
+    //this.playBtn.setAlpha(1);
+    //this.playBtn.setInteractive();
+  //}
   
   console.log('✅ 10 Puzzle and Play buttons restored');
 }
