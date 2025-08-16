@@ -360,21 +360,31 @@ if (!userData.gameProgress) {
     // Event handler untuk lv01Puzzle10Btn - Play 10 Puzzle
     
 lv01Puzzle10Btn.on('pointerdown', async () => {
+  if (this.isGameOver) {
+    this.showGameOverPuzzleMessage();
+    return;
+  }
   const email = localStorage.getItem('email');
   if (!email) {
     alert('Please login first!');
     return;
   } 
-     
-    // Toggle pesan: jika sudah ada, hilangkan; jika belum, tampilkan
-    if (this.welcomeMsgRect && this.welcomeMsgRect.visible) {
-      this.welcomeMsgRect.destroy();
-      this.welcomeMsgText.destroy();
-      this.welcomeMsgRect = null;
-      this.welcomeMsgText = null;
-      if (this.welcomeMsgTimer) this.welcomeMsgTimer.remove();
-      return;
-    }
+    
+  // Setelah user klik tombol 10 Puzzle (lv01Puzzle10Btn), baru aktifkan playBtn:
+  if (this.playBtn) {
+    this.playBtn.setInteractive({ useHandCursor: true });
+    this.playBtn.setAlpha(1);
+    this.playBtn.setVisible(true);
+  }
+  // Toggle pesan: jika sudah ada, hilangkan; jika belum, tampilkan
+  if (this.welcomeMsgRect && this.welcomeMsgRect.visible) {
+    this.welcomeMsgRect.destroy();
+    this.welcomeMsgText.destroy();
+    this.welcomeMsgRect = null;
+    this.welcomeMsgText = null;
+    if (this.welcomeMsgTimer) this.welcomeMsgTimer.remove();
+    return;
+  }
   
       // Efek sinar (glow/scale)
       this.tweens.add({
@@ -2076,6 +2086,11 @@ async updateTaxInBackground(musicTitle, x, y) {
     playBtn.on('pointerdown', async () => { //(TIDAK MUNCUL PUZZLE)
       playBtn.setTexture('playSheriffL');
       playBtn.setScale(0.4);
+      if (this.playBtn) {
+        this.playBtn.setAlpha(0.5);
+        this.playBtn.disableInteractive();
+        this.playBtn.setVisible(true);  
+        }
 
       if (this.claimHatBtn) {
         this.claimHatBtn.destroy();
@@ -2658,11 +2673,19 @@ async onTimeUp() {
   // === LOGIKA RONDE ===
   // Jika score habis, Game Over
   if ((this.level01Score || 0) <= 0) {
-    this.isGameOver = true;
-    this.lockAllGameplayButtons();
-    this.showGameOverReturnMessage();
-    return;
-  }
+    // HENTIKAN DAN RESET TIMER SAAT GAME OVER
+    if (this.roundTimer) {
+      this.roundTimer.remove(false);
+      this.roundTimer = null;
+    }
+    this.timeElapsed = 0;
+      if (this.timerText) this.timerText.setText("00:00");
+    // Tampilkan pesan Game Over
+      this.isGameOver = true;
+      this.lockAllGameplayButtons();
+      this.showGameOverReturnMessage();
+      return;
+    }
 
   // Atur ronde sesuai alur:
   // R1 -> R2 -> R3 -> R3 (loop) sampai menang atau score habis
@@ -2930,15 +2953,16 @@ async checkGameOverStatusFromServer() {
     if (data.isGameOver) {
       this.isGameOver = true;
     // Tampilkan pesan sesuai tipe user
-      if (data.userStatus.lossUser) {
+      //if (data.userStatus.lossUser) {
+       if (data.userStatus && data.userStatus.lossUser) {
         this.showGameOverReturnMessage && this.showGameOverReturnMessage();
         this.lockAllGameplayButtons && this.lockAllGameplayButtons();
-      } else if (data.userStatus.winUser) {
+      } else if (data.userStatus && data.userStatus.winUser) {
         // WIN USER: Sudah main >= 1x, score > 0
         this.isGameOver = false;
         this.unblur10PuzzleButton && this.unblur10PuzzleButton();
         // Bisa tambahkan pesan kemenangan jika perlu
-      } else if (data.userStatus.newUser) {
+      } else if (data.userStatus && data.userStatus.newUser) {
         // NEW USER: Belum pernah main
         this.isGameOver = false;
         this.unblur10PuzzleButton && this.unblur10PuzzleButton();
