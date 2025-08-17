@@ -277,9 +277,6 @@ if (!userData.gameProgress) {
     const email = localStorage.getItem('email');
     if (!email) return;
 
-    // Force sync dengan backend
-    window.forceSyncWithBackend(email);
-
     // ✅ Start auto-sync setiap 1 menit jika user sudah login
     if (email) {
     window.startAutoSync(email);
