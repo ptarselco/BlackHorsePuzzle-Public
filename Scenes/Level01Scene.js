@@ -2628,8 +2628,8 @@ async checkPuzzle() {
       bestTime: this.timeElapsed,
       //averageTime: newAverageTime,
       averageTime: this.timeElapsed,
-      //completionRate: newCompletionRate,
-      completionRate: 100,
+      completionRate: newCompletionRate,
+      //completionRate: 100,
       //perfectGames: isPerfectGame,
       perfectGames: true,
       //totalAttempts: (progress.progress.totalAttempts || 0) + 1
