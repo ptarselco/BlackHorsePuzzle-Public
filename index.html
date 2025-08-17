@@ -422,16 +422,16 @@ window.forceSyncWithBackend = async function(email) {
     
     // Show notification
     if (window.showSuccessNotification) {
-      showSuccessNotification('✅ Data synced with server');
+     // showSuccessNotification('✅ Data synced with server');
     }
     
     // Refresh scene jika perlu
-    if (window.Phaser && window.game && window.game.scene) {
-      const level01 = window.game.scene.getScene('Level01Scene');
-      if (level01) {
-        level01.scene.restart();
-      }
-    }
+    //if (window.Phaser && window.game && window.game.scene) {
+      //const level01 = window.game.scene.getScene('Level01Scene');
+      //if (level01) {
+        //level01.scene.restart();
+      //}
+    //}
   } else {
     console.log('❌ Force sync failed');
     if (window.showErrorNotification) {
