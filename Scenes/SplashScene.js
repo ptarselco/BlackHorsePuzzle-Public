@@ -228,7 +228,7 @@ async getUserStatus(email, level = 'Level01Scene') {
 // GABUNGKAN CHECK USER STATUS DAN GAME OVER
 async checkUserStatusAndGameOver(email) {
   // Ambil status user dari backend (POST)
-  const status = await this.getUserStatus(email, level = 'Level01Scene');
+  const status = await this.getUserStatus(email, 'Level01Scene');
   if (!status) {
     console.error('Gagal ambil status user');
       return null;
@@ -809,7 +809,7 @@ window.addEventListener('beforeunload', () => {
    });
 
     // 4. Ambil status user dari backend
-    const userStatus = await this.getUserStatus(email, level = 'Level01Scene');
+    const userStatus = await this.getUserStatus(email, 'Level01Scene');
     // Cek dan update status game over (jika perlu set-gameover)
     const status = await this.checkUserStatusAndGameOver(email);
 
