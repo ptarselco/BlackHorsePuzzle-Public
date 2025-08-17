@@ -809,7 +809,7 @@ window.addEventListener('beforeunload', () => {
    });
 
     // 4. Ambil status user dari backend
-    const userStatus = await this.getUserStatus(email, 'Level01, Level01Scene');
+    const userStatus = await this.getUserStatus(email, level = 'Level01Scene');
     // Cek dan update status game over (jika perlu set-gameover)
     const status = await this.checkUserStatusAndGameOver(email);
 
