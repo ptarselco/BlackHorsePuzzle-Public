@@ -1,4 +1,4 @@
-const { trusted } = require("mongoose");
+//const { trusted } = require("mongoose");
 
 class Level01Scene extends Phaser.Scene {
   constructor() {
@@ -1525,7 +1525,7 @@ async showGameOverReturnMessage() {
     const response = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
       { email, 
-        level: Level01Scene,
+        level: 'Level01Scene',
         level01Score,
         totalPlays: progress.totalPlays || 0, 
         level01HighScore: progress.level01HighScore || 0,
@@ -1564,6 +1564,7 @@ async showGameOverReturnMessage() {
   if (newUser || winUser) {
     this.isGameOver = false;
     this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+    console.log('✅ User bukan loss user - tidak perlu Game Over message');
     return;
   }
 
@@ -1571,7 +1572,7 @@ async showGameOverReturnMessage() {
   if (lossUser) {
     this.isGameOver = true;
     this.blur10PuzzleButton && this.blur10PuzzleButton();
-    return;
+    //return;
   }
   console.log('🔒 Game Over state detected - showing message panel');
   // Background overlay
