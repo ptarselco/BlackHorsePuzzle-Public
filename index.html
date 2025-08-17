@@ -412,36 +412,6 @@ if (!userData.gameProgress) {
 }
 //======================================================================================
 
-// ✅ PERBAIKAN: Function untuk force sync manual
-window.forceSyncWithBackend = async function(email) {
-  console.log('🔄 Force syncing with backend...');
-  const result = await syncProgressFromBackend(email);
-  
-  if (result.success) {
-    console.log('✅ Force sync successful');
-    
-    // Show notification
-    if (window.showSuccessNotification) {
-      showSuccessNotification('✅ Data synced with server');
-    }
-    
-    // Refresh scene jika perlu
-    //if (window.Phaser && window.game && window.game.scene) {
-      //const level01 = window.game.scene.getScene('Level01Scene');
-      //if (level01) {
-        //level01.scene.restart();
-      //}
-    //}
-  } else {
-    console.log('❌ Force sync failed');
-    if (window.showErrorNotification) {
-      showErrorNotification('❌ Sync failed: ' + result.error);
-    }
-  }
-  
-  return result;
-};
-
 // Fungsi cek status pembayaran dari backend (lengkap)
 window.checkPaymentStatusFromBackend = async function(email) {
   try {
