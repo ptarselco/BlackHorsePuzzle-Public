@@ -515,32 +515,6 @@ window.checkPaymentStatus = async function(email) {
   console.log('💳 Payment check result:', result);
   return result;
 };
-// This function updates the game payment status and UI based on the payment state
-// ✅ ENHANCED GAME PAYMENT STATUS UPDATE:
-
-window.updateGamePaymentStatus = function(isPaid, method = null) {
-  const email = localStorage.getItem("email");
-  if (!email) {
-    console.error('❌ email not defined in updateGamePaymentStatus');
-    return; // ✅ KELUAR JIKA TIDAK ADA EMAIL
-  }
-
-  console.log('💳 Updating payment status for:', email, 'isPaid:', isPaid);
-
-  let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
-  userData.isPaid = isPaid;
-  localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
-  window.isPaid = isPaid;
-  // Unlock tombol jika sudah bayar
-  if (isPaid) {
-    if (window.unblur10PuzzleButton) window.unblur10PuzzleButton();
-    if (window.unlockGameAfterPurchase) window.unlockGameAfterPurchase();
-    console.log('✅ Payment status updated, game unlocked');
-  } else {
-    if (window.lockAllGameplayButtons) window.lockAllGameplayButtons();
-    console.log('🔒 Payment not confirmed, game locked');
-  }
-}
 
  // Client-side handling of payment status
 //if (payment === "cancelled") {
@@ -618,8 +592,7 @@ window.updateGamePaymentStatus = function(isPaid, method = null) {
 <!--
 <button id="logoutBtn" style="display:none;">Logout</button>-->
     <!-- === End form login === style="margin-left:10px;" dikeluarkan dari Resend Code === -->
-
-     
+   
     <script src="./Scenes/SplashScene.js"></script>
     <script src="./Scenes/Level01Scene.js"></script>
     <script src="./Scenes/Level02Scene.js"></script>
@@ -1004,6 +977,32 @@ window.showMessage = function(message, color = '#ff6b6b') {
     console.log('📢 Message:', message);
 };   
 
+// This function updates the game payment status and UI based on the payment state
+// ✅ ENHANCED GAME PAYMENT STATUS UPDATE:
+
+window.updateGamePaymentStatus = function(isPaid, method = null) {
+  const email = localStorage.getItem("email");
+  if (!email) {
+    console.error('❌ email not defined in updateGamePaymentStatus');
+    return; // ✅ KELUAR JIKA TIDAK ADA EMAIL
+  }
+
+  console.log('💳 Updating payment status for:', email, 'isPaid:', isPaid);
+
+  let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+  userData.isPaid = isPaid;
+  localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+  window.isPaid = isPaid;
+  // Unlock tombol jika sudah bayar
+  if (isPaid) {
+    if (window.unblur10PuzzleButton) window.unblur10PuzzleButton();
+    if (window.unlockGameAfterPurchase) window.unlockGameAfterPurchase();
+    console.log('✅ Payment status updated, game unlocked');
+  } else {
+    if (window.lockAllGameplayButtons) window.lockAllGameplayButtons();
+    console.log('🔒 Payment not confirmed, game locked');
+  }
+}
 
 // Redefine verifyEmailWithBackend with actual backend connection
 //async function verifyEmailWithBackend(email) {

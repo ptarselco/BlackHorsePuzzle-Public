@@ -2563,6 +2563,11 @@ async checkPuzzle() {
     }
   }
 
+  // Tambahkan deklarasi progress di sini:
+  const email = localStorage.getItem('email');
+  let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+  let progress = userData.gameProgress || {};
+
   if (isCorrect) {
     // Stop timer
     if (this.roundTimer) {
