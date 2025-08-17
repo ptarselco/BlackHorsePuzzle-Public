@@ -614,7 +614,7 @@ window.checkPaymentStatus = async function(email) {
      }
     } 
 
-// ✅ REPLACE bagian beforeunload di line 644-665 dengan yang diperbaiki:
+// ✅ SEANDBEACON KIRIM DATA KE BACKEND
 window.addEventListener('beforeunload', () => {
   const email = localStorage.getItem('email');
   if (!email) return;
