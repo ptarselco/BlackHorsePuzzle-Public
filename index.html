@@ -419,8 +419,7 @@ window.checkPaymentStatusFromBackend = async function(email) {
     
     const res = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/payment-status`,
-      { email: email.toLowerCase().trim(),
-        provider: 'paypal' },
+      {},
       { timeout: 200000 }
     );
 
