@@ -1,3 +1,5 @@
+const { trusted } = require("mongoose");
+
 class Level01Scene extends Phaser.Scene {
   constructor() {
     super('Level01Scene');
@@ -2628,8 +2630,8 @@ async checkPuzzle() {
       bestTime: this.timeElapsed,
       //averageTime: newAverageTime,
       averageTime: this.timeElapsed,
-      completionRate: newCompletionRate,
-      //completionRate: 100,
+      //completionRate: newCompletionRate,
+      completionRate: true,
       //perfectGames: isPerfectGame,
       perfectGames: true,
       //totalAttempts: (progress.progress.totalAttempts || 0) + 1
