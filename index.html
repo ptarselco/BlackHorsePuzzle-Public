@@ -416,19 +416,24 @@ if (!userData.gameProgress) {
 window.checkPaymentStatusFromBackend = async function(email) {
   try {
     console.log('🔍 Checking payment status for:', email);
-    //const encodedEmail = encodeURIComponent(email);
+    
     const res = await axios.post(
-      `https://backend-paypalblackhorsepuzzle.onrender.com/api/${encodeURIComponent(email)}/payment-status`,
-      { }, // Send email in POST body
-      {timeout: 200000}
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/payment-status`,
+      { email, provider: 'paypal' },
+      { timeout: 200000 }
     );
+
     const data = res.data;
     console.log('💳 Payment status response:', data);
 
+    // ✅ Hanya terima payment dari PayPal
     if (data && data.success) {
-      // Kembalikan seluruh data status pembayaran, bukan hanya boolean
+      const paypalAmount = data.paypalAmount || 0;
+      
       return {
-        isPaid: data.isPaid === true,
+        isPaid: paypalAmount > 0,
+        amount: paypalAmount,
+        provider: 'paypal',
         supportAmount: data.supportAmount || 0,
         paymentMethods: data.paymentMethods || [],
         gameStats: data.gameStats || {},
@@ -436,9 +441,10 @@ window.checkPaymentStatusFromBackend = async function(email) {
       };
     } else {
       console.log('⚠️ Payment check: no success flag in response');
-      // Jika respons tidak sesuai harapan
       return {
         isPaid: false,
+        amount: 0,
+        provider: null,
         supportAmount: 0,
         paymentMethods: [],
         gameStats: {},
@@ -447,9 +453,10 @@ window.checkPaymentStatusFromBackend = async function(email) {
     }
   } catch (err) {
     console.error('Failed to check payment status:', err);
-    // Jika error, kembalikan default unpaid status
     return {
       isPaid: false,
+      amount: 0,
+      provider: null,
       supportAmount: 0,
       paymentMethods: [],
       gameStats: {},
