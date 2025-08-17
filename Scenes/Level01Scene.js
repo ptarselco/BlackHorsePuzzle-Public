@@ -221,7 +221,10 @@ if (lossUser) {
         isGameOver: this.isGameOver || false
       };
       const url = `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`;
-      navigator.sendBeacon(url, JSON.stringify(progress));
+      navigator.sendBeacon(
+        url, 
+        new Blob([JSON.stringify(progress)], { type: 'application/json' } )
+      );
     }
   });
 

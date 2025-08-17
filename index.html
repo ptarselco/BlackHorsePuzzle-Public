@@ -670,36 +670,48 @@ window.addEventListener('beforeunload', () => {
 });
  
 //=================================== BATAS SENDBEACON ====================================
-
+// KIRIM DATA KE BACKEND
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
     const email = localStorage.getItem('email');
-    const level01Score = localStorage.getItem(`score_${email}`) || 0;
-    // Jika ada timeElapsed yang valid, ambil dari scene, jika tidak, pakai 0
+    if (!email) return;
+
+    // Ambil score terbaru dari scene atau localStorage
+    let level01Score = 0;
     let time = 0;
     if (window.game && window.game.scene && window.game.scene.getScene) {
       const level01 = window.game.scene.getScene('Level01Scene');
-      if (level01 && typeof level01.timeElapsed !== 'undefined') {
-        time = level01.timeElapsed;
+      if (level01) {
+        level01Score = level01.level01Score || 0;
+        time = level01.timeElapsed || 0;
       }
     }
+    // Fallback ke localStorage jika scene tidak aktif
+    if (!level01Score) {
+      level01Score = parseInt(localStorage.getItem(`score_${email}`) || 0);
+    }
+
+    // Ambil high score dari localStorage
+    const userData = JSON.parse(localStorage.getItem(`gameData-${email}`) || '{}');
+    const gameProgress = userData.gameProgress || {};
+    const level01HighScore = Math.max(level01Score, gameProgress.level01HighScore || 0);
 
     console.log('📤 Visibility hidden - backup level01Score:', level01Score, time);
 
-    if (email) {
-      const data = JSON.stringify({
+    // Kirim ke backend
+    navigator.sendBeacon(
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
+      new Blob([JSON.stringify({
         email,
-        level01Completed: false,
+        level01Completed: level01Score > 0,
         level01Score: level01Score,
+        level01HighScore: level01HighScore,
         completionTime: time,
-        isPerfectGame: false
-      });
-
-      //navigator.sendBeacon(
-        //'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/' + encodeURIComponent(email) + '/update-progress',
-        //new Blob([data], { type: 'text/plain' })
-      //);
-    }
+        isPerfectGame: false,
+        preserveHighScore: true,
+        source: 'visibilitychange'
+      })], { type: 'application/json' })
+    );
   }
 });
 //================================= BATAS VISIBILITY CHANGE =================================
