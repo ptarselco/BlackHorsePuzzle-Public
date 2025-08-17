@@ -2565,8 +2565,8 @@ async checkPuzzle() {
 
   // Tambahkan deklarasi progress di sini:
   const email = localStorage.getItem('email');
-  let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
-  let progress = userData.gameProgress || {};
+  const userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+  const progress = userData.gameProgress || {};
 
   if (isCorrect) {
     // Stop timer
@@ -2630,7 +2630,7 @@ async checkPuzzle() {
     await this.updateUserProgress(email, {
       level01Completed: true,
       level01Score: this.level01Score,
-      level01HighScore: Math.max(this.level01Score, progress.progress.level01HighScore || 0),
+      level01HighScore: Math.max(this.level01Score, progress.level01HighScore || 0),
       //totalPlays: (progress.progress.totalPlays || 0) + 1,
       totalPlays: userData.gameProgress.totalPlays,
       bestTime: this.timeElapsed,
