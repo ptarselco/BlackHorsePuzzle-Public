@@ -2625,17 +2625,17 @@ async checkPuzzle() {
       level01Completed: true,
       level01Score: this.level01Score,
       level01HighScore: Math.max(this.level01Score, progress.progress.level01HighScore || 0),
-      totalPlays: (progress.progress.totalPlays || 0) + 1,
-      //totalPlays: userData.gameProgress.totalPlays,
+      //totalPlays: (progress.progress.totalPlays || 0) + 1,
+      totalPlays: userData.gameProgress.totalPlays,
       bestTime: this.timeElapsed,
-      //averageTime: newAverageTime,
-      averageTime: this.timeElapsed,
+      averageTime: newAverageTime,
+      //averageTime: this.timeElapsed,
       //completionRate: newCompletionRate,
       completionRate: true,
       //perfectGames: isPerfectGame,
       perfectGames: true,
-      totalAttempts: (progress.progress.totalAttempts || 0) + 1
-      //totalAttempts: userData.gameProgress.totalAttempts
+      //totalAttempts: (progress.progress.totalAttempts || 0) + 1
+      totalAttempts: userData.gameProgress.totalAttempts
     });
    } catch (err) {
       console.error('Error updating progress:', err);
