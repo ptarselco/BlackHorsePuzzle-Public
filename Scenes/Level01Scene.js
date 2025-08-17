@@ -197,60 +197,7 @@ if (lossUser) {
   // Pastikan level01Score diinisialisasi
   this.level01Score = data.level01Score || 0;
 
-  // ✅ SEANDBEACON KIRIM DATA KE BACKEND
-window.addEventListener('beforeunload', () => {
-  const email = localStorage.getItem('email');
-  if (!email) return;
 
-  // ✅ AMBIL SCORE TERTINGGI DARI SEMUA SUMBER - JANGAN KIRIM 0
-  let finalScore = 0;
-  let timeElapsed = 0;
-
-  // 1. Ambil dari scene yang aktif (prioritas tertinggi)
-  if (window.game && window.game.scene) {
-    const level01 = window.game.scene.getScene('Level01Scene');
-    if (level01) {
-      finalScore = level01.level01Score || 0;
-      timeElapsed = level01.timeElapsed || 0;
-    }
-  }
-
-  // 2. Ambil dari localStorage score
-  const localScore = parseInt(localStorage.getItem(`score_${email}`) || 0);
-  finalScore = Math.max(finalScore, localScore);
-
-  // 3. Ambil dari gameData untuk memastikan
-  const userData = JSON.parse(localStorage.getItem(`gameData-${email}`) || '{}');
-  const gameProgress = userData.gameProgress || {};
-  finalScore = Math.max(finalScore, gameProgress.level01Score || 0, gameProgress.level01HighScore || 0);
-
-  // 4. Ambil dari history
-  const history = JSON.parse(localStorage.getItem(`gameHistory_${email}`) || '{}');
-  finalScore = Math.max(finalScore, history.highestScore || 0);
-
-  console.log('📤 Sending BEST score via sendBeacon:', finalScore, 'Time:', timeElapsed);
-
-  // ✅ HANYA KIRIM JIKA ADA SCORE YANG VALID - JANGAN KIRIM 0 YANG BISA OVERWRITE SCORE TINGGI
-  if (finalScore > 0) {
-    navigator.sendBeacon(
-      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
-      new Blob([JSON.stringify({
-        email,
-        level01Completed: true, // ✅ Jika ada score > 0, berarti completed
-        level01Score: finalScore, // ✅ Kirim score tertinggi
-        level01HighScore: finalScore, // ✅ Pastikan high score juga di-update
-        completionTime: timeElapsed,
-        isPerfectGame: false,
-        preserveHighScore: true, // ✅ Flag untuk backend: jangan turunkan score
-        source: 'beforeunload'
-      })], { type: 'application/json' }) // ✅ Ganti ke application/json
-    );
-    
-    console.log('💾 Score preserved via sendBeacon:', finalScore);
-  } else {
-    console.log('🚫 No valid score found, skipping sendBeacon to prevent score loss');
-  }
-});
 
    // Tambahkan juga untuk visibilitychange (tab pindah/fokus hilang)
   document.addEventListener('visibilitychange', () => {
@@ -2877,23 +2824,37 @@ async onTimeUp() {
 
   // Reset timer dan tampilkan pesan ronde
   this.timeElapsed = 0;
-  let timeLimit = this.roundTimeLimits[this.round - 1] || 18;
-  if (this.roundTimer) this.roundTimer.remove(false);
-  this.roundTimer = this.time.addEvent({
-    delay: 1000,
-    callback: () => {
-      this.timeElapsed++;
-      let min = Math.floor(this.timeElapsed / 60).toString().padStart(2, '0');
-      let sec = (this.timeElapsed % 60).toString().padStart(2, '0');
-      this.timerText.setText(`${min}:${sec}`);
-      if (this.timeElapsed >= timeLimit) {
-        this.roundTimer.remove(false);
-        this.onTimeUp();
-      }
-    },
-    callbackScope: this,
-    loop: true
-  });
+  if (this.timerText) this.timerText.setText("00:00");
+
+  // Tampilkan pesan ronde berikutnya, tapi tunggu klik PlayBtn
+  this.showRoundMessage(`ROUND ${this.round} - ${timeLimit}s`);
+
+  // Aktifkan PlayBtn agar user harus klik untuk lanjut
+  if (this.playBtn) {
+    this.playBtn.setInteractive({ useHandCursor: true });
+    this.playBtn.setAlpha(1);
+    this.playBtn.setVisible(true);
+  }
+
+  //let timeLimit = this.roundTimeLimits[this.round - 1] || 18;
+  //if (this.roundTimer) this.roundTimer.remove(false);
+  //this.roundTimer = this.time.addEvent({
+    //delay: 1000,
+    //callback: () => {
+      //this.timeElapsed++;
+      //let min = Math.floor(this.timeElapsed / 60).toString().padStart(2, '0');
+      //let sec = (this.timeElapsed % 60).toString().padStart(2, '0');
+      //this.timerText.setText(`${min}:${sec}`);
+      //if (this.timeElapsed >= timeLimit) {
+        //this.roundTimer.remove(false);
+        //this.onTimeUp();
+      //}
+    //},
+    //callbackScope: this,
+    //loop: true
+  //});
+
+
   this.showRoundMessage(`ROUND ${this.round} - ${timeLimit}s`);
   this.showHorseShakeHead();
 
