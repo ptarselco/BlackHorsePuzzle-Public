@@ -82,7 +82,7 @@ class Level02Scene extends Phaser.Scene {
   //});
 
 // Di dalam create()
-window.addEventListener('beforeunload', window.handleBeforeUnloadLevel02Scene.bind(this));
+//window.addEventListener('beforeunload', window.handleBeforeUnloadLevel02Scene.bind(this));
 
   // Update progress ke backend saat tab ditutup atau pindah
 
