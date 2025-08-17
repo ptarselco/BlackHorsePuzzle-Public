@@ -587,11 +587,11 @@ async  syncProgressFromBackend(email) {
   // Cek apakah email sudah ada di localStorage
     const email = localStorage.getItem("email");
     let playerScore = 0;
+
     // ✅ ENHANCED SAFETY CHECK in updateGameScore function:
     if (email) {
     const scoreStatus = checkPlayerScoreStatus(email); 
     updateGameScore(email, scoreStatus.currentScore);
-    //updateGameScore(email,scoreStatus.currentScore);
     console.log('✅ updateGameScore dipanggil:', email,scoreStatus.currentScore);
     
     // Sembunyikan loginBox, tampilkan logoutBtn
@@ -599,19 +599,16 @@ async  syncProgressFromBackend(email) {
     const logoutBtn = document.getElementById("logoutBtn");
     if (loginBox) loginBox.style.display = "none";
     if (logoutBtn) logoutBtn.style.display = "inline-block";
-  } else {
-    // Email tidak ditemukan, tampilkan loginBox dan sembunyikan logoutBtn
-    console.warn('❌ email tidak ditemukan - tidak bisa updateGameScore');
+  
+    // Panggil sync progress dari backend di sini
+    syncProgressFromBackend(email);
+    } else {
     const loginBox = document.getElementById("loginBox");
     const logoutBtn = document.getElementById("logoutBtn");
     if (loginBox) loginBox.style.display = "block";
     if (logoutBtn) logoutBtn.style.display = "none";
   }
   
-    // Panggil sync progress dari backend di sini
-  if (email) {
-    syncProgressFromBackend(email); // ← panggil di sini
-  }
 //======================================================================================
 // HANDLE SEANDBEACON
 // ✅ SEANDBEACON KIRIM DATA KE BACKEND
