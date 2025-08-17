@@ -2631,7 +2631,7 @@ async checkPuzzle() {
       averageTime: newAverageTime,
       //averageTime: this.timeElapsed,
       //completionRate: newCompletionRate,
-      completionRate: true,
+      completionRate: 100,
       //perfectGames: isPerfectGame,
       perfectGames: true,
       //totalAttempts: (progress.progress.totalAttempts || 0) + 1
