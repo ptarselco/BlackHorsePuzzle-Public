@@ -210,7 +210,7 @@ if (lossUser) {
   //});
 
 // HANDLE SEANDBEACON
-window.addEventListener('beforeunload', window.handleBeforeUnloadLevel01.bind(this));
+window.addEventListener('beforeunload', window.handleBeforeUnloadLevel01Scene.bind(this));
 
    // Tambahkan juga untuk visibilitychange (tab pindah/fokus hilang)
   document.addEventListener('visibilitychange', () => {
