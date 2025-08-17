@@ -275,6 +275,14 @@ if (!userData.gameProgress) {
     const email = localStorage.getItem('email');
     if (!email) return;
 
+    // Force sync dengan backend
+    window.forceSyncWithBackend(email);
+
+    // ✅ Start auto-sync setiap 1 menit jika user sudah login
+    if (email) {
+    window.startAutoSync(email);
+    }   
+
    // Ambil progress dari localStorage
   const userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
   const progress = userData.gameProgress || {}; 
@@ -1492,20 +1500,36 @@ async showGameOverReturnMessage() {
 
   const email = localStorage.getItem('email');
   let progress = {};
+  let newUser = false;
+  let winUser = false;
+  let lossUser = false;
+
   if (email) {
     try {
       const level01Score = this.level01Score || 0;
-      const level01HighScore = progress.level01HighScore || 0;
-      const totalPlays = progress.totalPlays || 0;
+      //const level01HighScore = progress.level01HighScore || 0;
+      //const totalPlays = progress.totalPlays || 0;
+
+   // ✅ AMBIL PROGRESS DARI getUserProgress DULU
+      const progressRes = await this.getUserProgress(email);
+      progress = progressRes.progress || {};   
+
+   // ✅  HITUNG USER CLASSIFICATION SETELAH DAPAT DATA
+   newUser = !progress || progress.totalPlays === 0;
+   winUser = progress && progress.totalPlays >= 1 && (progress.level01Score || 0) > 0;
+   lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
+
+   console.log('🔒 Game Over state detected - newUser:', newUser, 'winUser:', winUser, 'lossUser:', lossUser);
+
       
-      // Ambil data progress dari backend
+    // ✅ UPDATE BACKEND DENGAN DATA YANG BENAR
     const response = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
       { email, 
         level: Level01Scene,
         level01Score,
-        totalPlays,
-        level01HighScore,
+        totalPlays: progress.totalPlays || 0, 
+        level01HighScore: progress.level01HighScore || 0,
         level01Completed: progress.level01Completed || false,
         newUser,
         winUser,
@@ -1513,28 +1537,38 @@ async showGameOverReturnMessage() {
        },
       { timeout: 200000 }
     );
-      progress = response.data.progress || {};
+
+    // ✅ UPDATE progress DENGAN RESPONSE BACKEND
+      if (response.data && response.data.progress) {
+        progress = response.data.progress;
+        // Re-calculate setelah update backend
+        newUser = !progress || (progress.totalPlays || 0) === 0;
+        winUser = progress && (progress.totalPlays || 0) >= 1 && (progress.level01Score || 0) > 0;
+        lossUser = progress && (progress.totalPlays || 0) >= 3 && (progress.level01Score || 0) === 0;
+      }
+     // progress = response.data.progress || {};
     } catch (err) {
       console.error('❌ Gagal ambil progress user:', err);
-      progress = {};
+      //progress = {};
+      // ✅ FALLBACK - GUNAKAN DATA LOKAL
+      const userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+      progress = userData.gameProgress || {};
+      newUser = !progress || (progress.totalPlays || 0) === 0;
+      winUser = progress && (progress.totalPlays || 0) >= 1 && (progress.level01Score || 0) > 0;
+      lossUser = progress && (progress.totalPlays || 0) >= 3 && (progress.level01Score || 0) === 0;
     }
   }
 
-   // ✅ CALCULATE USER TYPES AND RETURN THEM:
-  const newUser = !progress || progress.totalPlays === 0;
-  const winUser = progress && progress.totalPlays >= 1 && (progress.level01Score || 0) > 0;
-  const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
-
   console.log('🔒 Game Over state detected - newUser:', newUser, 'winUser:', winUser, 'lossUser:', lossUser);
-
-  // Jika bukan lossUser, tidak perlu tampilkan pesan Game Over
+  
+  // ✅ JIKA BUKAN LOSSUSER, JANGAN TAMPILKAN GAME OVER
   if (newUser || winUser) {
     this.isGameOver = false;
     this.unblur10PuzzleButton && this.unblur10PuzzleButton();
     return;
   }
 
-  // Jika lossUser, tampilkan panel Game Over
+  // ✅ JIKA LOSSUSER, TAMPILKAN PANEL GAME OVER
   if (lossUser) {
     this.isGameOver = true;
     this.blur10PuzzleButton && this.blur10PuzzleButton();
@@ -2532,64 +2566,87 @@ async checkPuzzle() {
       this.roundTimer.remove(false);
       this.roundTimer = null;
     }
+
+     // ✅ STOP TIME ELAPSED agar tidak bertambah lagi
+    this.timeElapsed = this.timeElapsed; // Freeze time
+
+    console.log('🏆 PUZZLE COMPLETE! Timer stopped at:', this.timeElapsed);
+
+    // ✅ TAMBAH SCORE
     this.level01Score = (this.level01Score || 0) + 100;
     this.scoreText.setText(this.level01Score.toString().padStart(5, '0'));
     this.registry.set('level01Score', this.level01Score);
+
     const email = localStorage.getItem('email');
 
     // Reset ke R1 setelah menang di ronde manapun
+    this.round = 1;
     this.currentRound = 1;
     this.timeElapsed = 0;
-    this.startNextRound();
+    //this.startNextRound(); // akan start timer lagi
 
-     // Ambil level01Score dari localStorage jika ada (data lama)
-      let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
-      //userData = userData || {};
-      userData.gameProgress = userData.gameProgress || {};
+     // ✅ SIMPAN PROGRESS KE LOCALSTORAGE
+    let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+    userData.gameProgress = userData.gameProgress || {};
 
-      // Pastikan level01HighScore selalu angka
-      if (typeof userData.gameProgress.level01HighScore !== 'number' || isNaN(userData.gameProgress.level01HighScore)) {
-      userData.gameProgress.level01HighScore = 0;
-      }
+    // Pastikan level01HighScore selalu angka // sonnet tidak ada koreksi ini
+    if (typeof userData.gameProgress.level01HighScore !== 'number' || isNaN(userData.gameProgress.level01HighScore)) {
+    userData.gameProgress.level01HighScore = 0;
+    }
      
-      // Simpan level01Score terbaru ke localStorage
-     userData.gameProgress.level01Score = this.level01Score;
-   
-     // Update localStorage dengan semua progress terbaru
+    // Update localStorage dengan semua progress terbaru
     userData.gameProgress.level01Score = this.level01Score;
     userData.gameProgress.level01HighScore = Math.max(userData.gameProgress.level01HighScore || 0, this.level01Score);
     userData.gameProgress.totalPlays = (userData.gameProgress.totalPlays || 0) + 1;
+    userData.gameProgress.level01Completed = true; // ✅ MARK AS COMPLETED
     userData.gameProgress.bestTime = this.timeElapsed;
-    userData.gameProgress.averageTime = typeof this.timeElapsed === 'number' ? this.timeElapsed : 0;
+    //userData.gameProgress.averageTime = typeof this.timeElapsed === 'number' ? this.timeElapsed : 0;
+    userData.gameProgress.averageTime = this.timeElapsed;
     userData.gameProgress.completionRate = 100; // Atur sesuai logic kamu
     userData.gameProgress.perfectGames = true; // Atur sesuai logic kamu
-    userData.gameProgress.totalAttempts = (userData.gameProgress.totalAttempts || 0)  
+    userData.gameProgress.totalAttempts = (userData.gameProgress.totalAttempts || 0) + 1;
 
-    
-    localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+     localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
   
     // Setelah update localStorage
-    const newAverageTime = typeof this.timeElapsed === 'number' ? this.timeElapsed : 0;
-    const newCompletionRate = 100; // Atau hitung sesuai logic kamu
-    const isPerfectGame = true; // Atur sesuai logic kamu
+    //const newAverageTime = typeof this.timeElapsed === 'number' ? this.timeElapsed : 0;
+    //const newCompletionRate = 100; // Atau hitung sesuai logic kamu
+    //const isPerfectGame = true; // Atur sesuai logic kamu
 
 
     // Update ke backend juga
-    const progress = await this.getUserProgress(email);   
+    //const progress = await this.getUserProgress(email);   
 
-    this.updateUserProgress(email, {
+    // ✅ UPDATE BACKEND TANPA TRIGGER GAME OVER
+    try {
+    await this.updateUserProgress(email, {
       level01Completed: true,
       level01Score: this.level01Score,
       level01HighScore: Math.max(this.level01Score, progress.progress.level01HighScore || 0),
-      totalPlays: (progress.progress.totalPlays || 0) + 1,
+      //totalPlays: (progress.progress.totalPlays || 0) + 1,
+      totalPlays: userData.gameProgress.totalPlays,
       bestTime: this.timeElapsed,
-      averageTime: newAverageTime,
-      completionRate: newCompletionRate,
-      perfectGames: isPerfectGame,
-      totalAttempts: (progress.progress.totalAttempts || 0) + 1
+      //averageTime: newAverageTime,
+      averageTime: this.timeElapsed,
+      //completionRate: newCompletionRate,
+      completionRate: 100,
+      //perfectGames: isPerfectGame,
+      perfectGames: true,
+      //totalAttempts: (progress.progress.totalAttempts || 0) + 1
+      totalAttempts: userData.gameProgress.totalAttempts
     });
+   } catch (err) {
+      console.error('Error updating progress:', err);
+   } 
 
+    // ✅ PLAY WIN MUSIC & HORSE ANIMATION
     this.sound.play('horseNeigh');
+    this.showHorseNodHead();
+
+   if (this.winMusic) {
+      this.winMusic.play();
+    }
+
     this.showClaimHat(() => {
       if (this.playBtn) {
         this.playBtn.setInteractive();

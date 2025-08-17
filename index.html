@@ -412,6 +412,36 @@ if (!userData.gameProgress) {
 }
 //======================================================================================
 
+// ✅ PERBAIKAN: Function untuk force sync manual
+window.forceSyncWithBackend = async function(email) {
+  console.log('🔄 Force syncing with backend...');
+  const result = await syncProgressFromBackend(email);
+  
+  if (result.success) {
+    console.log('✅ Force sync successful');
+    
+    // Show notification
+    if (window.showSuccessNotification) {
+      showSuccessNotification('✅ Data synced with server');
+    }
+    
+    // Refresh scene jika perlu
+    if (window.Phaser && window.game && window.game.scene) {
+      const level01 = window.game.scene.getScene('Level01Scene');
+      if (level01) {
+        level01.scene.restart();
+      }
+    }
+  } else {
+    console.log('❌ Force sync failed');
+    if (window.showErrorNotification) {
+      showErrorNotification('❌ Sync failed: ' + result.error);
+    }
+  }
+  
+  return result;
+};
+
 // Fungsi cek status pembayaran dari backend (lengkap)
 window.checkPaymentStatusFromBackend = async function(email) {
   try {
@@ -811,6 +841,20 @@ try {
       return;
     }
 
+    // ✅ SYNC DENGAN BACKEND SETELAH LOGIN
+      const syncResult = await syncProgressFromBackend(inputEmail);
+      
+      if (syncResult.success) {
+        console.log('✅ Post-login sync successful');
+        
+        // Start auto-sync
+        window.startAutoSync(inputEmail);
+
+        // Check payment status
+        const paymentData = await checkPaymentStatusFromBackend(inputEmail);
+        window.updateGamePaymentStatus(paymentData.isPaid, paymentData.method);
+      }
+
     //localStorage.setItem("email", inputEmail);
     console.log('📧 Attempting login with email:', inputEmail);
     
@@ -998,6 +1042,33 @@ window.verifyEmailWithBackend = async function(email) {
   }
 };
 
+// ✅ PERBAIKAN: Sync berkala setiap 1 menit
+let autoSyncInterval = null;
+
+window.startAutoSync = function(email) {
+  if (autoSyncInterval) clearInterval(autoSyncInterval);
+  
+  autoSyncInterval = setInterval(async () => {
+    console.log('🔄 Auto-syncing with backend...');
+    await syncProgressFromBackend(email);
+  }, 60000); // 1 menit
+
+  console.log('✅ Auto-sync started for:', email);
+};
+
+window.stopAutoSync = function() {
+  if (autoSyncInterval) {
+    clearInterval(autoSyncInterval);
+    autoSyncInterval = null;
+    console.log('🛑 Auto-sync stopped');
+  }
+};
+
+// ✅ Start auto-sync jika user sudah login
+if (email) {
+  window.startAutoSync(email);
+}
+
 // Tambahkan fungsi unlock global
 window.unlockPlayAndHideGameOver = function() {
   // Dapatkan scene Level01Scene
@@ -1106,28 +1177,184 @@ function getPlayerGameHistory(email) {
 
 
 // ✅ ENHANCED UPDATE PLAYER GAME level01Score HISTORY
+// ✅ PERBAIKAN 1: Function updatePlayerGameHistory()
 function updatePlayerGameHistory(email, updates) {
   const history = getPlayerGameHistory(email);
   const updatedHistory = { ...history, ...updates };
   localStorage.setItem(`gameHistory_${email}`, JSON.stringify(updatedHistory));
   console.log('📊 Game history updated for:', email, updatedHistory);
   return updatedHistory;
+
+
+// ✅ LOGIC FIX: Jika ada highestScore > 0, otomatis hasPlayedBefore = true
+  if (updatedHistory.highestScore > 0) {
+    updatedHistory.hasPlayedBefore = true;
+  }
+  
+  // ✅ LOGIC FIX: Jika totalPlays > 0, otomatis hasPlayedBefore = true
+  if (updatedHistory.totalGamesPlayed > 0) {
+    updatedHistory.hasPlayedBefore = true;
+  }
+  
+  // ✅ LOGIC FIX: Pastikan totalGamesPlayed tidak 0 jika ada score
+  if (updatedHistory.highestScore > 0 && updatedHistory.totalGamesPlayed === 0) {
+    updatedHistory.totalGamesPlayed = 1; // Minimal 1 game
+  }
+  
+  localStorage.setItem(`gameHistory_${email}`, JSON.stringify(updatedHistory));
+  console.log('📊 Game history updated for:', email, updatedHistory);
+  return updatedHistory;
+}
+
+// ✅ PERBAIKAN 2: Function getPlayerGameHistory()
+function getPlayerGameHistory(email) {
+  const history = localStorage.getItem(`gameHistory_${email}`);
+  const parsed = history ? JSON.parse(history) : {
+    hasPlayedBefore: false,
+    totalGamesPlayed: 0,
+    highestScore: 0,
+    gameOvers: 0,
+    lastPlayedDate: null,
+    favoriteGiven: false
+  };
+  
+  // ✅ CONSISTENCY CHECK: Fix inconsistent data
+  if (parsed.highestScore > 0 && !parsed.hasPlayedBefore) {
+    console.log('🔧 Fixing inconsistent history data...');
+    parsed.hasPlayedBefore = true;
+    parsed.totalGamesPlayed = Math.max(parsed.totalGamesPlayed, 1);
+    localStorage.setItem(`gameHistory_${email}`, JSON.stringify(parsed));
+  }
+  
+  return parsed;
+}
+
+// ✅ PERBAIKAN 3: Function updateGameScore()
+async function updateGameScore(email, newScore) {
+  if (!email) {
+    console.error('❌ Email is null or undefined in updateGameScore');
+    return {
+      success: false,
+      error: 'Email is null or undefined',
+      newUser: false,
+      winUser: false,
+      lossUser: false,
+      gameProgress: {}
+    };
+  } 
+  
+  localStorage.setItem(`score_${email}`, newScore.toString());
+  window.level01Score = newScore;
+  window.playerScore = newScore;
+
+  // ✅ GET CURRENT HISTORY
+  const history = getPlayerGameHistory(email);
+  
+  // ✅ UPDATE HISTORY WITH CONSISTENT LOGIC
+  const updatedHistory = {
+    hasPlayedBefore: true, // ✅ SELALU TRUE jika function ini dipanggil
+    totalGamesPlayed: Math.max(history.totalGamesPlayed + 1, 1), // ✅ INCREMENT atau minimal 1
+    highestScore: Math.max(history.highestScore, newScore),
+    gameOvers: history.gameOvers,
+    lastPlayedDate: new Date().toISOString(),
+    favoriteGiven: history.favoriteGiven
+  };
+
+  // ✅ SAVE UPDATED HISTORY
+  localStorage.setItem(`gameHistory_${email}`, JSON.stringify(updatedHistory));
+
+  const userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+  const progress = userData.gameProgress || {};
+  const level01Completed = progress.level01Completed ?? false;
+  const level01HighScore = Math.max(progress.level01HighScore ?? 0, newScore); // ✅ UPDATE HIGH SCORE
+  const totalPlays = Math.max(progress.totalPlays ?? 0, updatedHistory.totalGamesPlayed); // ✅ SYNC totalPlays
+  const bestTime = progress.bestTime ?? 0;  
+  const averageTime = progress.averageTime ?? 0;
+  const completionRate = progress.completionRate ?? 0;  
+  const perfectGames = progress.perfectGames ?? 0;
+  const totalAttempts = progress.totalAttempts ?? 0;
+  const completionTime = progress.completionTime ?? 0;
+  const isPerfectGame = newScore >= level01HighScore && newScore > 0;
+
+  // ✅ UPDATE userData dengan data yang konsisten
+  userData.gameProgress = {
+    level01Completed,
+    level01Score: newScore,
+    level01HighScore,
+    totalPlays,
+    bestTime,
+    averageTime,
+    completionRate,
+    perfectGames,
+    totalAttempts,
+    completionTime,
+    isPerfectGame
+  };
+  
+  localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+
+  // Simpan ke backend setiap kali level01Score berubah
+  try { 
+    const res = await axios.post(
+    `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
+    {
+      email,
+      level01Completed,
+      level01Score: newScore,
+      level01HighScore,
+      totalPlays,
+      bestTime,
+      averageTime,
+      completionRate,
+      perfectGames,
+      totalAttempts,
+      completionTime,
+      isPerfectGame
+    },
+    { timeout: 200000 }
+  );
+
+    console.log('✅ Backend updated - Score:', newScore, 'TotalPlays:', totalPlays);
+
+    // Return struktur lengkap seperti SplashScene
+    return {
+      success: res.data.success,
+      user: res.data.user,
+      newUser: res.data.newUser,
+      winUser: res.data.winUser,
+      lossUser: res.data.lossUser,
+      message: res.data.message,
+      gameProgress: res.data.user?.gameProgress || {}
+    };
+  } catch (err) {
+    console.error('❌ Update user progress error:', err);
+    return {
+      success: false,
+      error: err.message,
+      newUser: false,
+      winUser: false,
+      lossUser: false,
+      gameProgress: {}
+    };
+  }  
 }
 
 // ✅ ENHANCED CHECK PLAYER level01Score STATUS 
+// ✅ PERBAIKAN 4: Function checkPlayerScoreStatus()
 function checkPlayerScoreStatus(email) {
   const currentScore = parseInt(localStorage.getItem(`score_${email}`) || 0);
-  const history = getPlayerGameHistory(email);
-  //localStorage.setItem(`score_${email}`, '0');
-  //const currentScore = 0; // Selalu 0, tidak ada angka 3
-  
+  const history = getPlayerGameHistory(email); // ✅ Ini sudah otomatis fix inconsistency
+    
   console.log('🔍 Checking level01Score status for:', email);
   console.log('Current level01Score:', currentScore);
   console.log('Game history:', history);
+
+  // ✅ LOGIC FIX: hasPlayedBefore berdasarkan data yang konsisten
+  const hasPlayedBefore = history.hasPlayedBefore || history.totalGamesPlayed > 0 || history.highestScore > 0;
   
   return {
     currentScore: currentScore,
-    hasPlayedBefore: history.hasPlayedBefore,
+    hasPlayedBefore: history.hasPlayedBefore, // ✅ Use consistent logic
     canPlay: !history.hasPlayedBefore || currentScore > 0, // User baru atau user lama dengan level01Score > 0
     needsFavorite: currentScore === 0 && history.hasPlayedBefore && !history.favoriteGiven,
     isGameOver: currentScore === 0 && history.hasPlayedBefore,
@@ -1135,6 +1362,52 @@ function checkPlayerScoreStatus(email) {
     history: history
   };
 }
+
+// ✅ PERBAIKAN 5: Tambahkan function untuk fix data yang sudah rusak
+window.fixUserDataConsistency = function(email) {
+  console.log('🔧 Fixing user data consistency for:', email);
+  
+  const currentScore = parseInt(localStorage.getItem(`score_${email}`) || 0);
+  const userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+  const history = getPlayerGameHistory(email);
+  
+  // Fix userData
+  if (!userData.gameProgress) userData.gameProgress = {};
+  
+  const progress = userData.gameProgress;
+  const hasAnyScore = currentScore > 0 || (progress.level01Score || 0) > 0 || history.highestScore > 0;
+  
+  if (hasAnyScore) {
+    // User punya score, pasti sudah main
+    progress.totalPlays = Math.max(progress.totalPlays || 0, 1);
+    progress.level01HighScore = Math.max(
+      progress.level01HighScore || 0, 
+      currentScore, 
+      progress.level01Score || 0,
+      history.highestScore || 0
+    );
+
+    // Fix history
+    const fixedHistory = {
+      hasPlayedBefore: true,
+      totalGamesPlayed: Math.max(history.totalGamesPlayed, progress.totalPlays, 1),
+      highestScore: progress.level01HighScore,
+      gameOvers: history.gameOvers || 0,
+      lastPlayedDate: history.lastPlayedDate || new Date().toISOString(),
+      favoriteGiven: history.favoriteGiven || false
+    };
+    
+    localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+    localStorage.setItem(`gameHistory_${email}`, JSON.stringify(fixedHistory));
+    
+    console.log('✅ Data consistency fixed:', {
+      score: currentScore,
+      highScore: progress.level01HighScore,
+      totalPlays: progress.totalPlays,
+      hasPlayedBefore: true
+    });
+  }
+};
 
 // ✅ pesan ini untuk pemain lama yang sudah game over
 function showGameOverWarning(email) {
@@ -1224,6 +1497,8 @@ window.addEventListener('DOMContentLoaded', async function() {
   console.log('📄 Enhanced Black Horse Puzzle - Initializing secure system');
   
   if (email) {
+    // ✅ AUTO-FIX INCONSISTENT DATA
+    window.fixUserDataConsistency(email);
     // ✅ TAMBAH: Auto-sync dengan backend saat page load
     try {
       console.log('🔄 Starting initial backend sync...');
@@ -1357,7 +1632,15 @@ async function handleScoreStatus(inputEmail, scoreStatus) {
     
     const email = localStorage.getItem("email");
     
-    stopPaymentMonitoring();
+    // ✅ FINAL SYNC SEBELUM LOGOUT
+    if (email) {
+    console.log('🔄 Final sync before logout...');
+    await syncProgressFromBackend(email);
+    }
+  
+  // Stop auto-sync
+  window.stopAutoSync();
+  stopPaymentMonitoring();
     
     
     //localStorage.removeItem("email");

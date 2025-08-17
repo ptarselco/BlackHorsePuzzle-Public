@@ -468,7 +468,7 @@ async  syncProgressFromBackend(email) {
         // Kirim data lokal untuk perbandingan
         localProgress: localProgress
       },
-      { timeout: 30000 }
+      { timeout: 200000 }
     );
     
     // ✅ STEP 3: Ambil data dari backend (PRIORITAS UTAMA)
