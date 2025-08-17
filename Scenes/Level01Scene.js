@@ -2969,7 +2969,7 @@ async getUserStatus(email, level = 'Level01Scene') {
   try {
     const response = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/status',
-      { email: email.toLowerCase().trim(), level },
+      { email, level: 'Level01Scene' },
       { timeout: 200000 }
     );
     return response.data;
