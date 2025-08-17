@@ -197,17 +197,20 @@ if (lossUser) {
   // Pastikan level01Score diinisialisasi
   this.level01Score = data.level01Score || 0;
 
-  window.addEventListener('beforeunload', () => {
-  const email = localStorage.getItem("email");
-  if (!email) return;
-  const progress = {
-    level01Score: window.level01Score || 0,
-    totalPlays: window.totalPlays || 0,
-    isGameOver: window.isGameOver || false
-  };
-  const url = `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`;
-  navigator.sendBeacon(url, JSON.stringify(progress));
-  });
+  //window.addEventListener('beforeunload', () => { // PINDAH KE CLASS
+  //const email = localStorage.getItem("email");
+  //if (!email) return;
+  //const progress = {
+    //level01Score: window.level01Score || 0,
+    //totalPlays: window.totalPlays || 0,
+    //isGameOver: window.isGameOver || false
+  //};
+  //const url = `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`;
+  //navigator.sendBeacon(url, JSON.stringify(progress));
+  //});
+
+// HANDLE SEANDBEACON
+window.addEventListener('beforeunload', window.handleBeforeUnloadLevel01.bind(this));
 
    // Tambahkan juga untuk visibilitychange (tab pindah/fokus hilang)
   document.addEventListener('visibilitychange', () => {
@@ -3828,7 +3831,7 @@ this.paymentCheckInterval = setInterval(async () => {
     const unlocked = await this.unlockedLevels(email, 'Level01Scene');
     if (unlocked) {
       // Unlock UI
-      this.unblur10PuzzleButton();
+      //this.unblur10PuzzleButton(); // tidak pakai karena playBtn di disable
       this.unlockGameAfterPurchase();
       alert('🎉 Level successfully unlocked!');
       //location.reload();
@@ -4083,7 +4086,7 @@ return;
     const unlocked = await this.unlockedLevels(email, 'Level01Scene');
     if (unlocked) {
       // Unlock UI
-      this.unblur10PuzzleButton();
+      //this.unblur10PuzzleButton(); // karena playBtn di disable
       this.unlockGameAfterPurchase();
       alert('🎉 Level successfully unlocked!');
       //location.reload();

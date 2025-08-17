@@ -522,8 +522,11 @@ window.updateGamePaymentStatus = function(isPaid, method = null) {
   const email = localStorage.getItem("email");
   if (!email) {
     console.error('❌ email not defined in updateGamePaymentStatus');
-    return;
+    return; // ✅ KELUAR JIKA TIDAK ADA EMAIL
   }
+
+  console.log('💳 Updating payment status for:', email, 'isPaid:', isPaid);
+
   let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
   userData.isPaid = isPaid;
   localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
@@ -638,28 +641,60 @@ window.updateGamePaymentStatus = function(isPaid, method = null) {
      }
     } 
 
-// SEANBEACON menyimpan level01Score dan waktu ke backend saat sebelum halaman ditutup
- window.addEventListener('beforeunload', () => {
+// ✅ REPLACE bagian beforeunload di line 644-665 dengan yang diperbaiki:
+window.addEventListener('beforeunload', () => {
   const email = localStorage.getItem('email');
-  //const level01Score = window.Level01Scene?.instance?.level01Score || 0; // pastikan ambil level01Score terbaru
-  const level01Score = localStorage.getItem(`score_${email}`) || 0;
-  const time = window.Level01Scene?.instance?.timeElapsed || 0;
   if (!email) return;
 
-  console.log('📤 Sending level01Score via sendBeacon:', level01Score, time);
+  // ✅ AMBIL SCORE TERTINGGI DARI SEMUA SUMBER - JANGAN KIRIM 0
+  let finalScore = 0;
+  let timeElapsed = 0;
 
+  // 1. Ambil dari scene yang aktif (prioritas tertinggi)
+  if (window.game && window.game.scene) {
+    const level01 = window.game.scene.getScene('Level01Scene');
+    if (level01) {
+      finalScore = level01.level01Score || 0;
+      timeElapsed = level01.timeElapsed || 0;
+    }
+  }
 
-  navigator.sendBeacon(
-  `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
-  new Blob([JSON.stringify({
-    email,
-    level01Completed: false,
-    level01Score: level01Score,    // ✅ gunakan level01Score dari instance
-    completionTime: time,        // ✅ gunakan time dari instance
-    isPerfectGame: false
-  })], { type: 'text/plain' })
- );
- });
+  // 2. Ambil dari localStorage score
+  const localScore = parseInt(localStorage.getItem(`score_${email}`) || 0);
+  finalScore = Math.max(finalScore, localScore);
+
+  // 3. Ambil dari gameData untuk memastikan
+  const userData = JSON.parse(localStorage.getItem(`gameData-${email}`) || '{}');
+  const gameProgress = userData.gameProgress || {};
+  finalScore = Math.max(finalScore, gameProgress.level01Score || 0, gameProgress.level01HighScore || 0);
+
+  // 4. Ambil dari history
+  const history = JSON.parse(localStorage.getItem(`gameHistory_${email}`) || '{}');
+  finalScore = Math.max(finalScore, history.highestScore || 0);
+
+  console.log('📤 Sending BEST score via sendBeacon:', finalScore, 'Time:', timeElapsed);
+
+  // ✅ HANYA KIRIM JIKA ADA SCORE YANG VALID - JANGAN KIRIM 0 YANG BISA OVERWRITE SCORE TINGGI
+  if (finalScore > 0) {
+    navigator.sendBeacon(
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
+      new Blob([JSON.stringify({
+        email,
+        level01Completed: true, // ✅ Jika ada score > 0, berarti completed
+        level01Score: finalScore, // ✅ Kirim score tertinggi
+        level01HighScore: finalScore, // ✅ Pastikan high score juga di-update
+        completionTime: timeElapsed,
+        isPerfectGame: false,
+        preserveHighScore: true, // ✅ Flag untuk backend: jangan turunkan score
+        source: 'beforeunload'
+      })], { type: 'application/json' }) // ✅ Ganti ke application/json
+    );
+    
+    console.log('💾 Score preserved via sendBeacon:', finalScore);
+  } else {
+    console.log('🚫 No valid score found, skipping sendBeacon to prevent score loss');
+  }
+});
  
 //=================================== BATAS SENDBEACON ====================================
 
@@ -1611,7 +1646,7 @@ async function handleScoreStatus(inputEmail, scoreStatus) {
   // Stop auto-sync
   window.stopAutoSync();
   stopPaymentMonitoring();
-    
+
     
     //localStorage.removeItem("email");
     document.getElementById("emailInput").value = "";

@@ -68,18 +68,23 @@ class Level02Scene extends Phaser.Scene {
     syncProgressFromBackend(email); // ← panggil di sini
   }
   
-   // Update progress ke backend saat tab ditutup atau pindah
-  window.addEventListener('beforeunload', () => {
-    if (!email) return;
-    const progress = {
-      level01Score: this.level01Score || 0,
-      totalPlays: this.totalPlays || 0,
-      isGameOver: this.isGameOver || false
+   // Update progress ke backend saat tab ditutup atau pindah //PINDAH KE CLASS
+  //window.addEventListener('beforeunload', () => {
+    //if (!email) return;
+    //const progress = {
+      //level01Score: this.level01Score || 0,
+      //totalPlays: this.totalPlays || 0,
+      //isGameOver: this.isGameOver || false
       // Tambahkan field lain sesuai kebutuhan
-    };
-    const url = `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`;
-    navigator.sendBeacon(url, JSON.stringify(progress));
-  });
+    //};
+    //const url = `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`;
+    //navigator.sendBeacon(url, JSON.stringify(progress));
+  //});
+
+// Di dalam create()
+window.addEventListener('beforeunload', window.handleBeforeUnloadLevel02.bind(this));
+
+  // Update progress ke backend saat tab ditutup atau pindah
 
   // Tambahkan juga untuk visibilitychange (tab pindah/fokus hilang)
   document.addEventListener('visibilitychange', () => {
@@ -223,6 +228,8 @@ this.input.keyboard.on('keydown-ESC', () => {
     this.time.addEvent({ delay: 9000, callback: () => this.sound.play("hoof"), repeat: 4 });
     this.time.addEvent({ delay: 12000, callback: () => this.sound.play("gallop"), repeat: 2 });
   }
+
+
   // ✅ DONATION DISPLAY FUNCTION dengan CLICKABLE PAYPAL LINK
 showDonationDisplay() {
   // Create donation overlay

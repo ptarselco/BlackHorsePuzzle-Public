@@ -613,18 +613,8 @@ async  syncProgressFromBackend(email) {
     syncProgressFromBackend(email); // ← panggil di sini
   }
 //======================================================================================
-// Tambahkan event listener untuk menyimpan progress sebelum halaman ditutup
-  window.addEventListener('beforeunload', () => {
-  const email = localStorage.getItem("email");
-  if (!email) return;
-  const progress = {
-    level01Score: window.level01Score || 0,
-    totalPlays: window.totalPlays || 0,
-    isGameOver: window.isGameOver || false
-  };
-  const url = `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`;
-  navigator.sendBeacon(url, JSON.stringify(progress));
-  });
+// HANDLE SEANDBEACON
+window.addEventListener('beforeunload', window.handleBeforeUnloadSplash.bind(this));
 
     // Essential splash display
    // this.add.image(960, 640, "coverBlank").setDepth(0);
@@ -855,7 +845,6 @@ async  syncProgressFromBackend(email) {
     });
     }
 
-    
   // ========== LAZY LOAD BACKGROUND ASSETS (Non-blocking) ==========
   lazyLoadBackgroundAssets() {
     // Load decorative assets di background
