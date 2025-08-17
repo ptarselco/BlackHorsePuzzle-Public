@@ -614,7 +614,7 @@ async  syncProgressFromBackend(email) {
   }
 //======================================================================================
 // HANDLE SEANDBEACON
-window.addEventListener('beforeunload', window.handleBeforeUnloadSplashScene.bind(this));
+//window.addEventListener('beforeunload', window.handleBeforeUnloadSplashScene.bind(this));
 
     // Essential splash display
    // this.add.image(960, 640, "coverBlank").setDepth(0);
