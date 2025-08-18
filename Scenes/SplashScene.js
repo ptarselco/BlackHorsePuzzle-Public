@@ -175,6 +175,78 @@ async getUserProgress(email) {
   }
 }
 
+    // PERBAIKAN FUNGSI checkUserStatusAndGameOver
+async checkUserStatusAndGameOver(email) {
+  const status = await this.getUserStatus(email, 'Level01Scene');
+  if (!status) {
+    console.error('Gagal ambil status user');
+    return null; 
+}
+
+const progress = status.progress || {};
+  const totalPlays = progress.totalPlays || 0;
+  const currentScore = progress.level01Score || 0;
+  const highScore = progress.level01HighScore || 0;
+  
+  // ✅ PERBAIKAN KLASIFIKASI USER:
+  const newUser = totalPlays === 0;
+  const winUser = totalPlays > 0 && (currentScore > 0 || highScore > 0);
+  const lossUser = totalPlays >= 3 && currentScore === 0 && highScore === 0;
+
+  console.log(`🔍 User status check: plays=${totalPlays}, score=${currentScore}, high=${highScore}`);
+  console.log(`🎯 User type: new=${newUser}, win=${winUser}, loss=${lossUser}`);
+
+  // ✅ UNTUK NEW USER: Aktifkan game
+  if (newUser) {
+    this.isGameOver = false;
+    this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+    console.log('✅ User baru - game diaktifkan');
+    return { ...status, newUser: true, winUser: false, lossUser: false };
+  }
+
+// ✅ UNTUK WIN USER: Selalu aktifkan game (sudah pernah menang)
+  if (winUser) {
+    this.isGameOver = false;
+    this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+    if (this.playBtn) {
+      this.playBtn.setInteractive({ useHandCursor: true });
+      this.playBtn.setAlpha(1);
+      this.playBtn.setVisible(true);
+    }
+    console.log('✅ Win user - game tetap aktif');
+    return { ...status, newUser: false, winUser: true, lossUser: false };
+  }
+
+  // ✅ UNTUK LOSS USER: Cek payment status
+  if (lossUser) {
+    // Cek payment status
+    const paymentData = await window.checkPaymentStatusFromBackend(email);
+    const isPaid = paymentData && paymentData.isPaid === true;
+
+if (!isPaid) {
+      this.isGameOver = true;
+      status.isGameOver = true;
+      status.showPurchase = true;
+      localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
+      this.lockAllGameplayButtons();
+      console.log('❌ Loss user belum bayar - game dikunci');
+      return { ...status, newUser: false, winUser: false, lossUser: true };
+    } else {
+      // Sudah bayar, unlock game
+      this.isGameOver = false;
+      this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+      console.log('✅ Loss user sudah bayar - game di-unlock');
+      return { ...status, newUser: false, winUser: false, lossUser: false, isPaid: true };
+    }
+  }
+
+  // Default case
+  this.isGameOver = false;
+  this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+  return status;
+}
+
+
 // 2. UPDATE FUNCTION FOR USER PROGRESS
 async updateUserProgress(email, progress) {
 try {
@@ -386,76 +458,6 @@ showNewHighScoreEffect(newHighScore) {
   }
 }
 
-    // PERBAIKAN FUNGSI checkUserStatusAndGameOver
-async checkUserStatusAndGameOver(email) {
-  const status = await this.getUserStatus(email, 'Level01Scene');
-  if (!status) {
-    console.error('Gagal ambil status user');
-    return null; 
-}
-
-const progress = status.progress || {};
-  const totalPlays = progress.totalPlays || 0;
-  const currentScore = progress.level01Score || 0;
-  const highScore = progress.level01HighScore || 0;
-  
-  // ✅ PERBAIKAN KLASIFIKASI USER:
-  const newUser = totalPlays === 0;
-  const winUser = totalPlays > 0 && (currentScore > 0 || highScore > 0);
-  const lossUser = totalPlays >= 3 && currentScore === 0 && highScore === 0;
-
-  console.log(`🔍 User status check: plays=${totalPlays}, score=${currentScore}, high=${highScore}`);
-  console.log(`🎯 User type: new=${newUser}, win=${winUser}, loss=${lossUser}`);
-
-  // ✅ UNTUK NEW USER: Aktifkan game
-  if (newUser) {
-    this.isGameOver = false;
-    this.unblur10PuzzleButton && this.unblur10PuzzleButton();
-    console.log('✅ User baru - game diaktifkan');
-    return { ...status, newUser: true, winUser: false, lossUser: false };
-  }
-
-// ✅ UNTUK WIN USER: Selalu aktifkan game (sudah pernah menang)
-  if (winUser) {
-    this.isGameOver = false;
-    this.unblur10PuzzleButton && this.unblur10PuzzleButton();
-    if (this.playBtn) {
-      this.playBtn.setInteractive({ useHandCursor: true });
-      this.playBtn.setAlpha(1);
-      this.playBtn.setVisible(true);
-    }
-    console.log('✅ Win user - game tetap aktif');
-    return { ...status, newUser: false, winUser: true, lossUser: false };
-  }
-
-  // ✅ UNTUK LOSS USER: Cek payment status
-  if (lossUser) {
-    // Cek payment status
-    const paymentData = await window.checkPaymentStatusFromBackend(email);
-    const isPaid = paymentData && paymentData.isPaid === true;
-
-if (!isPaid) {
-      this.isGameOver = true;
-      status.isGameOver = true;
-      status.showPurchase = true;
-      localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
-      this.lockAllGameplayButtons();
-      console.log('❌ Loss user belum bayar - game dikunci');
-      return { ...status, newUser: false, winUser: false, lossUser: true };
-    } else {
-      // Sudah bayar, unlock game
-      this.isGameOver = false;
-      this.unblur10PuzzleButton && this.unblur10PuzzleButton();
-      console.log('✅ Loss user sudah bayar - game di-unlock');
-      return { ...status, newUser: false, winUser: false, lossUser: false, isPaid: true };
-    }
-  }
-
-  // Default case
-  this.isGameOver = false;
-  this.unblur10PuzzleButton && this.unblur10PuzzleButton();
-  return status;
-}
 
 // 3. GET USER STATUS DARI BACKEND (POST)
 async getUserStatus(email, level = 'Level01Scene') {
@@ -482,12 +484,10 @@ async checkUserStatusAndGameOver(email) {
 
  const progress = status.progress  || {};
     // ✅ CALCULATE USER TYPES AND RETURN THEM:
-    const newUser = !progress || progress.totalPlays === 0;
-    const winUser = progress && progress.totalPlays >= 1 && (progress.level01Score || 0) > 0;
-    const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
+   const newUser = totalPlays === 0;
+   const winUser = totalPlays > 0 && (currentScore > 0 || highScore > 0);
+   const lossUser = totalPlays >= 3 && currentScore === 0 && highScore === 0;
     
-
-  
 // Jika newUser, aktifkan tombol Play & Puzzle
   if (newUser) {
     this.isGameOver = false;
@@ -753,10 +753,10 @@ async  syncProgressFromBackend(email) {
     };
     
     // ✅ STEP 5: Hitung user classification berdasarkan data backend
-    const newUser = !progress || (progress.totalPlays || 0) === 0;
-    const winUser = progress && (progress.totalPlays || 0) >= 1 && (progress.level01Score || 0) > 0;
-    const lossUser = progress && (progress.totalPlays || 0) >= 3 && (progress.level01Score || 0) === 0;
-    
+    const newUser = totalPlays === 0;
+    const winUser = totalPlays > 0 && (currentScore > 0 || highScore > 0);
+    const lossUser = totalPlays >= 3 && currentScore === 0 && highScore === 0;
+
     console.log(`👤 Backend user classification: newUser=${newUser}, winUser=${winUser}, lossUser=${lossUser}`);
     
     // ✅ STEP 6: UPDATE localStorage dengan data backend (FORCE UPDATE)
@@ -1192,7 +1192,7 @@ window.manualSaveProgress = function(email, gameData) {
     const currentScore = progress.level01Score || 0;
     
     const newUser = totalPlays === 0;
-    const winUser = totalPlays >= 1 && currentScore > 0;
+    const winUser = totalPlays >= 0 && currentScore > 0;
     const lossUser = totalPlays >= 3 && currentScore === 0;
 
     console.log(`👤 User: totalPlays=${totalPlays}, score=${currentScore}`);

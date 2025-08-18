@@ -348,10 +348,10 @@ async function syncProgressFromBackend(email) {
     }; 
 
     // ✅ STEP 5: Hitung user classification berdasarkan data backend
-    const newUser = !progress || (progress.totalPlays || 0) === 0;
-    const winUser = progress && (progress.totalPlays || 0) >= 1 && (progress.level01Score || 0) > 0;
-    const lossUser = progress && (progress.totalPlays || 0) >= 3 && (progress.level01Score || 0) === 0;
-    
+    const newUser = totalPlays === 0;
+    const winUser = totalPlays > 0 && (currentScore > 0 || highScore > 0);
+    const lossUser = totalPlays >= 3 && currentScore === 0 && highScore === 0;
+
     console.log(`👤 Backend user classification: newUser=${newUser}, winUser=${winUser}, lossUser=${lossUser}`);
     
     // ✅ STEP 6: UPDATE localStorage dengan data backend (FORCE UPDATE)
