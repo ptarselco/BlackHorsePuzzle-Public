@@ -810,6 +810,12 @@ window.addEventListener('beforeunload', () => {
     // Cek dan update status game over (jika perlu set-gameover)
     const status = await this.checkUserStatusAndGameOver(email);
 
+    // Tambahkan pengecekan ini:
+    if (!status) {
+    alert("Failed to check user status: data is not defined");
+    return;
+    }
+
     // 5. Cek status game over dari server (opsional, validasi ulang)
     await this.checkGameOverStatusFromServer();
 
