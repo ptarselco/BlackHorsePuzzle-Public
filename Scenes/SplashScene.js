@@ -288,7 +288,7 @@ async checkUserStatusAndGameOver(email) {
 
   // Tambah totalPlays setiap kali fungsi ini dipanggil (untuk user lama)
   //status.totalPlays = (status.totalPlays || 0) + 1; // bisa hapus score jika 3x pindah scene
-    this.level01Score = data.level01Score || 0;
+    this.level01Score = status.level01Score || 0;
 
   // Jika totalPlays >= 3 dan level01Score masih 0, set game over
   const isLossUser = (
@@ -742,16 +742,36 @@ window.addEventListener('beforeunload', () => {
   level1Glow.setVisible(true);
   btnBlue.setVisible(true);
 
+  // ✅ TAMBAHKAN LOADING TEXT
+  const loadingText = this.add.text(233, 350, 'Checking status...', {
+    fontSize: '18px',
+    fill: '#ffffff',
+    stroke: '#000000',
+    strokeThickness: 2,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    padding: { left: 10, right: 10, top: 5, bottom: 5 }
+  }).setOrigin(0.5).setDepth(30);  
+
   const email = localStorage.getItem("email");
   console.log('Email di localStorage:', email);
+
   if (!email) {
+    // ✅ HIDE LOADING INDICATORS JIKA ERROR
+    level1Glow.setVisible(false);
+    btnBlue.setVisible(false);
+    loadingText.destroy();
+
     document.getElementById("loginBox").style.display = "block";
     alert("Please Login with your email!");
     return;
   }
-  // Tambahan dari sonnet check status
-  console.log('🔍 Checking user status for:', email);
+  
+  try {
+    // ✅ UPDATE LOADING TEXT
+    loadingText.setText('Connecting to server...');
     
+    console.log('🔍 Checking user status for:', email);
+
     // Tambahkan timeout untuk memastikan backend response
     const status = await Promise.race([
       this.checkUserStatusAndGameOver(email),
@@ -763,17 +783,31 @@ window.addEventListener('beforeunload', () => {
     console.log('📊 User status result:', status);
 
     if (!status) {
+      // ✅ HIDE LOADING SEBELUM ALERT
+      level1Glow.setVisible(false);
+      btnBlue.setVisible(false);
+      loadingText.destroy();
+      
+      console.error('❌ checkUserStatusAndGameOver returned null');
       alert("Failed to check user status: Unable to connect to server");
       return;
     }
 
-  // ✅ TAMBAH AUTO PAYMENT CHECK DI SINI (line 437-438): tamabah 070825
-  console.log('🔍 Auto checking payment status for:', email);
-  try {
-    const paymentData = await checkPaymentStatusFromBackend(email);
-    if (paymentData && paymentData.isPaid === true) {
+    // ✅ UPDATE LOADING TEXT
+    loadingText.setText('Checking payment status...');
+
+
+    // ✅ TAMBAH AUTO PAYMENT CHECK DI SINI (line 437-438): tamabah 070825
+    console.log('🔍 Auto checking payment status for:', email);
+    try {
+      const paymentData = await checkPaymentStatusFromBackend(email);
+      if (paymentData && paymentData.isPaid === true) {
       console.log('✅ Payment detected! Auto-unlocking game...');
       
+      // ✅ HIDE LOADING SEBELUM PINDAH SCENE
+      loadingText.destroy();
+      // level1Glow dan btnBlue biarkan terlihat sampai scene transition  
+
       // Clear game over state
       localStorage.removeItem(`gameOver_${email}`);
       
@@ -784,8 +818,8 @@ window.addEventListener('beforeunload', () => {
       localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
       
       // Hide glow effect
-      level1Glow.setVisible(false);
-      btnBlue.setVisible(false);
+      //level1Glow.setVisible(false);
+      //btnBlue.setVisible(false);
       
       console.log('🎮 Payment verified - proceeding to Level01Scene');
       this.scene.start("Level01Scene", { 
@@ -797,11 +831,11 @@ window.addEventListener('beforeunload', () => {
     } else {
       console.log('❌ No payment detected - checking game over logic');
     }
-  } catch (error) {
-    console.error('❌ Payment check error:', error);
-  }
+    
+    // ✅ UPDATE LOADING TEXT
+    loadingText.setText('Preparing game...');
 
-  try {
+  
      // 1. Ambil progress user dari backend
     //const progress = await this.getUserProgress(email);
     const progressRes = await this.getUserProgress(email);
@@ -858,32 +892,32 @@ window.addEventListener('beforeunload', () => {
     // 5. Cek status game over dari server (opsional, validasi ulang)
     await this.checkGameOverStatusFromServer();
 
-// 6. Lock level dengan urutan: newUser, winUser, lossUser (koreksi sonnet)
-if (newUser) {
-  console.log('👶 New User - Welcome! Activating game...');
-  this.isGameOver = false;
-  this.unblur10PuzzleButton();
-  this.scene.start("Level01Scene", { 
-    isGameOver: false, 
-    userType: 'newUser',
-  });
-  return;
-}
+    // 6. Lock level dengan urutan: newUser, winUser, lossUser (koreksi sonnet)
+    if (newUser) {
+      console.log('👶 New User - Welcome! Activating game...');
+      this.isGameOver = false;
+      this.unblur10PuzzleButton();
+      this.scene.start("Level01Scene", { 
+        isGameOver: false, 
+        userType: 'newUser',
+      });
+      return;
+     }
 
-if (winUser || (status && status.level01Score > 0)) {
-  console.log('🏆 Win User - Game unlocked!');
-  this.isGameOver = false;
-  this.unblur10PuzzleButton();
-  this.scene.start("Level01Scene", { 
-    isGameOver: false, 
-    userType: 'winUser',
-    level01Score: status.level01Score 
-  });
-  return;
-}
+     if (winUser || (status && status.level01Score > 0)) {
+        console.log('🏆 Win User - Game unlocked!');
+        this.isGameOver = false;
+        this.unblur10PuzzleButton();
+        this.scene.start("Level01Scene", { 
+          isGameOver: false, 
+          userType: 'winUser',
+          level01Score: status.level01Score 
+        });
+        return;
+      }
 
-if (lossUser || (status && status.isGameOver && (status.level01Score || 0) === 0)) {
-  console.log('💀 Loss User - Lock 10 puzzle only, allowing navigation');
+      if (lossUser || (status && status.isGameOver && (status.level01Score || 0) === 0)) {
+      console.log('💀 Loss User - Lock 10 puzzle only, allowing navigation');
   
  // ✅ CEK PAYMENT STATUS SEBELUM LOCK
   const paymentData = await window.checkPaymentStatusFromBackend(email);
@@ -941,6 +975,9 @@ this.scene.start("Level01Scene", {
       console.log('🔒 Game locked: belum ada pembayaran');
     }
 
+    // ✅ HIDE LOADING SETELAH SEMUA PROSES SELESAI
+    loadingText.destroy();
+
     // Jika belum game over, lanjut ke Level01Scene
     // Show loading indicator
     const loadingText = this.add.text(960, 850, '', {
@@ -971,8 +1008,14 @@ this.scene.start("Level01Scene", {
         });
       });
     } catch (error) {
+      // ✅ HIDE LOADING INDICATORS SAAT ERROR
+    level1Glow.setVisible(false);
+    btnBlue.setVisible(false);
+    loadingText.destroy();
+
+    console.error('❌ Critical error in user status check:', error);  
     alert("Failed to check user status: " + error.message);
-    }
+      }
   });
   
     // Background music delayed
