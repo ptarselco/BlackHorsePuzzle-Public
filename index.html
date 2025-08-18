@@ -277,7 +277,8 @@ window.checkPaymentStatusFromBackend = async function(email) {
     // Cek semua metode pembayaran
     const paypalAmount = (data && typeof data.paypalAmount === 'number') ? data.paypalAmount : 0;
     const xsollaAmount = (data && typeof data.xsollaAmount === 'number') ? data.xsollaAmount : 0;
-    const isPaid = paypalAmount > 0 || xsollaAmount > 0;
+    const kofiAmount = (data && typeof data.kofiAmount === 'number') ? data.kofiAmount : 0;
+    const isPaid = paypalAmount > 0 || xsollaAmount > 0 || kofiAmount > 0;
 
     return {
       isPaid,
