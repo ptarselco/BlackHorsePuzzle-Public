@@ -1,5 +1,3 @@
-//const { trusted } = require("mongoose");
-
 class Level01Scene extends Phaser.Scene {
   constructor() {
     super('Level01Scene');
@@ -12,8 +10,6 @@ class Level01Scene extends Phaser.Scene {
     this.backendUrl = 'https://backend-paypalblackhorsepuzzle.onrender.com'; 
     this.userCountry = 'ID'; // FIXED :Default
     
-
-// ...existing code...
     // Inisialisasi properti favorit
     this.airBtn = null;
     this.grassBtn = null;
@@ -23,7 +19,41 @@ class Level01Scene extends Phaser.Scene {
     // Untuk menyimpan status favorit yang dibeli
     this.favoritItemBought = null;
     this.favoritItemBtnRef = null;
+  
+    // ✅ TAMBAHKAN PROPERTIES UNTUK PROTEKSI
+    this.level01Score = 0;
+    this.level01HighScore = 0;
+    this.timeElapsed = 0;
+    this.gameCompleted = false;
+    this.gameOver = false;
+    this.gameWon = false;
+    this.hasUserInput = false; // ✅ FLAG PENTING: cek apakah user sudah input
+    this.gameStarted = false; // ✅ FLAG: cek apakah game sudah dimulai
+    this.gameTimer = null;
+    this.timerText = null;
+    this.scoreText = null;
+    this.isGameLocked = false;
   }
+
+    init(data) {
+    console.log('🎮 Level01Scene init with data:', data);
+    
+    // ✅ TERIMA DATA DARI SPLASHSCENE
+    this.isGameOver = data.isGameOver || false;
+    this.userType = data.userType || 'unknown';
+    this.level01Score = data.level01Score || 0;
+    this.isPaid = data.isPaid || false;
+    
+    // ✅ RESET FLAGS SAAT INIT
+    this.gameCompleted = false;
+    this.gameWon = false;
+    this.hasUserInput = false;
+    this.gameStarted = false;
+    this.timeElapsed = 0;
+    
+    console.log(`👤 User type: ${this.userType}, isGameOver: ${this.isGameOver}, score: ${this.level01Score}`);
+  }
+    
 
   preload() {
    // Loader untuk text saat loading --> please wait (Co)
@@ -198,35 +228,69 @@ class Level01Scene extends Phaser.Scene {
   // Pastikan level01Score diinisialisasi
   this.level01Score = data.level01Score || 0;
 
-   // Tambahkan juga untuk visibilitychange (tab pindah/fokus hilang)
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden' && email) {
-      const progress = {
-        level02Score: this.level02Score || 0,
-        totalPlays: this.totalPlays || 0,
-        isGameOver: this.isGameOver || false
-      };
-      const url = `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`;
-      navigator.sendBeacon(
-        url, 
-        new Blob([JSON.stringify(progress)], { type: 'application/json' } )
+  
+
+
+// ✅ PERBAIKAN: SYNC PROGRESS DENGAN PROTEKSI
+  async function syncProgressFromBackend(email) {
+    try {
+      console.log('🔄 Level01 syncing progress from backend for:', email);
+      
+      const response = await axios.post(
+        `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
+        { 
+          email, 
+          level: 'Level01Scene',
+          requestType: 'sync_only'
+        },
+        { timeout: 15000 }
       );
+      
+      const progress = response.data.progress || {};
+      
+      // ✅ UPDATE PROPERTIES DENGAN PROTEKSI
+      this.level01Score = Math.max(this.level01Score, progress.level01Score || 0);
+      this.level01HighScore = Math.max(this.level01HighScore, progress.level01HighScore || 0);
+      
+      // ✅ UPDATE UI JIKA ADA
+      if (this.scoreText) {
+        this.scoreText.setText(this.level01Score.toString().padStart(5, '0'));
+      }
+
+       console.log('✅ Level01 progress synced:', { 
+        score: this.level01Score, 
+        highScore: this.level01HighScore 
+      });
+      
+      return {
+        success: true,
+        progress: progress,
+        level01Score: this.level01Score,
+        level01HighScore: this.level01HighScore
+      };
+      
+    } catch (err) {
+      console.error('❌ Level01 sync progress failed:', err);
+      return { success: false, error: err.message };
     }
-  });
+  }
 
 
-  // Di dalam create()
-  //if (email) {
-   // syncProgressFromBackend(email);
-  //}
+   // ✅ SYNC PROGRESS DARI BACKEND
+   //const email = localStorage.getItem('email');
+   if (email) {
+      this.syncProgressFromBackend(email);
+    }
+
+
+// ✅ SETUP VISIBILITY HANDLER
+this.setupVisibilityHandler();
 
 // Deklarasi variabel utama
 let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
 
 // Panggil fungsi async tanpa await
 this.initUserData(email, userData);
-
-
 
 // Pastikan gameProgress selalu ada
 if (!userData.gameProgress) {
@@ -2475,6 +2539,7 @@ async updateTaxInBackground(musicTitle, x, y) {
 
 // ==== 7 FUNCTIONS FOR SplashScene CONNECTED TO BACKEND ====
 // 1. GET FUNCTION FOR USER PROGRESS
+// ========== GANTI DENGAN FUNCTION getUserProgress YANG BENAR ==========
 async getUserProgress(email) {
   try {
     const response = await axios.post(
@@ -2482,22 +2547,32 @@ async getUserProgress(email) {
       { email, level: 'Level01Scene' },
       { timeout: 200000 }
     );
+    
     const progress = response.data.progress || {};
-    const newUser = !progress || progress.totalPlays === 0;
-    const winUser = progress && progress.totalPlays >= 1 && (progress.level01Score || 0) > 0;
-    const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
+    
+    // ✅ PERBAIKAN: Hitung user classification dengan lebih akurat
+    const totalPlays = progress.totalPlays || 0;
+    const currentScore = progress.level01Score || 0;
+    const highScore = progress.level01HighScore || 0;
+    
+    // ✅ LOGIKA YANG DIPERBAIKI:
+    const newUser = totalPlays === 0; // Belum pernah main sama sekali
+    const winUser = totalPlays > 0 && (currentScore > 0 || highScore > 0); // Pernah menang minimal 1x
+    const lossUser = totalPlays >= 3 && currentScore === 0 && highScore === 0; // 3x main tapi tidak pernah menang
 
-    console.log(`👤 User classification: newUser=${newUser}, lossUser=${lossUser}, winUser=${winUser}`);
-    console.log(`📊 Progress data: totalPlays=${progress.totalPlays}, level01Score=${progress.level01Score}`);
+    console.log(`👤 User classification FIXED: totalPlays=${totalPlays}, currentScore=${currentScore}, highScore=${highScore}`);
+    console.log(`👤 Classification: newUser=${newUser}, lossUser=${lossUser}, winUser=${winUser}`);
+    
     return {
-      success: response.data.success,
+    success: response.data.success,
       progress: progress,
       user: response.data.user,
       newUser,
       winUser,
       lossUser,
-      totalPlays: progress.totalPlays || 0,
-      level01Score: progress.level01Score || 0
+      totalPlays,
+      level01Score: currentScore,
+      level01HighScore: highScore
     };
   } catch (err) {
     console.error('❌ Get user progress error:', err);
@@ -2514,60 +2589,287 @@ async getUserProgress(email) {
     };
   }
 }
+
 // 2. UPDATE FUNCTION FOR USER PROGRESS
 async updateUserProgress(email, progress) {
-  try {
-    // Tambahkan inisialisasi variabel dari parameter progress atau default value
-    const level01Completed = progress.level01Completed ?? false;
-    const level01Score = progress.level01Score ?? 0;
-    const level01HighScore = progress.level01HighScore ?? 0;
-    const totalPlays = progress.totalPlays ?? 0;
-    const bestTime = progress.bestTime ?? 0;
-    const averageTime = progress.averageTime ?? 0;
-    const completionRate = progress.completionRate ?? 0;
-    const perfectGames = progress.perfectGames ?? false;
-    const totalAttempts = progress.totalAttempts ?? 0;
-    const completionTime = progress.completionTime ?? 0;
-    const isPerfectGame = progress.isPerfectGame ?? false;
+try {
+// ✅ VALIDASI INPUT
+    if (!email || typeof email !== 'string') {
+      console.error('❌ Invalid email in updateUserProgress');
+      return { success: false, error: 'Invalid email' };
+    }
+
+    // ✅ CURRENT SCORE = Score terakhir yang diperoleh (bisa naik/turun)
+    const level01Score = Math.max(0, progress.level01Score ?? 0);
+    
+    // ✅ AMBIL HIGH SCORE EXISTING DARI BERBAGAI SUMBER
+    const currentLocalHighScore = parseInt(localStorage.getItem(`highScore_${email}`) || '0');
+    const gameData = JSON.parse(localStorage.getItem(`gameData-${email}`) || '{}');
+    const existingHighScore = Math.max(
+      currentLocalHighScore,
+      gameData.gameProgress?.level01HighScore || 0,
+      progress.level01HighScore || 0
+    );
+    
+    // ✅ HIGH SCORE LOGIC YANG BENAR:
+    // - Jika current score LEBIH TINGGI dari existing high score → UPDATE high score
+    // - Jika current score LEBIH RENDAH dari existing high score → TETAP pakai existing high score
+    const level01HighScore = Math.max(level01Score, existingHighScore);
+    const isNewHighScore = level01Score > existingHighScore;
+    
+    const level01Completed = progress.level01Completed ?? (level01Score > 0);
+
+    // ✅ PERBAIKAN: SELALU UPDATE CURRENT SCORE, HIGH SCORE HANYA UPDATE JIKA LEBIH TINGGI
+    if (level01Score === 0 && !progress.forceUpdate && !progress.gameResult) {
+      console.log('🚫 Skipping update - no valid game session');
+      return {
+        success: false,
+        message: 'No valid game session to update',
+        preservedScore: true
+      };
+    }
+
+    console.log('📤 Updating progress:', {
+      email,
+      currentScore: level01Score, // ✅ Score terakhir (bisa naik/turun)
+      existingHighScore: existingHighScore, // ✅ High score yang sudah ada
+      newHighScore: level01HighScore, // ✅ High score yang akan disimpan
+      isNewHighScore: isNewHighScore, // ✅ Apakah ini high score baru?
+      gameResult: progress.gameResult || 'unknown'
+    });
+
     const res = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
-      //{ email, ...progress },
-      { email, 
+      {
+        email,
+        level01Score, // ✅ SELALU kirim current score (terakhir yang diperoleh)
+        level01HighScore, // ✅ High score (hanya naik jika current > existing)
         level01Completed,
-        level01Score, // ✅ cukup satu kali
-        level01HighScore,
-        totalPlays,
-        bestTime,
-        averageTime,
-        completionRate,
-        perfectGames,
-        totalAttempts,
-        completionTime,
-        isPerfectGame
-         },
-      { timeout: 200000 }
+        totalPlays: Math.max(0, progress.totalPlays ?? 0),
+        completionTime: progress.completionTime || 0,
+        gameResult: progress.gameResult || 'unknown',
+        // ✅ FLAGS UNTUK BACKEND
+        updateCurrentScore: true, // ✅ Selalu update current score
+        updateHighScore: isNewHighScore, // ✅ Hanya update high score jika lebih tinggi
+        preserveHighScore: true, // ✅ Jangan turunkan high score existing
+        allowScoreDecrease: true, // ✅ Izinkan current score turun
+        isNewHighScore: isNewHighScore, // ✅ Flag: apakah ini high score baru
+        source: 'splash_scene',
+        timestamp: new Date().toISOString()
+      },
+      { timeout: 15000 }
     );
-   // Kembalikan seluruh response, termasuk newUser, winUser, lossUser
+
+    // ✅ UPDATE LOCAL STORAGE DENGAN LOGIC YANG BENAR
+    if (res.data.success) {
+      // ✅ SELALU update current score
+      this.level01Score = level01Score;
+      localStorage.setItem(`score_${email}`, level01Score.toString());
+      
+      // ✅ UPDATE high score HANYA jika lebih tinggi
+      if (isNewHighScore) {
+        this.level01HighScore = level01HighScore;
+        localStorage.setItem(`highScore_${email}`, level01HighScore.toString());
+        console.log(`🏆 NEW HIGH SCORE! ${existingHighScore} → ${level01HighScore}`);
+        
+        // ✅ BISA TAMBAHKAN CELEBRATION EFFECT
+        this.showNewHighScoreEffect && this.showNewHighScoreEffect(level01HighScore);
+      } else {
+        this.level01HighScore = existingHighScore;
+        console.log(`📊 Current: ${level01Score}, High Score unchanged: ${existingHighScore}`);
+      }
+      
+      // ✅ Update gameData dengan kedua score
+      const updatedGameData = {
+        ...gameData,
+        gameProgress: {
+          ...gameData.gameProgress,
+          level01Score: level01Score, // ✅ Current score (terakhir)
+          level01HighScore: this.level01HighScore, // ✅ High score (tertinggi)
+          level01Completed,
+          lastUpdated: new Date().toISOString(),
+          lastGameResult: progress.gameResult || 'unknown',
+          isNewHighScore: isNewHighScore // ✅ Flag untuk UI
+        },
+        newUser: res.data.newUser || false,
+        winUser: res.data.winUser || false,
+        lossUser: res.data.lossUser || false
+      };
+      localStorage.setItem(`gameData-${email}`, JSON.stringify(updatedGameData));
+
+      // ✅ UPDATE history dengan KEDUA score
+      const history = JSON.parse(localStorage.getItem(`gameHistory_${email}`) || '{}');
+      const updatedHistory = {
+        ...history,
+        currentScore: level01Score, // ✅ Score terakhir
+        highestScore: this.level01HighScore, // ✅ Score tertinggi sepanjang masa
+        lastGameDate: new Date().toISOString(),
+        lastGameResult: progress.gameResult || 'unknown',
+        isNewHighScore: isNewHighScore,
+        previousHighScore: existingHighScore // ✅ Simpan high score sebelumnya untuk perbandingan
+      };
+      localStorage.setItem(`gameHistory_${email}`, JSON.stringify(updatedHistory));
+      
+      console.log('✅ Progress updated - Current:', level01Score, 'High:', this.level01HighScore);
+    }
+
     return {
       success: res.data.success,
       user: res.data.user,
-      newUser: res.data.newUser,
-      winUser: res.data.winUser,
-      lossUser: res.data.lossUser,
+      newUser: res.data.newUser || false,
+      winUser: res.data.winUser || false,
+      lossUser: res.data.lossUser || false,
       message: res.data.message,
-      gameProgress: res.data.user?.gameProgress || {}
+      currentScore: level01Score,
+      highScore: this.level01HighScore,
+      isNewHighScore: isNewHighScore, // ✅ Return info apakah high score baru
+      previousHighScore: existingHighScore // ✅ Return high score sebelumnya
     };
-  } catch (err) {
-    console.error('❌ Update user progress error:', err);
+
+    } catch (err) {
+    console.error('❌ Update progress error:', err);
+    
+    // ✅ FALLBACK: Update local dengan logic yang sama
+    if (email && progress.level01Score >= 0) {
+      const currentLocal = JSON.parse(localStorage.getItem(`gameData-${email}`) || '{}');
+      const localHighScore = currentLocal.gameProgress?.level01HighScore || 0;
+      const newHighScore = Math.max(progress.level01Score || 0, localHighScore);
+      const isNewHighScore = (progress.level01Score || 0) > localHighScore;
+      
+      const fallbackData = {
+        ...currentLocal,
+        gameProgress: {
+          ...currentLocal.gameProgress,
+          level01Score: progress.level01Score, // ✅ Current score
+          level01HighScore: newHighScore, // ✅ High score (hanya naik jika lebih tinggi)
+          lastUpdated: new Date().toISOString(),
+          offlineUpdate: true,
+          lastGameResult: progress.gameResult || 'unknown',
+          isNewHighScore: isNewHighScore
+        }
+      };
+      localStorage.setItem(`gameData-${email}`, JSON.stringify(fallbackData));
+      localStorage.setItem(`score_${email}`, (progress.level01Score || 0).toString());
+      
+      // Update high score di localStorage jika lebih tinggi
+      if (isNewHighScore) {
+        localStorage.setItem(`highScore_${email}`, newHighScore.toString());
+        console.log('💾 Fallback: NEW HIGH SCORE saved locally:', newHighScore);
+      }
+
+      console.log('💾 Fallback: Progress saved locally');
+    }
+    
     return {
       success: false,
       error: err.message,
-      newUser: false,
-      winUser: false,
-      lossUser: false,
-      gameProgress: {}
+      fallbackSaved: true
     };
   }
+}
+
+// ✅ TAMBAHAN: FUNCTION UNTUK SHOW NEW HIGH SCORE EFFECT
+showNewHighScoreEffect(newHighScore) {
+  console.log('🎉 NEW HIGH SCORE ACHIEVED:', newHighScore);
+  
+  // ✅ BISA TAMBAHKAN VISUAL EFFECT DI SINI
+  // Contoh: 
+  // - Flash screen
+  // - Show congratulations text
+  // - Play special sound
+  // - Particle effects
+  
+  // Contoh simple text effect:
+  if (this.add && typeof this.add.text === 'function') {
+    const congratsText = this.add.text(960, 300, `NEW HIGH SCORE!\n${newHighScore}`, {
+      fontSize: '48px',
+      fill: '#FFD700',
+      stroke: '#000000',
+      strokeThickness: 3,
+      align: 'center'
+    }).setOrigin(0.5).setDepth(1000);
+    
+    // Fade out after 3 seconds
+    this.time.delayedCall(3000, () => {
+      this.tweens.add({
+        targets: congratsText,
+        alpha: 0,
+        duration: 1000,
+        onComplete: () => congratsText.destroy()
+      });
+    });
+  }
+}
+
+    // PERBAIKAN FUNGSI checkUserStatusAndGameOver
+async checkUserStatusAndGameOver(email) {
+  const status = await this.getUserStatus(email, 'Level01Scene');
+  if (!status) {
+    console.error('Gagal ambil status user');
+    return null; 
+}
+
+const progress = status.progress || {};
+  const totalPlays = progress.totalPlays || 0;
+  const currentScore = progress.level01Score || 0;
+  const highScore = progress.level01HighScore || 0;
+  
+  // ✅ PERBAIKAN KLASIFIKASI USER:
+  const newUser = totalPlays === 0;
+  const winUser = totalPlays > 0 && (currentScore > 0 || highScore > 0);
+  const lossUser = totalPlays >= 3 && currentScore === 0 && highScore === 0;
+
+  console.log(`🔍 User status check: plays=${totalPlays}, score=${currentScore}, high=${highScore}`);
+  console.log(`🎯 User type: new=${newUser}, win=${winUser}, loss=${lossUser}`);
+
+  // ✅ UNTUK NEW USER: Aktifkan game
+  if (newUser) {
+    this.isGameOver = false;
+    this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+    console.log('✅ User baru - game diaktifkan');
+    return { ...status, newUser: true, winUser: false, lossUser: false };
+  }
+
+// ✅ UNTUK WIN USER: Selalu aktifkan game (sudah pernah menang)
+  if (winUser) {
+    this.isGameOver = false;
+    this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+    if (this.playBtn) {
+      this.playBtn.setInteractive({ useHandCursor: true });
+      this.playBtn.setAlpha(1);
+      this.playBtn.setVisible(true);
+    }
+    console.log('✅ Win user - game tetap aktif');
+    return { ...status, newUser: false, winUser: true, lossUser: false };
+  }
+
+  // ✅ UNTUK LOSS USER: Cek payment status
+  if (lossUser) {
+    // Cek payment status
+    const paymentData = await window.checkPaymentStatusFromBackend(email);
+    const isPaid = paymentData && paymentData.isPaid === true;
+
+if (!isPaid) {
+      this.isGameOver = true;
+      status.isGameOver = true;
+      status.showPurchase = true;
+      localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
+      this.lockAllGameplayButtons();
+      console.log('❌ Loss user belum bayar - game dikunci');
+      return { ...status, newUser: false, winUser: false, lossUser: true };
+    } else {
+      // Sudah bayar, unlock game
+      this.isGameOver = false;
+      this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+      console.log('✅ Loss user sudah bayar - game di-unlock');
+      return { ...status, newUser: false, winUser: false, lossUser: false, isPaid: true };
+    }
+  }
+
+  // Default case
+  this.isGameOver = false;
+  this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+  return status;
 }
 
 // 3. GET USER STATUS DARI BACKEND (POST)
@@ -2819,6 +3121,44 @@ async  unlockedLevels(email, level) {
   }
 }
 
+// ✅ PERBAIKAN: HANDLE VISIBILITY CHANGE KHUSUS UNTUK LEVEL01
+  setupVisibilityHandler() {
+    // ✅ LEVEL01 SPECIFIC VISIBILITY HANDLER
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        const email = localStorage.getItem('email');
+        if (!email || !this.hasUserInput) return;
+
+        console.log('👁️ Level01 page hidden - saving current state');
+        
+        // ✅ PAUSE TIMER SAAT TAB HIDDEN
+        if (this.gameTimer && !this.gameCompleted) {
+          this.gameTimer.paused = true;
+          console.log('⏸️ Game timer paused');
+        }
+        
+        // ✅ QUICK SAVE CURRENT STATE
+        if (this.level01Score > 0 || this.hasUserInput) {
+          window.manualSaveProgress && window.manualSaveProgress(email, {
+            score: this.level01Score,
+            highScore: this.level01HighScore,
+            time: this.timeElapsed,
+            completed: this.gameCompleted,
+            result: this.gameWon ? 'won' : (this.gameCompleted ? 'lost' : 'paused')
+          });
+        }
+      } else if (document.visibilityState === 'visible') {
+        console.log('👁️ Level01 page visible - resuming');
+        
+        // ✅ RESUME TIMER JIKA GAME BELUM SELESAI
+        if (this.gameTimer && !this.gameCompleted && this.hasUserInput) {
+          this.gameTimer.paused = false;
+          console.log('▶️ Game timer resumed');
+        }
+      }
+    });
+  } 
+
 // Definisikan di luar create()
 initUserData(email, userData) {
   // Jika belum ada data progress, ambil dari backend
@@ -2918,29 +3258,65 @@ async checkPuzzle() {
     this.timeElapsed = this.timeElapsed; // Freeze time
 
     console.log('🏆 PUZZLE COMPLETE! Timer stopped at:', this.timeElapsed);
+    console.log('🎯 Current round when winning:', this.round);
 
     // ✅ SCORE BONUS BERDASARKAN RONDE
     let scoreBonus = 100; // Default score R1 & R2
+    let showBonusMessage = false;
+
+    // ✅ HANYA BERIKAN BONUS 300 JIKA MENANG DI RONDE 3
     if (this.round === 3) {
       scoreBonus = 300; // ⭐ BONUS SCORE RONDE 3
-      console.log('🔥 RONDE 3 WIN BONUS! +300 score');
-      // ✅ TAMPILKAN PESAN BONUS RONDE 3
-      this.showRonde3BonusMessage();
-    }
-
+      showBonusMessage = true; // Flag untuk menampilkan pesan bonus
+      console.log('🔥 RONDE 3 WIN BONUS! +300 score(Player won in Round 3)');
+    } else {
+      console.log(`✅ Round ${this.round} win: +100 score (normal win)`);
+    }  
+  
     // ✅ TAMBAH SCORE
     //this.level01Score = (this.level01Score || 0) + 100;
     this.level01Score = (this.level01Score || 0) + scoreBonus;
     this.scoreText.setText(this.level01Score.toString().padStart(5, '0'));
     this.registry.set('level01Score', this.level01Score);
 
+    // ✅ TAMPILKAN PESAN BONUS RONDE 3
+    if (showBonusMessage) {
+      this.showRonde3BonusMessage();
+    }
     //const email = localStorage.getItem('email');
 
     // Reset ke R1 setelah menang di ronde manapun
     this.round = 1;
     this.currentRound = 1;
+
+    // ✅ RESET TIMER KE 00:00 SETELAH MENANG JUGA
     this.timeElapsed = 0;
+    if (this.timerText) {
+      this.timerText.setText("00:00");
+      console.log('🏆 Win: Timer reset to 00:00 - Menu favorit unlocked');
     //this.startNextRound(); // akan start timer lagi
+    }
+    // ✅ SEMBUNYIKAN SEMUA PUZZLE SETELAH MENANG
+    for (let i = 0; i < 10; i++) {
+      let piece = this.puzzlePieces[i];
+      let numText = this.puzzlePieceNumbers[i];
+      
+      piece.setAlpha(0.01);
+      piece.setVisible(false);
+      piece.disableInteractive();
+      
+      numText.setAlpha(0.01);
+      numText.setVisible(false);
+      
+      piece.x = 118;
+      piece.y = 465;
+      numText.x = 118;
+      numText.y = 465;
+    }  
+
+    // ✅ RESET RIGHT BOARD SLOTS
+    this.rightBoardSlots = Array(10).fill(null);
+    console.log('✅ Win: Arena cleaned - all puzzles hidden');
 
      // ✅ SIMPAN PROGRESS KE LOCALSTORAGE
     //let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
@@ -2977,20 +3353,15 @@ async checkPuzzle() {
     // ✅ UPDATE BACKEND TANPA TRIGGER GAME OVER
     try {
     await this.updateUserProgress(email, {
-      level01Completed: true,
-      level01Score: this.level01Score,
-      level01HighScore: Math.max(this.level01Score, progress.level01HighScore || 0),
-      //totalPlays: (progress.progress.totalPlays || 0) + 1,
-      totalPlays: userData.gameProgress.totalPlays,
-      bestTime: this.timeElapsed,
-      //averageTime: newAverageTime,
-      averageTime: this.timeElapsed,
-      //completionRate: newCompletionRate,
-      completionRate: 100,
-      //perfectGames: isPerfectGame,
-      perfectGames: true,
-      //totalAttempts: (progress.progress.totalAttempts || 0) + 1
-      totalAttempts: userData.gameProgress.totalAttempts
+    level01Completed: true,
+        level01Score: this.level01Score,
+        level01HighScore: Math.max(this.level01Score, progress.level01HighScore || 0),
+        totalPlays: userData.gameProgress.totalPlays,
+        bestTime: this.timeElapsed,
+        averageTime: this.timeElapsed,
+        completionRate: 100,
+        perfectGames: true,
+        totalAttempts: userData.gameProgress.totalAttempts  
     });
    } catch (err) {
       console.error('Error updating progress:', err);
@@ -3029,6 +3400,25 @@ async checkPuzzle() {
       this.onTimeUp();
     }
   }
+    
+// ✅ INFO TENTANG SYSTEM RONDE YANG BENAR:
+/*
+SYSTEM RONDE YANG BENAR:
+1. R1 (18 detik) - Menang: +100 score, Reset ke R1
+2. R2 (10 detik) - Menang: +100 score, Reset ke R1  
+3. R3 (8 detik)  - Menang: +300 score, Reset ke R1 ⭐ BONUS!
+
+KAPAN PLAYBTN AKTIF:
+1. ✅ Pertama kali: Harus klik 10 Puzzle
+2. ✅ Setelah beli menu favorit: Harus klik 10 Puzzle
+3. ✅ Saat game aktif (R1→R2→R3): PlayBtn otomatis aktif tanpa perlu klik 10 Puzzle
+4. ✅ Setelah menang/kalah: Kembali ke kondisi awal, harus klik 10 Puzzle lagi
+
+TIMELINE WAKTU PER RONDE:
+- this.roundTimeLimits = [18, 10, 8]; // ✅ SUDAH BENAR
+*/
+
+
 
   // ✅ TAMBAHKAN FUNCTION BARU SETELAH checkPuzzle():
 showRonde3BonusMessage() {
@@ -3202,12 +3592,63 @@ createGoldParticles() {
 
   // filepath: [Level01Scene.js](https://_vscodecontentref_/2)
 async onTimeUp() {
+console.log('⏰ Time is up for round:', this.round);
+  
+  // ✅ LANGSUNG STOP DAN DESTROY TIMER
+  if (this.roundTimer) {
+    this.roundTimer.remove(false);
+    this.roundTimer = null;
+    console.log('⏹️ Round timer stopped and destroyed');
+  }
+  
+  // ✅ RESET TIMER KE 00:00 LANGSUNG AGAR MENU FAVORIT TIDAK TERKUNCI
+  this.timeElapsed = 0;
+  if (this.timerText) {
+    this.timerText.setText("00:00");
+    console.log('🕐 Timer reset to 00:00 - Menu favorit unlocked');
+  }
+
   this.sound.play('horseSnort');
 
   // Kurangi score jika gagal, minimal 0
   this.level01Score = Math.max(0, (this.level01Score || 0) - 100);
   this.scoreText.setText(this.level01Score.toString().padStart(5, '0'));
   this.registry.set('level01Score', this.level01Score);
+
+  // ✅ SEMBUNYIKAN SEMUA PUZZLE PIECES DARI ARENA BOARD KIRI
+  console.log('🧩 Hiding all puzzle pieces from arena...');
+  for (let i = 0; i < 10; i++) {
+    let piece = this.puzzlePieces[i];
+    let numText = this.puzzlePieceNumbers[i];
+    
+    // Sembunyikan puzzle pieces
+    piece.setAlpha(0.01);
+    piece.setVisible(false);
+    piece.disableInteractive();
+    
+    // Sembunyikan nomor puzzle
+    numText.setAlpha(0.01);
+    numText.setVisible(false);
+    
+    // Reset posisi ke posisi awal (opsional, untuk cleanup)
+    piece.x = 118;
+    piece.y = 465;
+    numText.x = 118;
+    numText.y = 465;
+  }
+  
+  // ✅ RESET RIGHT BOARD SLOTS
+  this.rightBoardSlots = Array(10).fill(null);
+  console.log('✅ Arena cleaned - all puzzles hidden');
+
+  // ✅ KEMBALIKAN TOMBOL PLAY KE KONDISI AWAL (BUREM DAN NONAKTIF)
+  if (this.playBtn) {
+    this.playBtn.setTexture('playSheriff');
+    this.playBtn.setScale(0.3); // Kembali ke scale awal
+    this.playBtn.setAlpha(0.5); // ✅ BUREM
+    this.playBtn.disableInteractive(); // ✅ NONAKTIF
+    console.log('🎮 PlayBtn dikembalikan ke kondisi awal (burem & nonaktif)');
+  }
 
   // Sync ke localStorage
   const email = localStorage.getItem('email');
@@ -3292,10 +3733,15 @@ async onTimeUp() {
 
   // Reset timer dan tampilkan pesan ronde
   this.timeElapsed = 0;
-  if (this.timerText) this.timerText.setText("00:00");
+  //if (this.timerText) this.timerText.setText("00:00");
+  if (this.timerText) {
+    this.timerText.setText("00:00");
+    console.log('🔓 Timer maintained at 00:00 - All favorite menus accessible');
+  }
 
-  // Tampilkan pesan ronde berikutnya, tapi tunggu klik PlayBtn
+  // Tampilkan pesan ronde berikutnya, tapi tunggu klik PlayBtn (tidak pakai time limit -1||18) setiap ronde wkt nya 18 detik ini salah
   this.showRoundMessage(`ROUND ${this.round} - ${timeLimit}s`);
+  this.showHorseShakeHead();
 
   // Aktifkan PlayBtn agar user harus klik untuk lanjut
   if (this.playBtn) {
@@ -3304,7 +3750,12 @@ async onTimeUp() {
     this.playBtn.setVisible(true);
   }
 
-  //let timeLimit = this.roundTimeLimits[this.round - 1] || 18;
+  console.log('🍎 Menu favorit sekarang bisa diakses karena timer = 00:00');
+
+  console.log(`✅ Round ${this.round} ended cleanly - Arena cleared, timer reset to 00:00`);
+
+
+  //let timeLimit = this.roundTimeLimits[this.round - 1] || 18; ini tidak pakai akan membuat ronde 18 detik terus
   //if (this.roundTimer) this.roundTimer.remove(false);
   //this.roundTimer = this.time.addEvent({
     //delay: 1000,

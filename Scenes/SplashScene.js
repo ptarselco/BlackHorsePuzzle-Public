@@ -124,6 +124,7 @@ unblur10PuzzleButton() {
 
 // ==== 7 FUNCTIONS FOR SplashScene CONNECTED TO BACKEND ====
 // 1. GET FUNCTION FOR USER PROGRESS
+// ========== GANTI DENGAN FUNCTION getUserProgress YANG BENAR ==========
 async getUserProgress(email) {
   try {
     const response = await axios.post(
@@ -131,22 +132,32 @@ async getUserProgress(email) {
       { email, level: 'Level01Scene' },
       { timeout: 200000 }
     );
+    
     const progress = response.data.progress || {};
-    const newUser = !progress || progress.totalPlays === 0;
-    const winUser = progress && progress.totalPlays >= 1 && (progress.level01Score || 0) > 0;
-    const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
+    
+    // ✅ PERBAIKAN: Hitung user classification dengan lebih akurat
+    const totalPlays = progress.totalPlays || 0;
+    const currentScore = progress.level01Score || 0;
+    const highScore = progress.level01HighScore || 0;
+    
+    // ✅ LOGIKA YANG DIPERBAIKI:
+    const newUser = totalPlays === 0; // Belum pernah main sama sekali
+    const winUser = totalPlays > 0 && (currentScore > 0 || highScore > 0); // Pernah menang minimal 1x
+    const lossUser = totalPlays >= 3 && currentScore === 0 && highScore === 0; // 3x main tapi tidak pernah menang
 
-    console.log(`👤 User classification: newUser=${newUser}, lossUser=${lossUser}, winUser=${winUser}`);
-    console.log(`📊 Progress data: totalPlays=${progress.totalPlays}, level01Score=${progress.level01Score}`);
+    console.log(`👤 User classification FIXED: totalPlays=${totalPlays}, currentScore=${currentScore}, highScore=${highScore}`);
+    console.log(`👤 Classification: newUser=${newUser}, lossUser=${lossUser}, winUser=${winUser}`);
+    
     return {
-      success: response.data.success,
+    success: response.data.success,
       progress: progress,
       user: response.data.user,
       newUser,
       winUser,
       lossUser,
-      totalPlays: progress.totalPlays || 0,
-      level01Score: progress.level01Score || 0
+      totalPlays,
+      level01Score: currentScore,
+      level01HighScore: highScore
     };
   } catch (err) {
     console.error('❌ Get user progress error:', err);
@@ -163,60 +174,287 @@ async getUserProgress(email) {
     };
   }
 }
+
 // 2. UPDATE FUNCTION FOR USER PROGRESS
 async updateUserProgress(email, progress) {
-  try {
-    // Tambahkan inisialisasi variabel dari parameter progress atau default value
-    const level01Completed = progress.level01Completed ?? false;
-    const level01Score = progress.level01Score ?? 0;
-    const level01HighScore = progress.level01HighScore ?? 0;
-    const totalPlays = progress.totalPlays ?? 0;
-    const bestTime = progress.bestTime ?? 0;
-    const averageTime = progress.averageTime ?? 0;
-    const completionRate = progress.completionRate ?? 0;
-    const perfectGames = progress.perfectGames ?? false;
-    const totalAttempts = progress.totalAttempts ?? 0;
-    const completionTime = progress.completionTime ?? 0;
-    const isPerfectGame = progress.isPerfectGame ?? false;
+try {
+// ✅ VALIDASI INPUT
+    if (!email || typeof email !== 'string') {
+      console.error('❌ Invalid email in updateUserProgress');
+      return { success: false, error: 'Invalid email' };
+    }
+
+    // ✅ CURRENT SCORE = Score terakhir yang diperoleh (bisa naik/turun)
+    const level01Score = Math.max(0, progress.level01Score ?? 0);
+    
+    // ✅ AMBIL HIGH SCORE EXISTING DARI BERBAGAI SUMBER
+    const currentLocalHighScore = parseInt(localStorage.getItem(`highScore_${email}`) || '0');
+    const gameData = JSON.parse(localStorage.getItem(`gameData-${email}`) || '{}');
+    const existingHighScore = Math.max(
+      currentLocalHighScore,
+      gameData.gameProgress?.level01HighScore || 0,
+      progress.level01HighScore || 0
+    );
+    
+    // ✅ HIGH SCORE LOGIC YANG BENAR:
+    // - Jika current score LEBIH TINGGI dari existing high score → UPDATE high score
+    // - Jika current score LEBIH RENDAH dari existing high score → TETAP pakai existing high score
+    const level01HighScore = Math.max(level01Score, existingHighScore);
+    const isNewHighScore = level01Score > existingHighScore;
+    
+    const level01Completed = progress.level01Completed ?? (level01Score > 0);
+
+    // ✅ PERBAIKAN: SELALU UPDATE CURRENT SCORE, HIGH SCORE HANYA UPDATE JIKA LEBIH TINGGI
+    if (level01Score === 0 && !progress.forceUpdate && !progress.gameResult) {
+      console.log('🚫 Skipping update - no valid game session');
+      return {
+        success: false,
+        message: 'No valid game session to update',
+        preservedScore: true
+      };
+    }
+
+    console.log('📤 Updating progress:', {
+      email,
+      currentScore: level01Score, // ✅ Score terakhir (bisa naik/turun)
+      existingHighScore: existingHighScore, // ✅ High score yang sudah ada
+      newHighScore: level01HighScore, // ✅ High score yang akan disimpan
+      isNewHighScore: isNewHighScore, // ✅ Apakah ini high score baru?
+      gameResult: progress.gameResult || 'unknown'
+    });
+
     const res = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
-      //{ email, ...progress },
-      { email, 
+      {
+        email,
+        level01Score, // ✅ SELALU kirim current score (terakhir yang diperoleh)
+        level01HighScore, // ✅ High score (hanya naik jika current > existing)
         level01Completed,
-        level01Score, // ✅ cukup satu kali
-        level01HighScore,
-        totalPlays,
-        bestTime,
-        averageTime,
-        completionRate,
-        perfectGames,
-        totalAttempts,
-        completionTime,
-        isPerfectGame
-         },
-      { timeout: 200000 }
+        totalPlays: Math.max(0, progress.totalPlays ?? 0),
+        completionTime: progress.completionTime || 0,
+        gameResult: progress.gameResult || 'unknown',
+        // ✅ FLAGS UNTUK BACKEND
+        updateCurrentScore: true, // ✅ Selalu update current score
+        updateHighScore: isNewHighScore, // ✅ Hanya update high score jika lebih tinggi
+        preserveHighScore: true, // ✅ Jangan turunkan high score existing
+        allowScoreDecrease: true, // ✅ Izinkan current score turun
+        isNewHighScore: isNewHighScore, // ✅ Flag: apakah ini high score baru
+        source: 'splash_scene',
+        timestamp: new Date().toISOString()
+      },
+      { timeout: 15000 }
     );
-   // Kembalikan seluruh response, termasuk newUser, winUser, lossUser
+
+    // ✅ UPDATE LOCAL STORAGE DENGAN LOGIC YANG BENAR
+    if (res.data.success) {
+      // ✅ SELALU update current score
+      this.level01Score = level01Score;
+      localStorage.setItem(`score_${email}`, level01Score.toString());
+      
+      // ✅ UPDATE high score HANYA jika lebih tinggi
+      if (isNewHighScore) {
+        this.level01HighScore = level01HighScore;
+        localStorage.setItem(`highScore_${email}`, level01HighScore.toString());
+        console.log(`🏆 NEW HIGH SCORE! ${existingHighScore} → ${level01HighScore}`);
+        
+        // ✅ BISA TAMBAHKAN CELEBRATION EFFECT
+        this.showNewHighScoreEffect && this.showNewHighScoreEffect(level01HighScore);
+      } else {
+        this.level01HighScore = existingHighScore;
+        console.log(`📊 Current: ${level01Score}, High Score unchanged: ${existingHighScore}`);
+      }
+      
+      // ✅ Update gameData dengan kedua score
+      const updatedGameData = {
+        ...gameData,
+        gameProgress: {
+          ...gameData.gameProgress,
+          level01Score: level01Score, // ✅ Current score (terakhir)
+          level01HighScore: this.level01HighScore, // ✅ High score (tertinggi)
+          level01Completed,
+          lastUpdated: new Date().toISOString(),
+          lastGameResult: progress.gameResult || 'unknown',
+          isNewHighScore: isNewHighScore // ✅ Flag untuk UI
+        },
+        newUser: res.data.newUser || false,
+        winUser: res.data.winUser || false,
+        lossUser: res.data.lossUser || false
+      };
+      localStorage.setItem(`gameData-${email}`, JSON.stringify(updatedGameData));
+
+      // ✅ UPDATE history dengan KEDUA score
+      const history = JSON.parse(localStorage.getItem(`gameHistory_${email}`) || '{}');
+      const updatedHistory = {
+        ...history,
+        currentScore: level01Score, // ✅ Score terakhir
+        highestScore: this.level01HighScore, // ✅ Score tertinggi sepanjang masa
+        lastGameDate: new Date().toISOString(),
+        lastGameResult: progress.gameResult || 'unknown',
+        isNewHighScore: isNewHighScore,
+        previousHighScore: existingHighScore // ✅ Simpan high score sebelumnya untuk perbandingan
+      };
+      localStorage.setItem(`gameHistory_${email}`, JSON.stringify(updatedHistory));
+      
+      console.log('✅ Progress updated - Current:', level01Score, 'High:', this.level01HighScore);
+    }
+
     return {
       success: res.data.success,
       user: res.data.user,
-      newUser: res.data.newUser,
-      winUser: res.data.winUser,
-      lossUser: res.data.lossUser,
+      newUser: res.data.newUser || false,
+      winUser: res.data.winUser || false,
+      lossUser: res.data.lossUser || false,
       message: res.data.message,
-      gameProgress: res.data.user?.gameProgress || {}
+      currentScore: level01Score,
+      highScore: this.level01HighScore,
+      isNewHighScore: isNewHighScore, // ✅ Return info apakah high score baru
+      previousHighScore: existingHighScore // ✅ Return high score sebelumnya
     };
-  } catch (err) {
-    console.error('❌ Update user progress error:', err);
+
+    } catch (err) {
+    console.error('❌ Update progress error:', err);
+    
+    // ✅ FALLBACK: Update local dengan logic yang sama
+    if (email && progress.level01Score >= 0) {
+      const currentLocal = JSON.parse(localStorage.getItem(`gameData-${email}`) || '{}');
+      const localHighScore = currentLocal.gameProgress?.level01HighScore || 0;
+      const newHighScore = Math.max(progress.level01Score || 0, localHighScore);
+      const isNewHighScore = (progress.level01Score || 0) > localHighScore;
+      
+      const fallbackData = {
+        ...currentLocal,
+        gameProgress: {
+          ...currentLocal.gameProgress,
+          level01Score: progress.level01Score, // ✅ Current score
+          level01HighScore: newHighScore, // ✅ High score (hanya naik jika lebih tinggi)
+          lastUpdated: new Date().toISOString(),
+          offlineUpdate: true,
+          lastGameResult: progress.gameResult || 'unknown',
+          isNewHighScore: isNewHighScore
+        }
+      };
+      localStorage.setItem(`gameData-${email}`, JSON.stringify(fallbackData));
+      localStorage.setItem(`score_${email}`, (progress.level01Score || 0).toString());
+      
+      // Update high score di localStorage jika lebih tinggi
+      if (isNewHighScore) {
+        localStorage.setItem(`highScore_${email}`, newHighScore.toString());
+        console.log('💾 Fallback: NEW HIGH SCORE saved locally:', newHighScore);
+      }
+
+      console.log('💾 Fallback: Progress saved locally');
+    }
+    
     return {
       success: false,
       error: err.message,
-      newUser: false,
-      winUser: false,
-      lossUser: false,
-      gameProgress: {}
+      fallbackSaved: true
     };
   }
+}
+
+// ✅ TAMBAHAN: FUNCTION UNTUK SHOW NEW HIGH SCORE EFFECT
+showNewHighScoreEffect(newHighScore) {
+  console.log('🎉 NEW HIGH SCORE ACHIEVED:', newHighScore);
+  
+  // ✅ BISA TAMBAHKAN VISUAL EFFECT DI SINI
+  // Contoh: 
+  // - Flash screen
+  // - Show congratulations text
+  // - Play special sound
+  // - Particle effects
+  
+  // Contoh simple text effect:
+  if (this.add && typeof this.add.text === 'function') {
+    const congratsText = this.add.text(960, 300, `NEW HIGH SCORE!\n${newHighScore}`, {
+      fontSize: '48px',
+      fill: '#FFD700',
+      stroke: '#000000',
+      strokeThickness: 3,
+      align: 'center'
+    }).setOrigin(0.5).setDepth(1000);
+    
+    // Fade out after 3 seconds
+    this.time.delayedCall(3000, () => {
+      this.tweens.add({
+        targets: congratsText,
+        alpha: 0,
+        duration: 1000,
+        onComplete: () => congratsText.destroy()
+      });
+    });
+  }
+}
+
+    // PERBAIKAN FUNGSI checkUserStatusAndGameOver
+async checkUserStatusAndGameOver(email) {
+  const status = await this.getUserStatus(email, 'Level01Scene');
+  if (!status) {
+    console.error('Gagal ambil status user');
+    return null; 
+}
+
+const progress = status.progress || {};
+  const totalPlays = progress.totalPlays || 0;
+  const currentScore = progress.level01Score || 0;
+  const highScore = progress.level01HighScore || 0;
+  
+  // ✅ PERBAIKAN KLASIFIKASI USER:
+  const newUser = totalPlays === 0;
+  const winUser = totalPlays > 0 && (currentScore > 0 || highScore > 0);
+  const lossUser = totalPlays >= 3 && currentScore === 0 && highScore === 0;
+
+  console.log(`🔍 User status check: plays=${totalPlays}, score=${currentScore}, high=${highScore}`);
+  console.log(`🎯 User type: new=${newUser}, win=${winUser}, loss=${lossUser}`);
+
+  // ✅ UNTUK NEW USER: Aktifkan game
+  if (newUser) {
+    this.isGameOver = false;
+    this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+    console.log('✅ User baru - game diaktifkan');
+    return { ...status, newUser: true, winUser: false, lossUser: false };
+  }
+
+// ✅ UNTUK WIN USER: Selalu aktifkan game (sudah pernah menang)
+  if (winUser) {
+    this.isGameOver = false;
+    this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+    if (this.playBtn) {
+      this.playBtn.setInteractive({ useHandCursor: true });
+      this.playBtn.setAlpha(1);
+      this.playBtn.setVisible(true);
+    }
+    console.log('✅ Win user - game tetap aktif');
+    return { ...status, newUser: false, winUser: true, lossUser: false };
+  }
+
+  // ✅ UNTUK LOSS USER: Cek payment status
+  if (lossUser) {
+    // Cek payment status
+    const paymentData = await window.checkPaymentStatusFromBackend(email);
+    const isPaid = paymentData && paymentData.isPaid === true;
+
+if (!isPaid) {
+      this.isGameOver = true;
+      status.isGameOver = true;
+      status.showPurchase = true;
+      localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
+      this.lockAllGameplayButtons();
+      console.log('❌ Loss user belum bayar - game dikunci');
+      return { ...status, newUser: false, winUser: false, lossUser: true };
+    } else {
+      // Sudah bayar, unlock game
+      this.isGameOver = false;
+      this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+      console.log('✅ Loss user sudah bayar - game di-unlock');
+      return { ...status, newUser: false, winUser: false, lossUser: false, isPaid: true };
+    }
+  }
+
+  // Default case
+  this.isGameOver = false;
+  this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+  return status;
 }
 
 // 3. GET USER STATUS DARI BACKEND (POST)
@@ -633,59 +871,200 @@ async  syncProgressFromBackend(email) {
 //======================================================================================
 // HANDLE SEANDBEACON
 // ✅ SEANDBEACON KIRIM DATA KE BACKEND
-window.addEventListener('beforeunload', () => {
+// ✅ BEFOREUNLOAD YANG BENAR DAN LENGKAP - PROTEKSI PENUH
+window.addEventListener('beforeunload', (event) => {
   const email = localStorage.getItem('email');
-  if (!email) return;
+  if (!email) {
+    console.log('🚫 No email found - skipping beforeunload');
+    return;
+  }
 
-  // ✅ AMBIL SCORE TERTINGGI DARI SEMUA SUMBER - JANGAN KIRIM 0
-  let finalScore = 0;
-  let timeElapsed = 0;
+  console.log('🔄 beforeunload triggered for:', email);
 
-  // 1. Ambil dari scene yang aktif (prioritas tertinggi)
-  if (window.game && window.game.scene) {
-    const level01 = window.game.scene.getScene('Level01Scene');
-    if (level01) {
-      finalScore = level01.level01Score || 0;
-      timeElapsed = level01.timeElapsed || 0;
+  try {
+    // ✅ AMBIL CURRENT SCORE DAN HIGH SCORE YANG TERAKHIR
+    let currentScore = 0;
+    let highScore = 0;
+    let timeElapsed = 0;
+    let gameResult = 'unknown';
+    let hasValidData = false;
+
+    // 1. Dari scene yang aktif (PRIORITAS TERTINGGI)
+    if (window.game && window.game.scene) {
+      const level01 = window.game.scene.getScene('Level01Scene');
+      if (level01) {
+        // Ambil current score dari game (bisa lebih rendah dari high score)
+        if (level01.level01Score !== undefined) {
+          currentScore = level01.level01Score;
+          hasValidData = true;
+        }
+        
+        // Ambil high score
+        if (level01.level01HighScore !== undefined) {
+          highScore = Math.max(highScore, level01.level01HighScore);
+        }
+        
+        timeElapsed = level01.timeElapsed || 0;
+        gameResult = level01.gameWon ? 'won' : (level01.gameCompleted ? 'lost' : 'unknown');
+        
+        console.log(`🎮 Scene data: current=${currentScore}, high=${highScore}, result=${gameResult}`);
+      }
+    }
+
+    // 2. Dari localStorage current score
+    const localCurrentScore = parseInt(localStorage.getItem(`score_${email}`) || '0');
+    if (localCurrentScore >= 0) {
+      currentScore = Math.max(currentScore, localCurrentScore);
+      hasValidData = true;
+    }
+
+    // 3. Dari localStorage high score
+    const localHighScore = parseInt(localStorage.getItem(`highScore_${email}`) || '0');
+    highScore = Math.max(highScore, localHighScore);
+
+    // 4. Dari gameData
+    const userData = JSON.parse(localStorage.getItem(`gameData-${email}`) || '{}');
+    const gameProgress = userData.gameProgress || {};
+    
+    if (gameProgress.level01Score >= 0) {
+      currentScore = Math.max(currentScore, gameProgress.level01Score);
+      hasValidData = true;
+    }
+
+    if (gameProgress.level01HighScore > 0) {
+      highScore = Math.max(highScore, gameProgress.level01HighScore);
+    }
+
+    // 5. ✅ PERBAIKAN: High score BISA SAMA dengan current score (jika current score adalah yang tertinggi)
+    // TAPI high score TIDAK BOLEH lebih rendah dari current score
+    highScore = Math.max(highScore, currentScore);
+
+    console.log(`📊 Final beforeunload data: current=${currentScore}, high=${highScore}, valid=${hasValidData}`);
+
+    // ✅ KIRIM DATA JIKA VALID (TERMASUK SCORE YANG TURUN)
+    if (hasValidData || currentScore > 0) {
+      // ✅ UPDATE localStorage dulu dengan logic yang benar
+      localStorage.setItem(`score_${email}`, currentScore.toString());
+      
+      // ✅ HIGH SCORE: Hanya update jika lebih tinggi dari yang sudah ada
+      const existingHighScore = parseInt(localStorage.getItem(`highScore_${email}`) || '0');
+      const finalHighScore = Math.max(highScore, existingHighScore);
+      if (finalHighScore > existingHighScore) {
+        localStorage.setItem(`highScore_${email}`, finalHighScore.toString());
+        console.log(`🏆 beforeunload: High score updated ${existingHighScore} → ${finalHighScore}`);
+      }
+
+     const dataToSend = {
+        email,
+        level01Completed: currentScore > 0,
+        level01Score: currentScore, // ✅ Current score (terakhir yang diperoleh)
+        level01HighScore: finalHighScore, // ✅ High score (tertinggi sepanjang masa)
+        completionTime: timeElapsed,
+        gameResult: gameResult,
+        // ✅ FLAGS
+        updateCurrentScore: true, // ✅ Selalu update current score
+        updateHighScore: finalHighScore > existingHighScore, // ✅ Hanya update high score jika lebih tinggi
+        preserveHighScore: true,
+        allowScoreDecrease: true,
+        isNewHighScore: finalHighScore > existingHighScore,
+        source: 'beforeunload_fixed',
+        timestamp: new Date().toISOString()
+      };
+
+      console.log('📤 Sending beforeunload data:', dataToSend);
+
+      navigator.sendBeacon(
+        `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
+        new Blob([JSON.stringify(dataToSend)], { type: 'application/json' })
+      );
+
+      console.log('✅ sendBeacon sent - Current:', currentScore, 'High:', finalHighScore);
+    }
+
+  } catch (error) {
+    console.error('❌ Error in beforeunload:', error);
+  }
+}); 
+
+//========================================================================================================================
+// ✅ JUGA TAMBAHKAN EVENT UNTUK VISIBILITYCHANGE (BACKUP)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    const email = localStorage.getItem('email');
+    if (!email) return;
+
+    console.log('👁️ Page hidden - quick save triggered');
+    
+    // Quick save tanpa validation ketat
+    const quickScore = parseInt(localStorage.getItem(`score_${email}`) || '0');
+    if (quickScore > 0) {
+      const quickData = {
+        email,
+        level01Score: quickScore,
+        level01HighScore: quickScore,
+        source: 'visibilitychange',
+        timestamp: new Date().toISOString(),
+        preserveHighScore: true
+      };
+      
+      navigator.sendBeacon(
+        `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
+        new Blob([JSON.stringify(quickData)], { type: 'application/json' })
+      );
+      
+      console.log('📤 Quick save sent via visibilitychange');
     }
   }
+});
+//==================================================================================================================
+// ✅ TAMBAHKAN FUNCTION UNTUK MANUAL SAVE (BISA DIPANGGIL DARI LEVEL01SCENE)
+window.manualSaveProgress = function(email, gameData) {
+  if (!email || !gameData) {
+    console.log('🚫 Manual save skipped - invalid data');
+    return false;
+  }
 
-  // 2. Ambil dari localStorage score
-  const localScore = parseInt(localStorage.getItem(`score_${email}`) || 0);
-  finalScore = Math.max(finalScore, localScore);
+  try {
+    const dataToSend = {
+      email,
+      level01Completed: gameData.completed || false,
+      level01Score: gameData.score || 0,
+      level01HighScore: gameData.highScore || gameData.score || 0,
+      completionTime: gameData.time || 0,
+      gameResult: gameData.result || 'manual',
+      source: 'manual_save',
+      timestamp: new Date().toISOString(),
+      preserveHighScore: true,
+      onlyUpdateIfHigher: true
+    };
 
-  // 3. Ambil dari gameData untuk memastikan
-  const userData = JSON.parse(localStorage.getItem(`gameData-${email}`) || '{}');
-  const gameProgress = userData.gameProgress || {};
-  finalScore = Math.max(finalScore, gameProgress.level01Score || 0, gameProgress.level01HighScore || 0);
+    // Update localStorage
+    localStorage.setItem(`score_${email}`, (gameData.score || 0).toString());
+    
+    const userData = JSON.parse(localStorage.getItem(`gameData-${email}`) || '{}');
+    userData.gameProgress = {
+      ...userData.gameProgress,
+      level01Score: gameData.score || 0,
+      level01HighScore: Math.max(gameData.highScore || 0, userData.gameProgress?.level01HighScore || 0),
+      lastSaved: new Date().toISOString()
+    };
+    localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
 
-  // 4. Ambil dari history
-  const history = JSON.parse(localStorage.getItem(`gameHistory_${email}`) || '{}');
-  finalScore = Math.max(finalScore, history.highestScore || 0);
-
-  console.log('📤 Sending BEST score via sendBeacon:', finalScore, 'Time:', timeElapsed);
-
-  // ✅ HANYA KIRIM JIKA ADA SCORE YANG VALID - JANGAN KIRIM 0 YANG BISA OVERWRITE SCORE TINGGI
-  if (finalScore > 0) {
+    // Kirim ke backend
     navigator.sendBeacon(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
-      new Blob([JSON.stringify({
-        email,
-        level01Completed: true, // ✅ Jika ada score > 0, berarti completed
-        level01Score: finalScore, // ✅ Kirim score tertinggi
-        level01HighScore: finalScore, // ✅ Pastikan high score juga di-update
-        completionTime: timeElapsed,
-        isPerfectGame: false,
-        preserveHighScore: true, // ✅ Flag untuk backend: jangan turunkan score
-        source: 'beforeunload'
-      })], { type: 'application/json' }) // ✅ Ganti ke application/json
+      new Blob([JSON.stringify(dataToSend)], { type: 'application/json' })
     );
-    
-    console.log('💾 Score preserved via sendBeacon:', finalScore);
-  } else {
-    console.log('🚫 No valid score found, skipping sendBeacon to prevent score loss');
+
+    console.log('✅ Manual save completed:', dataToSend);
+    return true;
+  } catch (error) {
+    console.error('❌ Manual save failed:', error);
+    return false;
   }
-});
+}; 
+//==========================================================================================================
+
     // Essential splash display
    // this.add.image(960, 640, "coverBlank").setDepth(0);
    // ✅ REPLACE with:
