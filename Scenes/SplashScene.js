@@ -772,13 +772,15 @@ window.addEventListener('beforeunload', () => {
     
     console.log('🔍 Checking user status for:', email);
 
+   
     // Tambahkan timeout untuk memastikan backend response
-    const statusWithTimeout = await Promise.race([
+    const status = await Promise.race([
       this.checkUserStatusAndGameOver(email),
       new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Timeout')), 30000)
       )
     ]);
+
 
     console.log('📊 User status result:', status);
 
@@ -883,7 +885,7 @@ window.addEventListener('beforeunload', () => {
     // 4. Ambil status user dari backend
     const userStatus = await this.getUserStatus(email, 'Level01Scene');
     // Cek dan update status game over (jika perlu set-gameover)
-    const status = await this.checkUserStatusAndGameOver(email);
+    //const status = await this.checkUserStatusAndGameOver(email);
 
     // Tambahkan pengecekan ini:
     //if (!status) {
@@ -984,9 +986,13 @@ window.addEventListener('beforeunload', () => {
 
     // Jika belum game over, lanjut ke Level01Scene
     // Show loading indicator
-    const loadingText = this.add.text(960, 850, '', {
-      fontSize: '24px', fill: '#00eaff'
-    }).setOrigin(0.5);
+    //const loadingText = this.add.text(960, 850, '', {
+     // fontSize: '24px', fill: '#00eaff'
+    //}).setOrigin(0.5);
+
+    // ✅ GUNAKAN loadingText YANG SUDAH ADA DARI LINE 746:
+    loadingText.setText('Loading assets...');
+    loadingText.setPosition(960, 850); // Pindah posisi jika perlu
 
     // ========== LAZY LOAD LEVEL01 ASSETS ==========
       console.log('🎵 Lazy loading Level01 assets...');
