@@ -4238,12 +4238,16 @@ return;
 //-----------------------------------------------------------------
 async checkUnlockStatus(email) {
   try {
-    const res = await axios.post("https://arselco.com/api/set-gameover", { email, isGameOver: false }); // minta unlock
+    // Ganti URL ke backend utama
+    const res = await axios.post(
+      "https://backend-paypalblackhorsepuzzle.onrender.com/api/users/unlock",
+      { email, isGameOver: false }
+    );
     const data = res.data;
     if (data.unlocked) {
-      this.unlockGameAfterPurchase();  // ✅ gunakan fungsi kamu
+      this.unlockGameAfterPurchase();
     } else {
-      this.showGameOverReturnMessage();  // ✅ tetap pakai fungsi kamu
+      this.showGameOverReturnMessage();
     }
   } catch (err) {
     console.error("Error unlock:", err);

@@ -262,6 +262,64 @@ if ('serviceWorker' in navigator) {
   console.log('⚠️ Service Worker not supported in this browser');
 }
 
+// Fungsi cek status pembayaran dari backend (lengkap)
+window.checkPaymentStatusFromBackend = async function(email) {
+  try {
+    console.log('🔍 Checking payment status for:', email);
+    
+    const res = await axios.post(
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/${encodeURIComponent(email)}/payment-status`,
+      {},
+      { timeout: 200000 }
+    );
+
+    const data = res.data;
+    console.log('💳 Payment status response:', data);
+
+    // ✅ Hanya terima payment dari PayPal
+    if (data && data.success) {
+    // ✅ GUNAKAN paypalAmount untuk PayPal fokus 
+    //  const paypalAmount = data.paypalAmount || 0;
+    const paypalAmount = (data && typeof data.paypalAmount === 'number') ? data.paypalAmount : 0;
+      if (paypalAmount > 0) {
+        // User sudah bayar via PayPal
+        // ... lanjutkan unlock game ...
+      }
+    
+      return {
+        isPaid: paypalAmount > 0,
+        amount: paypalAmount,
+        provider: 'paypal',
+        supportAmount: data.supportAmount || 0,
+        paymentMethods: data.paymentMethods || [],
+        gameStats: data.gameStats || {},
+        user: data.user || null
+      };
+    } else {
+      return {
+        isPaid: false,
+        amount: 0,
+        provider: null,
+        supportAmount: 0,
+        paymentMethods: [],
+        gameStats: {},
+        user: null
+      };
+    }
+  } catch (err) {
+    console.error('Failed to check payment status:', err);
+    return {
+      isPaid: false,
+      amount: 0,
+      provider: null,
+      supportAmount: 0,
+      paymentMethods: [],
+      gameStats: {},
+      user: null
+    };
+  }
+};
+
 async function syncProgressFromBackend(email) {
   try {
       console.log('🔄 Syncing progress from backend for:', email);
@@ -411,65 +469,6 @@ if (!userData.gameProgress) {
   };
 }
 //======================================================================================
-
-// Fungsi cek status pembayaran dari backend (lengkap)
-window.checkPaymentStatusFromBackend = async function(email) {
-  try {
-    console.log('🔍 Checking payment status for:', email);
-    
-    const res = await axios.post(
-      `https://backend-paypalblackhorsepuzzle.onrender.com/api/${encodeURIComponent(email)}/payment-status`,
-      {},
-      { timeout: 200000 }
-    );
-
-    const data = res.data;
-    console.log('💳 Payment status response:', data);
-
-    // ✅ Hanya terima payment dari PayPal
-    if (data && data.success) {
-    // ✅ GUNAKAN paypalAmount untuk PayPal fokus 
-    //  const paypalAmount = data.paypalAmount || 0;
-    const paypalAmount = (data && typeof data.paypalAmount === 'number') ? data.paypalAmount : 0;
-      if (paypalAmount > 0) {
-        // User sudah bayar via PayPal
-        // ... lanjutkan unlock game ...
-      }
-    
-      return {
-        isPaid: paypalAmount > 0,
-        amount: paypalAmount,
-        provider: 'paypal',
-        supportAmount: data.supportAmount || 0,
-        paymentMethods: data.paymentMethods || [],
-        gameStats: data.gameStats || {},
-        user: data.user || null
-      };
-    } else {
-      return {
-        isPaid: false,
-        amount: 0,
-        provider: null,
-        supportAmount: 0,
-        paymentMethods: [],
-        gameStats: {},
-        user: null
-      };
-    }
-  } catch (err) {
-    console.error('Failed to check payment status:', err);
-    return {
-      isPaid: false,
-      amount: 0,
-      provider: null,
-      supportAmount: 0,
-      paymentMethods: [],
-      gameStats: {},
-      user: null
-    };
-  }
-};
-
 //<!-- FIND function checkPaymentStatus around line 350 dan REPLACE dengan: -->
 window.checkPaymentStatus = async function(email) {
   let result = { paid: false, method: null };
@@ -853,8 +852,8 @@ try {
         window.startAutoSync(inputEmail);
 
         // Check payment status
-       // const paymentData = await checkPaymentStatusFromBackend(inputEmail);
-       // window.updateGamePaymentStatus(paymentData.isPaid, paymentData.method);
+        const paymentData = await checkPaymentStatusFromBackend(inputEmail);
+        window.updateGamePaymentStatus(paymentData.isPaid, paymentData.method);
       }
 
     //localStorage.setItem("email", inputEmail);
