@@ -295,7 +295,20 @@ async checkUserStatusAndGameOver(email) {
     (status.isGameOver && (status.level01Score || 0) === 0) || 
     (status.totalPlays >= 3 && (status.level01Score || 0) === 0)
   );
+
+  // Tambahkan parameter isPaid dari payment status (pastikan sudah diambil sebelumnya)
+  if (lossUser && !isPaid) {
+   // Jangan blokir di sini, beri flag agar Level01Scene bisa tampilkan menu pembelian
+   status.isGameOver = true;
+   status.showPurchase = true; // flag untuk Level01Scene
+   localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
+   this.isGameOver = true;
+   // Jangan return di sini, biarkan proses lanjut ke Level01Scene
+  return status;
+  }
+
   if (isLossUser) {
+    // Jangan blokir di sini, beri flag agar Level01Scene bisa tampilkan menu pembelian
     status.isGameOver = true;
     await this.setGameOver(email, true); // gunakan fungsi async
     status.isGameOver = true; // pastikan status di-set ke true
