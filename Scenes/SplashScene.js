@@ -802,7 +802,8 @@ window.addEventListener('beforeunload', () => {
     // ✅ TAMBAH AUTO PAYMENT CHECK DI SINI (line 437-438): tamabah 070825
     console.log('🔍 Auto checking payment status for:', email);
     try {
-      const paymentData = await checkPaymentStatusFromBackend(email);
+      // ✅ CEK PAYMENT STATUS SEBELUM LOCK
+      const paymentData = await window.checkPaymentStatusFromBackend(email);
       if (paymentData && paymentData.isPaid === true) {
       console.log('✅ Payment detected! Auto-unlocking game...');
       
@@ -899,7 +900,7 @@ window.addEventListener('beforeunload', () => {
 
     // 6. Lock level dengan urutan: newUser, winUser, lossUser (koreksi sonnet)
     if (newUser) {
-      console.log('👶 New User - Welcome! Activating game...');
+      console.log('🙂 New User - Welcome! Activating game...');
       this.isGameOver = false;
       this.unblur10PuzzleButton();
       this.scene.start("Level01Scene", { 
@@ -910,7 +911,7 @@ window.addEventListener('beforeunload', () => {
      }
 
      if (winUser || (status && status.level01Score > 0)) {
-        console.log('🏆 Win User - Game unlocked!');
+        console.log('😄🏆 Win User - Game unlocked!');
         this.isGameOver = false;
         this.unblur10PuzzleButton();
         this.scene.start("Level01Scene", { 
@@ -922,7 +923,7 @@ window.addEventListener('beforeunload', () => {
       }
 
       if (lossUser || (status && status.isGameOver && (status.level01Score || 0) === 0)) {
-      console.log('💀 Loss User - Lock 10 puzzle only, allowing navigation');
+      console.log('😔 Loss User - Lock 10 puzzle only, allowing navigation');
   
      // ✅ CEK PAYMENT STATUS SEBELUM LOCK
       const paymentData = await window.checkPaymentStatusFromBackend(email);
@@ -931,7 +932,7 @@ window.addEventListener('beforeunload', () => {
       if (isPaid) {
         console.log('💳 Payment detected - unlocking game for loss user');
         this.isGameOver = false;
-         this.unblur10PuzzleButton();
+        this.unblur10PuzzleButton();
         this.unlockGameAfterPurchase();
         this.scene.start("Level01Scene", { 
           isGameOver: false, 
@@ -943,9 +944,11 @@ window.addEventListener('beforeunload', () => {
         console.log('🔒 No payment - lock 10 puzzle only, allow navigation');
         this.isGameOver = true;
         this.showGameOverReturnMessage();  // Tampilkan pesan
-        this.blur10PuzzleButton();         // Lock hanya 10 puzzle + playBtn
+        this.blur10PuzzleButton(); 
+                // Lock hanya 10 puzzle + playBtn
     
         // ✅ TETAP MASUK Level01Scene UNTUK AKSES MENU PEMBELIAN
+        loadingText.destroy();
         this.scene.start("Level01Scene", { 
           isGameOver: true, 
           userType: 'lossUser'

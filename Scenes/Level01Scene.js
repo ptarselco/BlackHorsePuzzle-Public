@@ -1589,7 +1589,7 @@ async showGameOverReturnMessage() {
     .setDepth(9999);
 
   // Title
-  const title = this.add.text(960, 480, "🔒 GAME OVER STATE DETECTED", {
+  const title = this.add.text(960, 480, "😔 GAME OVER STATE DETECTED 🔒", {
     font: "bold 40px Segoe UI",
     fill: "#ff0000",
     align: "center"
@@ -1609,7 +1609,7 @@ async showGameOverReturnMessage() {
   }).setOrigin(0.5).setDepth(10000);
 
   // Continue button (disabled until purchase)
-  const continueBtn = this.add.text(960, 785, "❌ LOCKED - BUY FAVORITE MENU FIRST", {
+  const continueBtn = this.add.text(960, 785, "🔒LOCKED - BUY FAVORITE MENU FIRST", {
     font: "bold 28px Segoe UI",
     fill: "#666666",
     backgroundColor: "#333333",
@@ -1760,7 +1760,7 @@ showLowScoreWarning() {
 
   // Warning message
   this.lowScoreWarning = this.add.text(960, 350,
-    `⚠️ LOW level01Score WARNING!\n\n` +
+    `⚠️ 😔 LOW level01Score WARNING!\n\n` +
     `Current level01Score: ${this.level01Score}\n` +
     `Game continues, but consider buying\n` +
     `favorite menu for better performance!`, {
@@ -1795,7 +1795,7 @@ blur10PuzzleButton() {
     this.playBtn.disableInteractive();
   }
   
-  console.log('🔒 10 Puzzle and Play buttons blurred - Only favorite menu accessible');
+  console.log('😔🔒 10 Puzzle and Play buttons blurred - Only favorite menu accessible');
 }
 
 // ========== UNBLUR BUTTONS AFTER PURCHASE ==========
@@ -1905,7 +1905,7 @@ showGameOverPuzzleMessage() {
 
   // Message
   this.gameOverPuzzleMsg = this.add.text(960, 350,
-    "🔒 GAME OVER - PUZZLES LOCKED!\n\n" +
+    "😔 GAME OVER - PUZZLES LOCKED!🔒\n\n" +
     "Your last session ended in Game Over.\n" +
     "To unlock puzzles, you need to persuade\n" +
     "Black Horse with his favorite menu.\n\n" +
@@ -2581,12 +2581,22 @@ async checkPuzzle() {
 
     console.log('🏆 PUZZLE COMPLETE! Timer stopped at:', this.timeElapsed);
 
+    // ✅ SCORE BONUS BERDASARKAN RONDE
+    let scoreBonus = 100; // Default score R1 & R2
+    if (this.round === 3) {
+      scoreBonus = 300; // ⭐ BONUS SCORE RONDE 3
+      console.log('🔥 RONDE 3 WIN BONUS! +300 score');
+      // ✅ TAMPILKAN PESAN BONUS RONDE 3
+      this.showRonde3BonusMessage();
+    }
+
     // ✅ TAMBAH SCORE
-    this.level01Score = (this.level01Score || 0) + 100;
+    //this.level01Score = (this.level01Score || 0) + 100;
+    this.level01Score = (this.level01Score || 0) + scoreBonus;
     this.scoreText.setText(this.level01Score.toString().padStart(5, '0'));
     this.registry.set('level01Score', this.level01Score);
 
-    const email = localStorage.getItem('email');
+    //const email = localStorage.getItem('email');
 
     // Reset ke R1 setelah menang di ronde manapun
     this.round = 1;
@@ -2595,7 +2605,7 @@ async checkPuzzle() {
     //this.startNextRound(); // akan start timer lagi
 
      // ✅ SIMPAN PROGRESS KE LOCALSTORAGE
-    let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+    //let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
     userData.gameProgress = userData.gameProgress || {};
 
     // Pastikan level01HighScore selalu angka // sonnet tidak ada koreksi ini
@@ -2682,6 +2692,115 @@ async checkPuzzle() {
     }
   }
 
+  // ✅ TAMBAHKAN FUNCTION BARU SETELAH checkPuzzle():
+showRonde3BonusMessage() {
+  // Hapus pesan bonus lama jika ada
+  if (this.bonusMsg) this.bonusMsg.destroy();
+  if (this.bonusMsgBg) this.bonusMsgBg.destroy();
+
+  // Background panel
+  this.bonusMsgBg = this.add.rectangle(960, 400, 1100, 300, 0x023d3f, 1)
+    .setStrokeStyle(6, 0xffd700) // Gold border
+    .setDepth(9998);
+
+  // Pesan bonus dengan animasi berkilau
+  this.bonusMsg = this.add.text(960, 400,
+    "🏆RONDE 3 WIN BONUS!🏆 \n\n⭐ +300 SCORE! ⭐", {
+    font: "bold 120px Segoe UI",
+    fill: "#ffd700", // Gold color
+    align: "center",
+    stroke: "#fff",
+    strokeThickness: 4,
+    shadow: {
+      offsetX: 0,
+      offsetY: 0,
+      color: "#ffd700",
+      blur: 20,
+      fill: true
+    }
+  }).setOrigin(0.5).setDepth(9999);
+
+  // Animasi masuk dengan scale dan glow
+  this.bonusMsg.setScale(0.1);
+  this.tweens.add({
+    targets: this.bonusMsg,
+    scale: 1.2,
+    duration: 600,
+    ease: 'Back.easeOut',
+    onComplete: () => {
+      // Efek berkilau berulang
+      this.tweens.add({
+        targets: this.bonusMsg,
+        scale: { from: 1.2, to: 1.3, to: 1.2 },
+        duration: 800,
+        repeat: 2,
+        ease: 'Sine.easeInOut'
+      });
+    }
+  });
+  
+  // Animasi background panel
+  this.bonusMsgBg.setAlpha(0);
+  this.tweens.add({
+    targets: this.bonusMsgBg,
+    alpha: 1,
+    duration: 400,
+    ease: 'Sine.easeInOut'
+  });
+
+  // Auto-hide setelah 4 detik
+  this.time.delayedCall(4000, () => {
+    if (this.bonusMsg) {
+      // Animasi keluar
+      this.tweens.add({
+        targets: [this.bonusMsg, this.bonusMsgBg],
+        alpha: 0,
+        scale: 0.8,
+        duration: 500,
+        ease: 'Sine.easeInOut',
+        onComplete: () => {
+          if (this.bonusMsg) this.bonusMsg.destroy();
+          if (this.bonusMsgBg) this.bonusMsgBg.destroy();
+          this.bonusMsg = null;
+          this.bonusMsgBg = null;
+        }
+      });
+    }
+  });
+
+  // Efek partikel emas (opsional)
+  this.createGoldParticles();
+}
+
+// ✅ EFEK PARTIKEL EMAS (OPSIONAL):
+createGoldParticles() {
+  // Buat 8 partikel emas di sekitar pesan
+  for (let i = 0; i < 8; i++) {
+    const angle = (i / 8) * Math.PI * 2;
+    const distance = 150;
+    
+    const particle = this.add.circle(
+      960 + Math.cos(angle) * 80, 
+      400 + Math.sin(angle) * 60, 
+      8, 
+      0xffd700
+    )
+      .setDepth(9999)
+      .setAlpha(0.8);
+    
+    // Animasi partikel keluar dengan fade
+    this.tweens.add({
+      targets: particle,
+      x: 960 + Math.cos(angle) * distance,
+      y: 400 + Math.sin(angle) * distance,
+      scale: { from: 1, to: 2 },
+      alpha: { from: 0.8, to: 0 },
+      duration: 1500,
+      ease: 'Cubic.easeOut',
+      onComplete: () => particle.destroy()
+    });
+  }
+}
 
   // ========== CLAIM HAT AFTER WIN ==========
   showClaimHat(callback) {
