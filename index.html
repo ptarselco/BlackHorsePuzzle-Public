@@ -418,7 +418,7 @@ window.checkPaymentStatusFromBackend = async function(email) {
     console.log('🔍 Checking payment status for:', email);
     
     const res = await axios.post(
-      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/payment-status`,
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/${encodeURIComponent(email)}/payment-status`,
       {},
       { timeout: 200000 }
     );
@@ -428,9 +428,14 @@ window.checkPaymentStatusFromBackend = async function(email) {
 
     // ✅ Hanya terima payment dari PayPal
     if (data && data.success) {
-     // ✅ GUNAKAN paypalAmount untuk PayPal fokus 
-      const paypalAmount = data.paypalAmount || 0;
-      
+    // ✅ GUNAKAN paypalAmount untuk PayPal fokus 
+    //  const paypalAmount = data.paypalAmount || 0;
+    const paypalAmount = (data && typeof data.paypalAmount === 'number') ? data.paypalAmount : 0;
+      if (paypalAmount > 0) {
+        // User sudah bayar via PayPal
+        // ... lanjutkan unlock game ...
+      }
+    
       return {
         isPaid: paypalAmount > 0,
         amount: paypalAmount,
