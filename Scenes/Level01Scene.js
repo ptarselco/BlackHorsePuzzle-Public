@@ -95,15 +95,15 @@ class Level01Scene extends Phaser.Scene {
     this.load.image('soundOnL', './Puzzle-Assets/UI/GM. Sound On Light.webp');
     this.load.image('soundOff', './Puzzle-Assets/UI/GM. Sound Off.webp');
     this.load.image('soundOffL', './Puzzle-Assets/UI/GM. Sound Off Light.webp');
-    this.load.audio('introMusic', './Puzzle-Assets/Sfx/scenes/level01-1-herdhorses-guitar-intro-ident.mp3');
-    this.load.audio('mainMusic', './Puzzle-Assets/Sfx/scenes/level01-2 music-favorite-sunset-dreams.mp3');
-    this.load.audio('winMusic', './Puzzle-Assets/Sfx/scenes/win-in-the-video-game.mp3');
-    this.load.audio('horseNeigh', './Puzzle-Assets/Sfx/sound/horse-neigh.mp3');
-    this.load.audio('horseSnort', './Puzzle-Assets/Sfx/sound/horse-snort.mp3');
-    this.load.audio('horseHoof', './Puzzle-Assets/Sfx/sound/hoof-run.mp3');
-    this.load.audio('horsehoofstep', './Puzzle-Assets/Sfx/sound/hoof-step.mp3');
-    this.load.audio('horseGallop', './Puzzle-Assets/Sfx/sound/blackhorse-gallop.mp3');
-    this.load.audio('herdGallop', './Puzzle-Assets/Sfx/sound/herd-gallop.mp3');
+    //this.load.audio('introMusic', './Puzzle-Assets/Sfx/scenes/level01-1-herdhorses-guitar-intro-ident.mp3');
+    //this.load.audio('mainMusic', './Puzzle-Assets/Sfx/scenes/level01-2 music-favorite-sunset-dreams.mp3');
+    //this.load.audio('winMusic', './Puzzle-Assets/Sfx/scenes/win-in-the-video-game.mp3');
+    //this.load.audio('horseNeigh', './Puzzle-Assets/Sfx/sound/horse-neigh.mp3');
+    //this.load.audio('horseSnort', './Puzzle-Assets/Sfx/sound/horse-snort.mp3');
+    //this.load.audio('horseHoof', './Puzzle-Assets/Sfx/sound/hoof-run.mp3');
+    //this.load.audio('horsehoofstep', './Puzzle-Assets/Sfx/sound/hoof-step.mp3');
+    //this.load.audio('horseGallop', './Puzzle-Assets/Sfx/sound/blackhorse-gallop.mp3');
+    //this.load.audio('herdGallop', './Puzzle-Assets/Sfx/sound/herd-gallop.mp3');
     
     // Sembunyikan loader please wait (dari Co)
   this.load.on('complete', () => {
@@ -195,20 +195,8 @@ class Level01Scene extends Phaser.Scene {
     };
   }
 
- 
-   
-  // Sync progress dari backend, update score di UI
-  //syncProgressFromBackend(email).then(progress => {
-    //if (progress && typeof progress.level01Score === 'number') {
-      //this.level01Score = progress.level01Score;
-      //updateGameScore(email, progress.level01Score); // Update UI score
-    //}
-  //});
-
   // Pastikan level01Score diinisialisasi
   this.level01Score = data.level01Score || 0;
-
-
 
    // Tambahkan juga untuk visibilitychange (tab pindah/fokus hilang)
   document.addEventListener('visibilitychange', () => {
@@ -248,7 +236,7 @@ if (!userData.gameProgress) {
   };
 }
 
-  // Tambahkan validasi score di sini
+ // Tambahkan validasi score di sini
  // if (typeof userData.gameProgress.level01Score !== 'number' || isNaN(userData.gameProgress.level01Score)) {
  // userData.gameProgress.level01Score = 0;
  // }
@@ -1352,7 +1340,7 @@ this.donationBtn.on('pointerdown', () => { // ini 1
     }
 
     // BATAS GRID KANAN
-    // Musik
+    // ✅ LOAD AUDIO DARI CACHE (SUDAH DI-LOAD DI SPLASHSCENE):
     this.introMusic = this.sound.add('introMusic');
     this.mainMusic = this.sound.add('mainMusic', { loop: true });
     this.winMusic = this.sound.add('winMusic');
@@ -1361,6 +1349,8 @@ this.donationBtn.on('pointerdown', () => { // ini 1
     this.horseHoof = this.sound.add('horseHoof');
     this.horseGallop = this.sound.add('horseGallop');
     this.herdGallop = this.sound.add('herdGallop');
+
+    // ✅ SET VOLUME (SAMA SEPERTI SEBELUMNYA):
     this.introMusic.setVolume(0.7);
     this.mainMusic.setVolume(0.6);
     this.winMusic.setVolume(0.7);
@@ -1369,6 +1359,8 @@ this.donationBtn.on('pointerdown', () => { // ini 1
     this.horseHoof.setVolume(0.5);
     this.horseGallop.setVolume(0.5);
     this.herdGallop.setVolume(0.5);
+
+     // ✅ START INTRO SEQUENCE (SAMA SEPERTI SEBELUMNYA):
     this.introMusic.play();
     this.showHorseShakeHead();
     this.showHorseShakeHead();
