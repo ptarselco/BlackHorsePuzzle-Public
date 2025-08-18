@@ -765,7 +765,7 @@ window.addEventListener('beforeunload', () => {
     alert("Please Login with your email!");
     return;
   }
-  
+    
   try {
     // ✅ UPDATE LOADING TEXT
     loadingText.setText('Connecting to server...');
@@ -773,7 +773,7 @@ window.addEventListener('beforeunload', () => {
     console.log('🔍 Checking user status for:', email);
 
     // Tambahkan timeout untuk memastikan backend response
-    const status = await Promise.race([
+    const statusWithTimeout = await Promise.race([
       this.checkUserStatusAndGameOver(email),
       new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Timeout')), 30000)
@@ -830,6 +830,9 @@ window.addEventListener('beforeunload', () => {
       return;
     } else {
       console.log('❌ No payment detected - checking game over logic');
+    }
+    } catch (error) {
+      console.error('❌ Auto payment check failed:', error);
     }
     
     // ✅ UPDATE LOADING TEXT
@@ -919,52 +922,53 @@ window.addEventListener('beforeunload', () => {
       if (lossUser || (status && status.isGameOver && (status.level01Score || 0) === 0)) {
       console.log('💀 Loss User - Lock 10 puzzle only, allowing navigation');
   
- // ✅ CEK PAYMENT STATUS SEBELUM LOCK
-  const paymentData = await window.checkPaymentStatusFromBackend(email);
-  const isPaid = paymentData && paymentData.isPaid === true;
+     // ✅ CEK PAYMENT STATUS SEBELUM LOCK
+      const paymentData = await window.checkPaymentStatusFromBackend(email);
+      const isPaid = paymentData && paymentData.isPaid === true;
   
-  if (isPaid) {
-    console.log('💳 Payment detected - unlocking game for loss user');
-    this.isGameOver = false;
-    this.unblur10PuzzleButton();
-    this.unlockGameAfterPurchase();
-    this.scene.start("Level01Scene", { 
-      isGameOver: false, 
-      userType: 'lossUser',
-      isPaid: true
-    });
-    return;
-  } else {
-    console.log('🔒 No payment - lock 10 puzzle only, allow navigation');
-    this.isGameOver = true;
-    this.showGameOverReturnMessage();  // Tampilkan pesan
-    this.blur10PuzzleButton();         // Lock hanya 10 puzzle + playBtn
+      if (isPaid) {
+        console.log('💳 Payment detected - unlocking game for loss user');
+        this.isGameOver = false;
+         this.unblur10PuzzleButton();
+        this.unlockGameAfterPurchase();
+        this.scene.start("Level01Scene", { 
+          isGameOver: false, 
+          userType: 'lossUser',
+          isPaid: true
+         });
+        return;
+        } else {
+        console.log('🔒 No payment - lock 10 puzzle only, allow navigation');
+        this.isGameOver = true;
+        this.showGameOverReturnMessage();  // Tampilkan pesan
+        this.blur10PuzzleButton();         // Lock hanya 10 puzzle + playBtn
     
-    // ✅ TETAP MASUK Level01Scene UNTUK AKSES MENU PEMBELIAN
-    this.scene.start("Level01Scene", { 
-      isGameOver: true, 
-      userType: 'lossUser'
-      // Level01Scene akan otomatis handle:
-      // - showGameOverPuzzleMessage() saat user klik 10 puzzle
-      // - blur10PuzzleButton() untuk lock puzzle
-      // - Menu favorit tetap bisa diklik untuk purchase
-    });
-    return;
-  }
-}
+        // ✅ TETAP MASUK Level01Scene UNTUK AKSES MENU PEMBELIAN
+        this.scene.start("Level01Scene", { 
+          isGameOver: true, 
+          userType: 'lossUser'
+            // Level01Scene akan otomatis handle:
+            // - showGameOverPuzzleMessage() saat user klik 10 puzzle
+             // - blur10PuzzleButton() untuk lock puzzle
+             // - Menu favorit tetap bisa diklik untuk purchase
+        });
+       return;
+        }
+      }
 
-// ✅ FALLBACK - jika tidak masuk kategori manapun
-console.log('🎮 Default case - proceeding to game');
-this.scene.start("Level01Scene", { 
-  isGameOver: false, 
-  userType: 'default' 
-});
+     // ✅ FALLBACK - jika tidak masuk kategori manapun
+     console.log('🎮 Default case - proceeding to game');
+     loadingText.destroy();
+     this.scene.start("Level01Scene", { 
+        isGameOver: false, 
+        userType: 'default' 
+     });
     
     // 7. Unlock level (opsional, misal setelah pembayaran)
     await this.unlockedLevels(email, 'level01');
 
 
-  // === CEK STATUS PEMBAYARAN DARI BACKEND ===
+    // === CEK STATUS PEMBAYARAN DARI BACKEND ===
     const paymentStatus = await window.checkPaymentStatusFromBackend(email);
     if (paymentStatus.isPaid) {
       this.unblur10PuzzleButton && this.unblur10PuzzleButton();
@@ -1016,15 +1020,15 @@ this.scene.start("Level01Scene", {
     console.error('❌ Critical error in user status check:', error);  
     alert("Failed to check user status: " + error.message);
       }
-  });
-  
+    });
+
     // Background music delayed
     this.time.delayedCall(3000, () => {
       if (this.backgroundMusicLoaded) {
         this.sound.play("music", { loop: true });
       }
     });
-    }
+  }
 
   // ========== LAZY LOAD BACKGROUND ASSETS (Non-blocking) ==========
   lazyLoadBackgroundAssets() {
@@ -1092,7 +1096,7 @@ this.scene.start("Level01Scene", {
     this.load.start();
   }
   
-  
+
   // ========== CREATE BACKGROUND ELEMENTS SETELAH LAZY LOAD ==========
   createBackgroundElements() {
 
