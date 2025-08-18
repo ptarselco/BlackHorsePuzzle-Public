@@ -892,11 +892,36 @@ document.getElementById("verifyBtn").onclick = async function() {
     //if (data.emailVerified === true) {
     if (data.user && data.user.emailVerified === true) {
       //alert('Email verified successfully! Welcome to Black Horse Puzzle!');
-      document.getElementById("verificationCodeInput").value = "";
+      // PENTING: Simpan email SEBELUM operasi lain
       localStorage.setItem("email", email);
+      console.log('📧 Email saved to localStorage:', email);
+
+      document.getElementById("verificationCodeInput").value = "";
       document.getElementById("verificationBox").style.display = "none";
       document.getElementById("logoutBtn").style.display = "inline-block";
       document.getElementById("verificationCodeInput").value = "";
+      
+      // Koreksi dari sonnet mulai tambahan di bawah ini
+      // Lakukan sync backend dan payment check SETELAH email tersimpan
+      try {
+        const syncResult = await syncProgressFromBackend(email);
+        console.log('✅ Post-verification sync:', syncResult);
+        
+        const paymentData = await checkPaymentStatusFromBackend(email);
+        console.log('💳 Post-verification payment check:', paymentData);
+        
+        // Sekarang baru update payment status (email sudah tersedia)
+        window.updateGamePaymentStatus(paymentData.isPaid, paymentData.provider);
+        
+        // Start auto-sync
+        window.startAutoSync(email);
+        
+      } catch (syncError) {
+        console.error('❌ Post-verification sync error:', syncError);
+      }
+      // Batas koreksi dari sonnet
+
+      // Start Phaser game
       if (window.Phaser && window.game && window.game.scene) {
         window.game.scene.start('SplashScene');
       }
@@ -989,8 +1014,10 @@ window.showMessage = function(message, color = '#ff6b6b') {
 window.updateGamePaymentStatus = function(isPaid, method = null) {
   const email = localStorage.getItem("email");
   if (!email) {
-    console.error('❌ email not defined in updateGamePaymentStatus');
-    return; // ✅ KELUAR JIKA TIDAK ADA EMAIL
+    //console.error('❌ email not defined in updateGamePaymentStatus');
+    //return; // ✅ KELUAR JIKA TIDAK ADA EMAIL
+    console.warn('⚠️ No email found - skipping payment status update');
+    return; // Jangan error, cukup skip saja
   }
 
   console.log('💳 Updating payment status for:', email, 'isPaid:', isPaid);

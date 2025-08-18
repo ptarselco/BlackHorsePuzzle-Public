@@ -749,6 +749,23 @@ window.addEventListener('beforeunload', () => {
     alert("Please Login with your email!");
     return;
   }
+  // Tambahan dari sonnet check status
+  console.log('🔍 Checking user status for:', email);
+    
+    // Tambahkan timeout untuk memastikan backend response
+    const status = await Promise.race([
+      this.checkUserStatusAndGameOver(email),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout')), 30000)
+      )
+    ]);
+
+    console.log('📊 User status result:', status);
+
+    if (!status) {
+      alert("Failed to check user status: Unable to connect to server");
+      return;
+    }
 
   // ✅ TAMBAH AUTO PAYMENT CHECK DI SINI (line 437-438): tamabah 070825
   console.log('🔍 Auto checking payment status for:', email);
@@ -832,38 +849,83 @@ window.addEventListener('beforeunload', () => {
     const status = await this.checkUserStatusAndGameOver(email);
 
     // Tambahkan pengecekan ini:
-    if (!status) {
-    alert("Failed to check user status: data is not defined");
-    return;
-    }
+    //if (!status) {
+    //alert("Failed to check user status: data is not defined");
+    // alert("Failed to check user status: Unable to connect to server");
+    //return;
+    //}
 
     // 5. Cek status game over dari server (opsional, validasi ulang)
     await this.checkGameOverStatusFromServer();
 
-    // 6. Lock level jika game over logika 3 user
-    if (newUser) {
-      this.isGameOver = false;
-      this.unblur10PuzzleButton();
-      // Tampilkan pesan selamat datang jika perlu
-      this.scene.start("Level01Scene", { isGameOver: false });
-      return;
-    }
-    if (lossUser || (status && status.isGameOver && (status.level01Score || 0) === 0)) {
-      await this.lockLevel(email, 'level01');
-      this.isGameOver = true;
-      this.showGameOverReturnMessage();
-      this.lockAllGameplayButtons();
-      this.scene.start("Level01Scene", { isGameOver: true });
-      return;
-    }
-    if (winUser || (status && status.level01Score > 0)) {
-      this.isGameOver = false;
-      this.unblur10PuzzleButton();
-      // Tampilkan pesan kemenangan jika perlu
-      this.scene.start("Level01Scene", { isGameOver: false, level01Score: status.level01Score });
-      return;
-    }
+// 6. Lock level dengan urutan: newUser, winUser, lossUser (koreksi sonnet)
+if (newUser) {
+  console.log('👶 New User - Welcome! Activating game...');
+  this.isGameOver = false;
+  this.unblur10PuzzleButton();
+  this.scene.start("Level01Scene", { 
+    isGameOver: false, 
+    userType: 'newUser',
+  });
+  return;
+}
 
+if (winUser || (status && status.level01Score > 0)) {
+  console.log('🏆 Win User - Game unlocked!');
+  this.isGameOver = false;
+  this.unblur10PuzzleButton();
+  this.scene.start("Level01Scene", { 
+    isGameOver: false, 
+    userType: 'winUser',
+    level01Score: status.level01Score 
+  });
+  return;
+}
+
+if (lossUser || (status && status.isGameOver && (status.level01Score || 0) === 0)) {
+  console.log('💀 Loss User - Lock 10 puzzle only, allowing navigation');
+  
+ // ✅ CEK PAYMENT STATUS SEBELUM LOCK
+  const paymentData = await window.checkPaymentStatusFromBackend(email);
+  const isPaid = paymentData && paymentData.isPaid === true;
+  
+  if (isPaid) {
+    console.log('💳 Payment detected - unlocking game for loss user');
+    this.isGameOver = false;
+    this.unblur10PuzzleButton();
+    this.unlockGameAfterPurchase();
+    this.scene.start("Level01Scene", { 
+      isGameOver: false, 
+      userType: 'lossUser',
+      isPaid: true
+    });
+    return;
+  } else {
+    console.log('🔒 No payment - lock 10 puzzle only, allow navigation');
+    this.isGameOver = true;
+    this.showGameOverReturnMessage();  // Tampilkan pesan
+    this.blur10PuzzleButton();         // Lock hanya 10 puzzle + playBtn
+    
+    // ✅ TETAP MASUK Level01Scene UNTUK AKSES MENU PEMBELIAN
+    this.scene.start("Level01Scene", { 
+      isGameOver: true, 
+      userType: 'lossUser'
+      // Level01Scene akan otomatis handle:
+      // - showGameOverPuzzleMessage() saat user klik 10 puzzle
+      // - blur10PuzzleButton() untuk lock puzzle
+      // - Menu favorit tetap bisa diklik untuk purchase
+    });
+    return;
+  }
+}
+
+// ✅ FALLBACK - jika tidak masuk kategori manapun
+console.log('🎮 Default case - proceeding to game');
+this.scene.start("Level01Scene", { 
+  isGameOver: false, 
+  userType: 'default' 
+});
+    
     // 7. Unlock level (opsional, misal setelah pembayaran)
     await this.unlockedLevels(email, 'level01');
 
