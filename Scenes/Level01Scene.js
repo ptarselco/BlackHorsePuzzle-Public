@@ -35,26 +35,6 @@ class Level01Scene extends Phaser.Scene {
     this.isGameLocked = false;
   }
 
-    init(data) {
-    console.log('🎮 Level01Scene init with data:', data);
-    
-    // ✅ TERIMA DATA DARI SPLASHSCENE
-    this.isGameOver = data.isGameOver || false;
-    this.userType = data.userType || 'unknown';
-    this.level01Score = data.level01Score || 0;
-    this.isPaid = data.isPaid || false;
-    
-    // ✅ RESET FLAGS SAAT INIT
-    this.gameCompleted = false;
-    this.gameWon = false;
-    this.hasUserInput = false;
-    this.gameStarted = false;
-    this.timeElapsed = 0;
-    
-    console.log(`👤 User type: ${this.userType}, isGameOver: ${this.isGameOver}, score: ${this.level01Score}`);
-  }
-    
-
   preload() {
    // Loader untuk text saat loading --> please wait (Co)
    document.getElementById('loader').style.display = 'flex';
@@ -160,7 +140,7 @@ class Level01Scene extends Phaser.Scene {
   this.userType = data.userType || 'default';
   this.isPaid = data.isPaid || false;
   this.level01Score = data.level01Score || 0;
-  
+
   // ✅ RESPONS BERDASARKAN USER TYPE DARI SPLASHSCENE
   if (this.userType === 'newUser') {
     console.log('👶 New User detected in Level01 - ready to play');
@@ -228,60 +208,11 @@ class Level01Scene extends Phaser.Scene {
   // Pastikan level01Score diinisialisasi
   this.level01Score = data.level01Score || 0;
 
-  
-
-
-// ✅ PERBAIKAN: SYNC PROGRESS DENGAN PROTEKSI
-  async function syncProgressFromBackend(email) {
-    try {
-      console.log('🔄 Level01 syncing progress from backend for:', email);
-      
-      const response = await axios.post(
-        `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
-        { 
-          email, 
-          level: 'Level01Scene',
-          requestType: 'sync_only'
-        },
-        { timeout: 15000 }
-      );
-      
-      const progress = response.data.progress || {};
-      
-      // ✅ UPDATE PROPERTIES DENGAN PROTEKSI
-      this.level01Score = Math.max(this.level01Score, progress.level01Score || 0);
-      this.level01HighScore = Math.max(this.level01HighScore, progress.level01HighScore || 0);
-      
-      // ✅ UPDATE UI JIKA ADA
-      if (this.scoreText) {
-        this.scoreText.setText(this.level01Score.toString().padStart(5, '0'));
-      }
-
-       console.log('✅ Level01 progress synced:', { 
-        score: this.level01Score, 
-        highScore: this.level01HighScore 
-      });
-      
-      return {
-        success: true,
-        progress: progress,
-        level01Score: this.level01Score,
-        level01HighScore: this.level01HighScore
-      };
-      
-    } catch (err) {
-      console.error('❌ Level01 sync progress failed:', err);
-      return { success: false, error: err.message };
-    }
-  }
-
-
    // ✅ SYNC PROGRESS DARI BACKEND
    //const email = localStorage.getItem('email');
    if (email) {
       this.syncProgressFromBackend(email);
     }
-
 
 // ✅ SETUP VISIBILITY HANDLER
 this.setupVisibilityHandler();
@@ -3120,6 +3051,50 @@ async  unlockedLevels(email, level) {
     return false;
   }
 }
+
+// ✅ PERBAIKAN: SYNC PROGRESS DENGAN PROTEKSI
+  async syncProgressFromBackend(email) {
+    try {
+      console.log('🔄 Level01 syncing progress from backend for:', email);
+      
+      const response = await axios.post(
+        `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
+        { 
+          email, 
+          level: 'Level01Scene',
+          requestType: 'sync_only'
+        },
+        { timeout: 15000 }
+      );
+      
+      const progress = response.data.progress || {};
+      
+      // ✅ UPDATE PROPERTIES DENGAN PROTEKSI
+      this.level01Score = Math.max(this.level01Score, progress.level01Score || 0);
+      this.level01HighScore = Math.max(this.level01HighScore, progress.level01HighScore || 0);
+      
+      // ✅ UPDATE UI JIKA ADA
+      if (this.scoreText) {
+        this.scoreText.setText(this.level01Score.toString().padStart(5, '0'));
+      }
+
+       console.log('✅ Level01 progress synced:', { 
+        score: this.level01Score, 
+        highScore: this.level01HighScore 
+      });
+      
+      return {
+        success: true,
+        progress: progress,
+        level01Score: this.level01Score,
+        level01HighScore: this.level01HighScore
+      };
+      
+    } catch (err) {
+      console.error('❌ Level01 sync progress failed:', err);
+      return { success: false, error: err.message };
+    }
+  }
 
 // ✅ PERBAIKAN: HANDLE VISIBILITY CHANGE KHUSUS UNTUK LEVEL01
   setupVisibilityHandler() {
