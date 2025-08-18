@@ -1,5 +1,13 @@
 // SplashScene.js - Versi Lazy Loading (Backup dari SplashScene.js)
 
+// Pastikan fungsi ini ada sebelum class SplashScene
+if (typeof window.checkPaymentStatusFromBackend !== 'function') {
+  window.checkPaymentStatusFromBackend = async function(email) {
+    // Fallback: return unpaid status jika fungsi global belum ada
+    return { isPaid: false, paypalAmount: 0, xsollaAmount: 0, supportAmount: 0, paymentMethods: [] };
+  };
+}
+
 class SplashScene extends Phaser.Scene {
   constructor() {
     super("SplashScene");

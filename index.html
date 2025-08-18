@@ -262,50 +262,32 @@ if ('serviceWorker' in navigator) {
   console.log('⚠️ Service Worker not supported in this browser');
 }
 
-// Fungsi cek status pembayaran dari backend (lengkap)
+// Fallback function for checking payment status
 window.checkPaymentStatusFromBackend = async function(email) {
   try {
     console.log('🔍 Checking payment status for:', email);
-    
     const res = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/${encodeURIComponent(email)}/payment-status`,
       {},
       { timeout: 200000 }
     );
-
     const data = res.data;
     console.log('💳 Payment status response:', data);
 
-    // ✅ Hanya terima payment dari PayPal
-    if (data && data.success) {
-    // ✅ GUNAKAN paypalAmount untuk PayPal fokus 
-    //  const paypalAmount = data.paypalAmount || 0;
+    // Cek semua metode pembayaran
     const paypalAmount = (data && typeof data.paypalAmount === 'number') ? data.paypalAmount : 0;
-      if (paypalAmount > 0) {
-        // User sudah bayar via PayPal
-        // ... lanjutkan unlock game ...
-      }
-    
-      return {
-        isPaid: paypalAmount > 0,
-        amount: paypalAmount,
-        provider: 'paypal',
-        supportAmount: data.supportAmount || 0,
-        paymentMethods: data.paymentMethods || [],
-        gameStats: data.gameStats || {},
-        user: data.user || null
-      };
-    } else {
-      return {
-        isPaid: false,
-        amount: 0,
-        provider: null,
-        supportAmount: 0,
-        paymentMethods: [],
-        gameStats: {},
-        user: null
-      };
-    }
+    const xsollaAmount = (data && typeof data.xsollaAmount === 'number') ? data.xsollaAmount : 0;
+    const isPaid = paypalAmount > 0 || xsollaAmount > 0;
+
+    return {
+      isPaid,
+      amount: paypalAmount + xsollaAmount,
+      provider: isPaid ? (paypalAmount > 0 ? 'paypal' : 'xsolla') : null,
+      supportAmount: data.supportAmount || 0,
+      paymentMethods: data.paymentMethods || [],
+      gameStats: data.gameStats || {},
+      user: data.user || null
+    };
   } catch (err) {
     console.error('Failed to check payment status:', err);
     return {
@@ -2055,7 +2037,6 @@ window.lockPlayAndShowGameOver = function() {
     if (window.lockPlayButton) window.lockPlayButton(); 
   });
 }
-  
 
 
     // ✅ COMPREHENSIVE SAFETY CHECK:
