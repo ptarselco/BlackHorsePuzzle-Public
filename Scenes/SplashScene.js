@@ -125,6 +125,7 @@ unblur10PuzzleButton() {
 // ==== 7 FUNCTIONS FOR SplashScene CONNECTED TO BACKEND ====
 // 1. GET FUNCTION FOR USER PROGRESS
 // ========== GANTI DENGAN FUNCTION getUserProgress YANG BENAR ==========
+// 1. GET USER PROGRESS
 async getUserProgress(email) {
   try {
     const response = await axios.post(
@@ -133,17 +134,23 @@ async getUserProgress(email) {
       { timeout: 200000 }
     );
     
-    const progress = response.data.progress || {};
-    
-    // ✅ PERBAIKAN: Hitung user classification dengan lebih akurat
+    // Ambil progress user
+    const progress = user.gameProgress || {};
+    const level01Score = progress.level01Score || 0;
     const totalPlays = progress.totalPlays || 0;
-    const currentScore = progress.level01Score || 0;
-    const highScore = progress.level01HighScore || 0;
+    const level01HighScore = progress.level01HighScore || 0;
+    const level01Completed = progress.level01Completed || false;
+
+    // ✅ DEFINISIKAN currentScore & highScore
+    const currentScore = progress.level01Score || 0;  // API -> Frontend
+    const highScore = progress.level01HighScore || 0; // API -> Frontend
     
     // ✅ LOGIKA YANG DIPERBAIKI:
-    const newUser = totalPlays === 0; // Belum pernah main sama sekali
-    const winUser = totalPlays > 0 && (currentScore > 0 || highScore > 0); // Pernah menang minimal 1x
-    const lossUser = totalPlays >= 3 && currentScore === 0 && highScore === 0; // 3x main tapi tidak pernah menang
+    const userStatus = {
+     newUser: totalPlays === 0, // Belum pernah main sama sekali
+     winUser: totalPlays > 0 && (currentScore > 0 || highScore > 0), // Pernah menang minimal 1x
+     lossUser: totalPlays >= 3 && currentScore === 0 && highScore === 0 // 3x main tapi tidak pernah menang
+    };
 
     console.log(`👤 User classification FIXED: totalPlays=${totalPlays}, currentScore=${currentScore}, highScore=${highScore}`);
     console.log(`👤 Classification: newUser=${newUser}, lossUser=${lossUser}, winUser=${winUser}`);
@@ -174,78 +181,6 @@ async getUserProgress(email) {
     };
   }
 }
-
-    // PERBAIKAN FUNGSI checkUserStatusAndGameOver
-async checkUserStatusAndGameOver(email) {
-  const status = await this.getUserStatus(email, 'Level01Scene');
-  if (!status) {
-    console.error('Gagal ambil status user');
-    return null; 
-}
-
-  const progress = status.progress || {};
-  const totalPlays = progress.totalPlays || 0;
-  const currentScore = progress.level01Score || 0;
-  const highScore = progress.level01HighScore || 0;
-  
-  // ✅ CALCULATE USER TYPES DENGAN VARIABLE YANG BENAR:
-  const newUser = totalPlays === 0;
-  const winUser = totalPlays > 0 && (currentScore > 0 || highScore > 0);
-  const lossUser = totalPlays >= 3 && currentScore === 0 && highScore === 0;
-
-  console.log(`🔍 User status check: plays=${totalPlays}, score=${currentScore}, high=${highScore}`);
-  console.log(`🎯 User type: new=${newUser}, win=${winUser}, loss=${lossUser}`);
-
-  // ✅ UNTUK NEW USER: Aktifkan game
-  if (newUser) {
-    this.isGameOver = false;
-    this.unblur10PuzzleButton && this.unblur10PuzzleButton();
-    console.log('✅ User baru - game diaktifkan');
-    return { ...status, newUser: true, winUser: false, lossUser: false };
-  }
-
-// ✅ UNTUK WIN USER: Selalu aktifkan game (sudah pernah menang)
-  if (winUser) {
-    this.isGameOver = false;
-    this.unblur10PuzzleButton && this.unblur10PuzzleButton();
-    if (this.playBtn) {
-      this.playBtn.setInteractive({ useHandCursor: true });
-      this.playBtn.setAlpha(1);
-      this.playBtn.setVisible(true);
-    }
-    console.log('✅ Win user - game tetap aktif');
-    return { ...status, newUser: false, winUser: true, lossUser: false };
-  }
-
-  // ✅ UNTUK LOSS USER: Cek payment status
-  if (lossUser) {
-    // Cek payment status
-    const paymentData = await window.checkPaymentStatusFromBackend(email);
-    const isPaid = paymentData && paymentData.isPaid === true;
-
-if (!isPaid) {
-      this.isGameOver = true;
-      status.isGameOver = true;
-      status.showPurchase = true;
-      localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
-      this.lockAllGameplayButtons();
-      console.log('❌ Loss user belum bayar - game dikunci');
-      return { ...status, newUser: false, winUser: false, lossUser: true };
-    } else {
-      // Sudah bayar, unlock game
-      this.isGameOver = false;
-      this.unblur10PuzzleButton && this.unblur10PuzzleButton();
-      console.log('✅ Loss user sudah bayar - game di-unlock');
-      return { ...status, newUser: false, winUser: false, lossUser: false, isPaid: true };
-    }
-  }
-
-  // Default case
-  this.isGameOver = false;
-  this.unblur10PuzzleButton && this.unblur10PuzzleButton();
-  return status;
-}
-
 
 // 2. UPDATE FUNCTION FOR USER PROGRESS
 async updateUserProgress(email, progress) {
@@ -295,6 +230,21 @@ try {
       gameResult: progress.gameResult || 'unknown'
     });
 
+    // Hitung status user berdasarkan progress SETELAH UPDATE
+    const finalTotalPlays = user.gameProgress.totalPlays || 0;
+    const finalLevel01Score = user.gameProgress.level01Score || 0;
+    const finalLevel01HighScore = user.gameProgress.level01HighScore || 0;
+
+    // ✅ DEFINISIKAN currentScore & highScore
+    const currentScore = progress.finalLevel01Score || 0;  // API -> Frontend
+    const highScore = progress.finalLevel01HighScore || 0; // API -> Frontend
+
+    const userStatus = {
+     newUser: finalTotalPlays === 0,
+     winUser: finalTotalPlays > 0 && (currentScore > 0 || highScore > 0),
+     lossUser: finalTotalPlays >= 3 && currentScore === 0 && highScore === 0
+    };
+
     const res = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
       {
@@ -323,11 +273,11 @@ try {
       this.level01Score = level01Score;
       localStorage.setItem(`score_${email}`, level01Score.toString());
       
-      // ✅ UPDATE high score HANYA jika lebih tinggi
-      if (isNewHighScore) {
-        this.level01HighScore = level01HighScore;
-        localStorage.setItem(`highScore_${email}`, level01HighScore.toString());
-        console.log(`🏆 NEW HIGH SCORE! ${existingHighScore} → ${level01HighScore}`);
+    // ✅ UPDATE high score HANYA jika lebih tinggi
+    if (isNewHighScore) {
+      this.level01HighScore = level01HighScore;
+      localStorage.setItem(`highScore_${email}`, level01HighScore.toString());
+      console.log(`🏆 NEW HIGH SCORE! ${existingHighScore} → ${level01HighScore}`);
         
         // ✅ BISA TAMBAHKAN CELEBRATION EFFECT
         this.showNewHighScoreEffect && this.showNewHighScoreEffect(level01HighScore);
@@ -473,94 +423,98 @@ async getUserStatus(email, level = 'Level01Scene') {
     return null;
   }
 }
-// GABUNGKAN CHECK USER STATUS DAN GAME OVER
+
+    // PERBAIKAN FUNGSI checkUserStatusAndGameOver
 async checkUserStatusAndGameOver(email) {
-  // Ambil status user dari backend (POST)
   const status = await this.getUserStatus(email, 'Level01Scene');
   if (!status) {
     console.error('Gagal ambil status user');
-      return null;
-    }
+    return null; 
+}
 
- const progress = status.progress  || {};
-    // ✅ CALCULATE USER TYPES AND RETURN THEM:
-   const newUser = totalPlays === 0;
-   const winUser = totalPlays > 0 && (currentScore > 0 || highScore > 0);
-   const lossUser = totalPlays >= 3 && currentScore === 0 && highScore === 0;
-    
-// Jika newUser, aktifkan tombol Play & Puzzle
+// Ambil progress user dengan variable yang benar
+const progress = user.gameProgress || {};
+const unlocked = progress?.[`${level.toLowerCase()}Completed`] || false;
+const level01Score = progress.level01Score || 0;
+const level01HighScore = progress.level01HighScore || 0;
+const totalPlays = progress.totalPlays || 0;
+
+// ✅ DEFINISIKAN currentScore & highScore
+const currentScore = progress.level01Score || 0;  // API -> Frontend
+const highScore = progress.level01HighScore || 0; // API -> Frontend
+
+// Hitung status user berdasarkan progress
+const userStatus = {
+ newUser: totalPlays === 0,
+ winUser: totalPlays > 0 && (currentScore > 0 || highScore > 0),
+ lossUser: totalPlays >= 3 && currentScore === 0 && highScore === 0
+};
+
+console.log(`🔍 User status check: plays=${totalPlays}, score=${currentScore}, high=${highScore}`);
+console.log(`🎯 User type: new=${newUser}, win=${winUser}, loss=${lossUser}`);
+
+// ✅ UNTUK NEW USER: Aktifkan game
   if (newUser) {
     this.isGameOver = false;
     this.unblur10PuzzleButton && this.unblur10PuzzleButton();
-    console.log('✅ User baru - tombol Play & Puzzle diaktifkan');
-    return status;
+    console.log('✅ User baru - game diaktifkan');
+    return { ...status, newUser: true, winUser: false, lossUser: false };
   }
 
-  // Cek status game over untuk lossUser or winUser
-  if (status.isGameOver) {
-    if (winUser > 0) {
-      // WIN USER: Sudah main >= 1x, score > 0
-      status.isGameOver = false;
-      localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
-      this.isGameOver = false;
-      this.unblur10PuzzleButton && this.unblur10PuzzleButton();
-
-      // ✅ Aktifkan playBtn untuk winUser
-      if (this.playBtn) {
+// ✅ UNTUK WIN USER: Selalu aktifkan game (sudah pernah menang)
+  if (winUser) {
+    this.isGameOver = false;
+    this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+    if (this.playBtn) {
       this.playBtn.setInteractive({ useHandCursor: true });
       this.playBtn.setAlpha(1);
       this.playBtn.setVisible(true);
-      }
+    }
+    console.log('✅ Win user - game tetap aktif');
+    return { ...status, newUser: false, winUser: true, lossUser: false };
+  }
 
-      console.log('✅ Game over status di-reset - tombol Play & Puzzle diaktifkan');
-      // Lanjutkan main
-      return status;
-    } else if (lossUser) {
-      // LOSS USER: Sudah main >= 3x, score = 0
-      this.isGameOver = true;
-      this.showGameOverReturnMessage();
-      this.lockAllGameplayButtons();
-      return status;
+  // ✅ UNTUK LOSS USER: Cek payment status
+   if (lossUser) {
+  // Cek payment status
+  const paymentData = await window.checkPaymentStatusFromBackend(email);
+  const isPaid = paymentData && paymentData.isPaid === true;
+
+  if (!isPaid) {
+    this.isGameOver = true;
+    status.isGameOver = true;
+    status.showPaymentPanel = true;       
+    status.showFavoritPayPanel = true;
+    localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
+    this.lockAllGameplayButtons();
+    console.log('❌ Loss user belum bayar - game dikunci');
+    return { ...status, newUser: false, winUser: false, lossUser: true };
+  } else {
+    // ✅ SUDAH BAYAR - PANGGIL UNLOCK FUNCTION
+    console.log('💳 Loss user sudah bayar - proceeding to unlock...');
+    
+    const unlockResult = await this.unlockedLevels(email, 'Level01Scene');
+    if (unlockResult) {
+      console.log('✅ Auto-unlock successful after payment detection');
+      this.isGameOver = false;
+      
+      // ✅ GET UPDATED STATUS DARI LOCALSTORAGE SETELAH UNLOCK
+      const updatedData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+      return { 
+        ...status, 
+        newUser: updatedData.newUser || false, 
+        winUser: updatedData.winUser || true, // Biasanya jadi winUser setelah unlock
+        lossUser: false, 
+        isPaid: true,
+        isGameOver: false
+      };
+    } else {
+      console.error('❌ Auto-unlock failed despite payment');
+      return { ...status, newUser: false, winUser: false, lossUser: true };
     }
   }
-
-  // Tambah totalPlays setiap kali fungsi ini dipanggil (untuk user lama)
-  //status.totalPlays = (status.totalPlays || 0) + 1; // bisa hapus score jika 3x pindah scene
-    this.level01Score = status.level01Score || 0;
-
-  // Jika totalPlays >= 3 dan level01Score masih 0, set game over
-  const isLossUser = (
-    (status.isGameOver && (status.level01Score || 0) === 0) || 
-    (status.totalPlays >= 3 && (status.level01Score || 0) === 0)
-  );
-
-  // Tambahkan parameter isPaid dari payment status (pastikan sudah diambil sebelumnya)
-  if (lossUser && !isPaid) {
-   // Jangan blokir di sini, beri flag agar Level01Scene bisa tampilkan menu pembelian
-   status.isGameOver = true;
-   status.showPurchase = true; // flag untuk Level01Scene
-   localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
-   this.isGameOver = true;
-   // Jangan return di sini, biarkan proses lanjut ke Level01Scene
-  return status;
-  }
-
-  if (isLossUser) {
-    // Jangan blokir di sini, beri flag agar Level01Scene bisa tampilkan menu pembelian
-    status.isGameOver = true;
-    await this.setGameOver(email, true); // gunakan fungsi async
-    status.isGameOver = true; // pastikan status di-set ke true
-    localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
-    this.isGameOver = true;
-    this.showGameOverReturnMessage();
-    this.lockAllGameplayButtons();
-    return status;
-  }
-
-  // Simpan totalPlays terbaru ke localStorage
-  localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
-
-  // Jika lolos semua, aktifkan tombol Play & Puzzle
+}
+  // Default case
   this.isGameOver = false;
   this.unblur10PuzzleButton && this.unblur10PuzzleButton();
   return status;
@@ -569,14 +523,86 @@ async checkUserStatusAndGameOver(email) {
 // 4. Fungsi SET GAME OVER (async)
 async setGameOver(email, isGameOver = true, userStatus = { newUser: false, winUser: false, lossUser: true }) {
   try {
-    await axios.post(
-      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/set-gameover',
-      { email, isGameOver, userStatus },
+  // Ambil progress dan status user dengan variable yang benar
+  const progressRes = await this.getUserProgress(email);
+  const progress = user.gameProgress || {};
+  const unlocked = progress?.[`${level.toLowerCase()}Completed`] || false;
+  const level01Score = progress.level01Score || 0;
+  const level01HighScore = progress.level01HighScore || 0;
+  const totalPlays = progress.totalPlays || 0;
+
+  // ✅ DEFINISIKAN currentScore & highScore
+  const currentScore = progress.level01Score || 0;
+  const highScore = progress.level01HighScore || 0;
+
+  // Hitung status user berdasarkan progress
+  const userStatus = {
+   newUser: totalPlays === 0,
+   winUser: totalPlays > 0 && (currentScore > 0 || highScore > 0),
+   lossUser: totalPlays >= 3 && currentScore === 0 && highScore === 0
+  }; 
+   console.log('🎯 Setting game over with calculated user status:', {
+      email,
+      isGameOver,
+      totalPlays,
+      currentScore,
+      highScore,
+      userStatus: finalUserStatus
+    });
+
+    // ✅ LANGKAH 5: KIRIM KE BACKEND DENGAN STATUS YANG BENAR
+    const response = await axios.post(
+    'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/set-gameover',
+      { email, isGameOver, userStatus: finalUserStatus},
       { timeout: 200000 }
     );
-    return true;
+
+    // ✅ LANGKAH 6: UPDATE LOCALSTORAGE DENGAN STATUS YANG BENAR
+    if (response.data.success) {
+      const userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+      userData.gameProgress = {
+        ...userData.gameProgress,
+        ...progress // ✅ UPDATE DENGAN PROGRESS TERBARU
+      };
+      userData.newUser = finalUserStatus.newUser;
+      userData.winUser = finalUserStatus.winUser;
+      userData.lossUser = finalUserStatus.lossUser;
+      userData.isGameOver = isGameOver;
+      userData.lastGameOverSet = new Date().toISOString();
+      localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+
+      console.log('✅ Game over status set successfully with calculated user status');
+    }
+    return response.data.success || true;
   } catch (err) {
     console.error('Set game over error:', err);
+
+    // ✅ FALLBACK: TETAP UPDATE LOCALSTORAGE MESKI BACKEND GAGAL
+    try {
+      const userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+      const localProgress = userData.gameProgress || {};
+      const localTotalPlays = localProgress.totalPlays || 0;
+      const localCurrentScore = localProgress.level01Score || 0;
+      const localHighScore = localProgress.level01HighScore || 0;
+
+      // Hitung status user dari data lokal
+      const fallbackUserStatus = {
+        newUser: localTotalPlays === 0,
+        winUser: localTotalPlays > 0 && (localCurrentScore > 0 || localHighScore > 0),
+        lossUser: localTotalPlays >= 3 && localCurrentScore === 0 && localHighScore === 0
+      };
+
+      userData.newUser = fallbackUserStatus.newUser;
+      userData.winUser = fallbackUserStatus.winUser;
+      userData.lossUser = fallbackUserStatus.lossUser;
+      userData.isGameOver = isGameOver;
+      userData.fallbackUpdate = true;
+      localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+
+      console.log('💾 Fallback: Game over status saved locally with calculated user status');
+    } catch (fallbackErr) {
+      console.error('❌ Fallback also failed:', fallbackErr);
+    }
     return false;
   }
 }
@@ -585,6 +611,24 @@ async setGameOver(email, isGameOver = true, userStatus = { newUser: false, winUs
 async checkGameOverStatusFromServer() {
   const email = localStorage.getItem('email');
   if (!email) return;
+
+  // Ambil progress dan status user dengan variable yang benar
+  const progress = user.gameProgress || {};
+  const unlocked = progress?.[`${level.toLowerCase()}Completed`] || false;
+  const level01Score = progress.level01Score || 0;
+  const level01HighScore = progress.level01HighScore || 0;
+  const totalPlays = progress.totalPlays || 0;
+
+  // ✅ DEFINISIKAN currentScore & highScore
+  const currentScore = progress.level01Score || 0;  // API -> Frontend
+  const highScore = progress.level01HighScore || 0; // API -> Frontend
+
+  // Hitung status user berdasarkan progress
+  const userStatus = {
+   newUser: totalPlays === 0,
+   winUser: totalPlays > 0 && (currentScore > 0 || highScore > 0),
+   lossUser: totalPlays >= 3 && currentScore === 0 && highScore === 0
+  };
 
   try {
     const response = await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/gameover', 
@@ -631,6 +675,24 @@ async checkGameOverStatusFromServer() {
 // 6. LOCK LEVEL (mengunci akses level untuk user)
 async lockLevel(email, level, userStatus = { newUser: false, winUser: false, lossUser: true }) {
   try {
+
+    const progress = user.gameProgress || {};
+    const unlocked = progress?.[`${level.toLowerCase()}Completed`] || false;
+    const level01Score = progress.level01Score || 0;
+    const level01HighScore = progress.level01HighScore || 0;
+    const totalPlays = progress.totalPlays || 0;
+
+    // ✅ DEFINISIKAN currentScore & highScore
+    const currentScore = progress.level01Score || 0;  // API -> Frontend
+    const highScore = progress.level01HighScore || 0; // API -> Frontend
+
+    // Hitung status user berdasarkan progress
+    const userStatus = {
+    newUser: totalPlays === 0,
+    winUser: totalPlays > 0 && (currentScore > 0 || highScore > 0),
+    lossUser: totalPlays >= 3 && currentScore === 0 && highScore === 0
+    };
+
     const res = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/lock',
       { email, level, userStatus },
@@ -660,12 +722,12 @@ async lockLevel(email, level, userStatus = { newUser: false, winUser: false, los
   }
 }
 
-// 7. UNLOCK LEVEL
-async  unlockedLevels(email, level) {
+// 7. UNLOCK LEVEL - DENGAN PERHITUNGAN USER STATUS
+async unlockedLevels(email, level) {
   try {
     console.log('🔍 Checking unlock status for:', email);
 
-   // ✅ USE EXISTING checkPaymentStatusFromBackend FUNCTION:
+    // ✅ USE EXISTING checkPaymentStatusFromBackend FUNCTION:
     const paymentData = await checkPaymentStatusFromBackend(email);
     
     if (!paymentData || paymentData.isPaid !== true) {
@@ -676,27 +738,78 @@ async  unlockedLevels(email, level) {
 
     console.log('✅ Payment verified! Proceeding to unlock level...');
    
-    // Jika sudah bayar, lanjut unlock level
+    // ✅ KIRIM isPaid KE BACKEND (SESUAI PERBAIKAN userRoutes.js)
     const unlockRes = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/unlock',
-      { email, level },
+      { 
+        email, 
+        level,
+        isPaid: true // ✅ TAMBAHKAN PARAMETER isPaid
+      },
       { timeout: 200000 }
     );
 
     console.log('🔓 Unlock level response:', unlockRes.data);
 
-   if (unlockRes.data.success || unlockRes.data.unlocked === true) { 
-     this.unblur10PuzzleButton(); // Hapus blur tombol 10 puzzle
-     this.unlockGameAfterPurchase(); // Aktifkan tombol Play & Puzzle
-    } 
+    // ✅ AMBIL RESPONSE LENGKAP DARI BACKEND (SESUAI PERBAIKAN userRoutes.js)
+    if (unlockRes.data.success || unlockRes.data.unlocked === true) {
+      
+      // ✅ UPDATE USER STATUS DARI RESPONSE BACKEND
+      const responseData = unlockRes.data;
+      const { 
+        newUser, 
+        winUser, 
+        lossUser, 
+        progress, 
+        level01Score, 
+        isGameOver, 
+      } = responseData;
+
+      console.log('👤 User status from unlock response:', { newUser, winUser, lossUser });
+      console.log('📊 Progress from unlock response:', progress);
+
+      // ✅ UPDATE LOCALSTORAGE DENGAN DATA DARI BACKEND
+      if (progress) {
+        let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+        userData.gameProgress = progress;
+        userData.newUser = newUser;
+        userData.winUser = winUser;
+        userData.lossUser = lossUser;
+        userData.isGameOver = false; // Always false after successful unlock
+        userData.lastUnlocked = new Date().toISOString();
+        localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+
+        // Update individual score items
+        localStorage.setItem(`score_${email}`, (level01Score || 100).toString());
+        localStorage.setItem(`highScore_${email}`, (progress.level01HighScore || level01Score || 100).toString());
+        
+        console.log('💾 LocalStorage updated with unlock data');
+      }
+
+      // ✅ UPDATE SCENE PROPERTIES
+      this.isGameOver = false;
+      this.userType = newUser ? 'newUser' : (winUser ? 'winUser' : 'default');
+
+      // ✅ UNLOCK UI ELEMENTS
+      this.unblur10PuzzleButton(); // Hapus blur tombol 10 puzzle
+      this.unlockGameAfterPurchase(); // Aktifkan tombol Play & Puzzle
+
+      // ✅ UPDATE GLOBAL VARIABLES
+      if (typeof window !== 'undefined') {
+        window.level01Score = level01Score || 100;
+        window.playerScore = level01Score || 100;
+      }
+
+      console.log('✅ Game unlocked successfully! User can now play.');
+      console.log(`🎮 New user status: ${this.userType}`);
+      console.log(`📊 New score: ${level01Score || 100}`);
+      
+      return true;
+    } else {
+      console.warn('❌ Unlock request failed:', unlockRes.data);
+      return false;
+    }
    
-    // ✅ LOGIKA UNLOCK LEVEL:
-    // Jika backend mengembalikan { success: true } atau { unlocked: true }
-    const isUnlocked = unlockRes.data.success || unlockRes.data.unlocked === true;
-    console.log('🎯 Final unlock result:', isUnlocked);
-    return isUnlocked;
-    // Response backend bisa { success: true, unlocked: true }
-    //return res.data.success || res.data.unlocked === true;
   } catch (err) {
     console.error('Unlock level error:', err);
 
@@ -706,6 +819,7 @@ async  unlockedLevels(email, level) {
   }
 }
 
+//======================================= BATAS 7 FUNGSI ========================================
 // FUNGSI UNTUK SYNC DATA DARI BACKEND KE LOCAL STORAGE DAN WINDOW SETIAP KALI LOGIN ATAU RELOAD
   // ✅ PERBAIKAN LENGKAP: syncProgressFromBackend function sekitar line 265-320
 async  syncProgressFromBackend(email) {
