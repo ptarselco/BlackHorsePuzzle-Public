@@ -437,7 +437,7 @@ async checkUserStatusAndGameOver(email) {
 // Ambil progress user dengan variable yang benar
 //const user = response.data.user || {};
 const progress = status.progress || {};
-const unlocked = progress?.[`${level.toLowerCase()}Completed`] || false;
+const unlocked = progress?.level01Completed || false; // Perbaiki nama property
 const level01Score = progress.level01Score || 0;
 const level01HighScore = progress.level01HighScore || 0;
 const totalPlays = progress.totalPlays || 0;
@@ -567,9 +567,9 @@ async setGameOver(email, isGameOver = true, userStatus = { newUser: false, winUs
         ...userData.gameProgress,
         ...progress // ✅ UPDATE DENGAN PROGRESS TERBARU
       };
-      userData.newUser = finalUserStatus.newUser;
-      userData.winUser = finalUserStatus.winUser;
-      userData.lossUser = finalUserStatus.lossUser;
+      userData.newUser = userStatus.newUser;
+      userData.winUser = userStatus.winUser;
+      userData.lossUser = userStatus.lossUser;
       userData.isGameOver = isGameOver;
       userData.lastGameOverSet = new Date().toISOString();
       localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
@@ -615,8 +615,15 @@ async checkGameOverStatusFromServer() {
   const email = localStorage.getItem('email');
   if (!email) return;
 
+  try {
+    const response = await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/gameover', 
+      { email },
+      { timeout: 200000 }  
+    );
+
   // Ambil progress dan status user dengan variable yang benar
-  const unlocked = progress?.[`${level.toLowerCase()}Completed`] || false;
+  const progress = response.data.progress || {};
+  const unlocked = progress.level01Completed || false;
   const level01Score = progress.level01Score || 0;
   const level01HighScore = progress.level01HighScore || 0;
   const totalPlays = progress.totalPlays || 0;
@@ -632,12 +639,6 @@ async checkGameOverStatusFromServer() {
    lossUser: totalPlays >= 3 && currentScore === 0 && highScore === 0
   };
 
-  try {
-    const response = await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/gameover', 
-      { email },
-      { timeout: 200000 }  
-    );
-    const progress = response.data.progress || {};
     const data = response.data;
     if (data.isGameOver) {
       this.isGameOver = true;
@@ -825,7 +826,7 @@ async unlockedLevels(email, level) {
 //======================================= BATAS 7 FUNGSI ========================================
 // FUNGSI UNTUK SYNC DATA DARI BACKEND KE LOCAL STORAGE DAN WINDOW SETIAP KALI LOGIN ATAU RELOAD
   // ✅ PERBAIKAN LENGKAP: syncProgressFromBackend function sekitar line 265-320
-async  syncProgressFromBackend(email) {
+async syncProgressFromBackend(email) {
   try {
     console.log('🔄 Syncing progress from backend for:', email);
     
@@ -1369,9 +1370,22 @@ window.manualSaveProgress = function(email, gameData) {
   }
 
     // ✅ GUNAKAN loadingText YANG SUDAH ADA DARI LINE 746:
-    loadingText.setText('Loading assets...');
+    
     loadingText.setPosition(960, 850); // Pindah posisi jika perlu
-
+    if (loadingText && !loadingText.scene) {
+  // Recreate loadingText if destroyed
+      loadingText = this.add.text(960, 850, 'Loading assets...', {
+      fontSize: '18px',
+    fill: '#ffffff',
+    stroke: '#000000',
+    strokeThickness: 2,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    padding: { left: 10, right: 10, top: 5, bottom: 5 }
+  }).setOrigin(0.5).setDepth(30);
+} else if (loadingText) {
+  loadingText.setText('Loading assets...');  
+  }
+  
     // ========== LAZY LOAD LEVEL01 ASSETS ==========
       console.log('🎵 Lazy loading Level01 assets...');
       this.lazyLoadLevel01Assets(async () => {

@@ -2781,7 +2781,7 @@ async checkUserStatusAndGameOver(email) {
 // Ambil progress user dengan variable yang benar
 //const user = response.data.user || {};
 const progress = status.progress || {};
-const unlocked = progress?.[`${level.toLowerCase()}Completed`] || false;
+const unlocked = progress?.level01sceneCompleted || false;
 const level01Score = progress.level01Score || 0;
 const level01HighScore = progress.level01HighScore || 0;
 const totalPlays = progress.totalPlays || 0;
@@ -2911,9 +2911,9 @@ async setGameOver(email, isGameOver = true, userStatus = { newUser: false, winUs
         ...userData.gameProgress,
         ...progress // ✅ UPDATE DENGAN PROGRESS TERBARU
       };
-      userData.newUser = finalUserStatus.newUser;
-      userData.winUser = finalUserStatus.winUser;
-      userData.lossUser = finalUserStatus.lossUser;
+      userData.newUser = userStatus.newUser;
+      userData.winUser = userStatus.winUser;
+      userData.lossUser = userStatus.lossUser;
       userData.isGameOver = isGameOver;
       userData.lastGameOverSet = new Date().toISOString();
       localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
@@ -2959,8 +2959,15 @@ async checkGameOverStatusFromServer() {
   const email = localStorage.getItem('email');
   if (!email) return;
 
+  try {
+    const response = await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/gameover', 
+      { email },
+      { timeout: 200000 }  
+    );
+
   // Ambil progress dan status user dengan variable yang benar
-  const unlocked = progress?.[`${level.toLowerCase()}Completed`] || false;
+  const progress = response.data.progress || {};
+  const unlocked = progress.level01Completed || false;
   const level01Score = progress.level01Score || 0;
   const level01HighScore = progress.level01HighScore || 0;
   const totalPlays = progress.totalPlays || 0;
@@ -2976,13 +2983,7 @@ async checkGameOverStatusFromServer() {
    lossUser: totalPlays >= 3 && currentScore === 0 && highScore === 0
   };
 
-  try {
-    const response = await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/gameover', 
-      { email },
-      { timeout: 200000 }  
-    );
-    const progress = response.data.progress || {};
-    const data = response.data;
+  const data = response.data;
     if (data.isGameOver) {
       this.isGameOver = true;
        // Tampilkan pesan sesuai tipe user
