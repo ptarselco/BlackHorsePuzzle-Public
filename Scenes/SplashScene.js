@@ -135,6 +135,7 @@ async getUserProgress(email) {
     );
     
     // Ambil progress user
+    const user = response.data.user || {};
     const progress = user.gameProgress || {};
     const level01Score = progress.level01Score || 0;
     const totalPlays = progress.totalPlays || 0;
@@ -231,6 +232,7 @@ try {
     });
 
     // Hitung status user berdasarkan progress SETELAH UPDATE
+    const user = response.data.user || {};
     const finalTotalPlays = user.gameProgress.totalPlays || 0;
     const finalLevel01Score = user.gameProgress.level01Score || 0;
     const finalLevel01HighScore = user.gameProgress.level01HighScore || 0;
@@ -433,6 +435,7 @@ async checkUserStatusAndGameOver(email) {
 }
 
 // Ambil progress user dengan variable yang benar
+const user = response.data.user || {};
 const progress = user.gameProgress || {};
 const unlocked = progress?.[`${level.toLowerCase()}Completed`] || false;
 const level01Score = progress.level01Score || 0;
@@ -525,6 +528,7 @@ async setGameOver(email, isGameOver = true, userStatus = { newUser: false, winUs
   try {
   // Ambil progress dan status user dengan variable yang benar
   const progressRes = await this.getUserProgress(email);
+  const user = progressRes.data.user || {};
   const progress = user.gameProgress || {};
   const unlocked = progress?.[`${level.toLowerCase()}Completed`] || false;
   const level01Score = progress.level01Score || 0;
@@ -613,6 +617,7 @@ async checkGameOverStatusFromServer() {
   if (!email) return;
 
   // Ambil progress dan status user dengan variable yang benar
+  const user = response.data.user || {};
   const progress = user.gameProgress || {};
   const unlocked = progress?.[`${level.toLowerCase()}Completed`] || false;
   const level01Score = progress.level01Score || 0;
@@ -675,7 +680,7 @@ async checkGameOverStatusFromServer() {
 // 6. LOCK LEVEL (mengunci akses level untuk user)
 async lockLevel(email, level, userStatus = { newUser: false, winUser: false, lossUser: true }) {
   try {
-
+    const user = response.data.user || {};
     const progress = user.gameProgress || {};
     const unlocked = progress?.[`${level.toLowerCase()}Completed`] || false;
     const level01Score = progress.level01Score || 0;
