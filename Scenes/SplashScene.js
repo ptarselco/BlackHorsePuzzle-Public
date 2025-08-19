@@ -183,12 +183,12 @@ async checkUserStatusAndGameOver(email) {
     return null; 
 }
 
-const progress = status.progress || {};
+  const progress = status.progress || {};
   const totalPlays = progress.totalPlays || 0;
   const currentScore = progress.level01Score || 0;
   const highScore = progress.level01HighScore || 0;
   
-  // ✅ PERBAIKAN KLASIFIKASI USER:
+  // ✅ CALCULATE USER TYPES DENGAN VARIABLE YANG BENAR:
   const newUser = totalPlays === 0;
   const winUser = totalPlays > 0 && (currentScore > 0 || highScore > 0);
   const lossUser = totalPlays >= 3 && currentScore === 0 && highScore === 0;
