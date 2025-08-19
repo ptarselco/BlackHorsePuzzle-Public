@@ -2498,15 +2498,15 @@ async getUserProgress(email) {
     };
 
     console.log(`👤 User classification FIXED: totalPlays=${totalPlays}, currentScore=${currentScore}, highScore=${highScore}`);
-    console.log(`👤 Classification: newUser=${newUser}, lossUser=${lossUser}, winUser=${winUser}`);
-    
+    console.log(`👤 Classification: newUser=${userStatus.newUser}, lossUser=${userStatus.lossUser}, winUser=${userStatus.winUser}`);
+
     return {
     success: response.data.success,
       progress: progress,
       user: response.data.user,
-      newUser,
-      winUser,
-      lossUser,
+      newUser: userStatus.newUser,
+      winUser: userStatus.winUser,
+      lossUser: userStatus.lossUser,
       totalPlays,
       level01Score: currentScore,
       level01HighScore: highScore
@@ -2576,14 +2576,13 @@ try {
     });
 
     // Hitung status user berdasarkan progress SETELAH UPDATE
-     const user = response.data.user || {};
     const finalTotalPlays = user.gameProgress.totalPlays || 0;
     const finalLevel01Score = user.gameProgress.level01Score || 0;
     const finalLevel01HighScore = user.gameProgress.level01HighScore || 0;
 
     // ✅ DEFINISIKAN currentScore & highScore
-    const currentScore = progress.finalLevel01Score || 0;  // API -> Frontend
-    const highScore = progress.finalLevel01HighScore || 0; // API -> Frontend
+    const currentScore = finalLevel01Score || 0;  // API -> Frontend
+    const highScore = finalLevel01HighScore || 0; // API -> Frontend
 
     const userStatus = {
      newUser: finalTotalPlays === 0,
@@ -2615,6 +2614,7 @@ try {
 
     // ✅ UPDATE LOCAL STORAGE DENGAN LOGIC YANG BENAR
     if (res.data.success) {
+      const user = res.data.user || {};
       // ✅ SELALU update current score
       this.level01Score = level01Score;
       localStorage.setItem(`score_${email}`, level01Score.toString());
@@ -2754,6 +2754,7 @@ showNewHighScoreEffect(newHighScore) {
   }
 }
 
+
 // 3. GET USER STATUS DARI BACKEND (POST)
 async getUserStatus(email, level = 'Level01Scene') {
   try {
@@ -2778,8 +2779,8 @@ async checkUserStatusAndGameOver(email) {
 }
 
 // Ambil progress user dengan variable yang benar
-const user = response.data.user || {};
-const progress = user.gameProgress || {};
+//const user = response.data.user || {};
+const progress = status.progress || {};
 const unlocked = progress?.[`${level.toLowerCase()}Completed`] || false;
 const level01Score = progress.level01Score || 0;
 const level01HighScore = progress.level01HighScore || 0;
@@ -2797,10 +2798,10 @@ const userStatus = {
 };
 
 console.log(`🔍 User status check: plays=${totalPlays}, score=${currentScore}, high=${highScore}`);
-console.log(`🎯 User type: new=${newUser}, win=${winUser}, loss=${lossUser}`);
+console.log(`🎯 User type: new=${userStatus.newUser}, win=${userStatus.winUser}, loss=${userStatus.lossUser}`);
 
 // ✅ UNTUK NEW USER: Aktifkan game
-  if (newUser) {
+  if (userStatus.newUser) {
     this.isGameOver = false;
     this.unblur10PuzzleButton && this.unblur10PuzzleButton();
     console.log('✅ User baru - game diaktifkan');
@@ -2808,7 +2809,7 @@ console.log(`🎯 User type: new=${newUser}, win=${winUser}, loss=${lossUser}`);
   }
 
 // ✅ UNTUK WIN USER: Selalu aktifkan game (sudah pernah menang)
-  if (winUser) {
+  if (userStatus.winUser) {
     this.isGameOver = false;
     this.unblur10PuzzleButton && this.unblur10PuzzleButton();
     if (this.playBtn) {
@@ -2820,8 +2821,8 @@ console.log(`🎯 User type: new=${newUser}, win=${winUser}, loss=${lossUser}`);
     return { ...status, newUser: false, winUser: true, lossUser: false };
   }
 
-   // ✅ UNTUK LOSS USER: Cek payment status
-   if (lossUser) {
+  // ✅ UNTUK LOSS USER: Cek payment status
+   if (userStatus.lossUser) {
   // Cek payment status
   const paymentData = await window.checkPaymentStatusFromBackend(email);
   const isPaid = paymentData && paymentData.isPaid === true;
@@ -2860,7 +2861,6 @@ console.log(`🎯 User type: new=${newUser}, win=${winUser}, loss=${lossUser}`);
     }
   }
 }
-  
   // Default case
   this.isGameOver = false;
   this.unblur10PuzzleButton && this.unblur10PuzzleButton();
@@ -2872,8 +2872,7 @@ async setGameOver(email, isGameOver = true, userStatus = { newUser: false, winUs
   try {
   // Ambil progress dan status user dengan variable yang benar
   const progressRes = await this.getUserProgress(email);
-  const user = progressRes.user || {};
-  const progress = user.gameProgress || {};
+  const progress = progressRes.progress || {};
   const unlocked = progress?.[`${level.toLowerCase()}Completed`] || false;
   const level01Score = progress.level01Score || 0;
   const level01HighScore = progress.level01HighScore || 0;
@@ -2895,13 +2894,13 @@ async setGameOver(email, isGameOver = true, userStatus = { newUser: false, winUs
       totalPlays,
       currentScore,
       highScore,
-      userStatus: finalUserStatus
+      userStatus: userStatus
     });
 
     // ✅ LANGKAH 5: KIRIM KE BACKEND DENGAN STATUS YANG BENAR
     const response = await axios.post(
     'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/set-gameover',
-      { email, isGameOver, userStatus: finalUserStatus},
+      { email, isGameOver, userStatus: userStatus},
       { timeout: 200000 }
     );
 
@@ -2955,15 +2954,12 @@ async setGameOver(email, isGameOver = true, userStatus = { newUser: false, winUs
   }
 }
 
-
 // 5. CHECK GAME OVER STATUS DARI SERVER
 async checkGameOverStatusFromServer() {
   const email = localStorage.getItem('email');
   if (!email) return;
 
   // Ambil progress dan status user dengan variable yang benar
-  const user = response.data.user || {};
-  const progress = user.gameProgress || {};
   const unlocked = progress?.[`${level.toLowerCase()}Completed`] || false;
   const level01Score = progress.level01Score || 0;
   const level01HighScore = progress.level01HighScore || 0;
@@ -2985,6 +2981,7 @@ async checkGameOverStatusFromServer() {
       { email },
       { timeout: 200000 }  
     );
+    const progress = response.data.progress || {};
     const data = response.data;
     if (data.isGameOver) {
       this.isGameOver = true;
@@ -3025,8 +3022,8 @@ async checkGameOverStatusFromServer() {
 // 6. LOCK LEVEL (mengunci akses level untuk user)
 async lockLevel(email, level, userStatus = { newUser: false, winUser: false, lossUser: true }) {
   try {
-    const user = response.data.user || {};
-    const progress = user.gameProgress || {};
+    const progressRes = await this.getUserProgress(email);
+    const progress = progressRes.progress || {};
     const unlocked = progress?.[`${level.toLowerCase()}Completed`] || false;
     const level01Score = progress.level01Score || 0;
     const level01HighScore = progress.level01HighScore || 0;
@@ -3171,49 +3168,136 @@ async unlockedLevels(email, level) {
 
 //========================================= BATAS 7 FUNGSI =========================================
 
-// ✅ PERBAIKAN: SYNC PROGRESS DENGAN PROTEKSI
-  async syncProgressFromBackend(email) {
-    try {
-      console.log('🔄 Level01 syncing progress from backend for:', email);
-      
-      const response = await axios.post(
-        `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
-        { 
-          email, 
-          level: 'Level01Scene',
-          requestType: 'sync_only'
-        },
-        { timeout: 15000 }
-      );
-      
-      const progress = response.data.progress || {};
-      
-      // ✅ UPDATE PROPERTIES DENGAN PROTEKSI
-      this.level01Score = Math.max(this.level01Score, progress.level01Score || 0);
-      this.level01HighScore = Math.max(this.level01HighScore, progress.level01HighScore || 0);
-      
-      // ✅ UPDATE UI JIKA ADA
-      if (this.scoreText) {
-        this.scoreText.setText(this.level01Score.toString().padStart(5, '0'));
-      }
+async  syncProgressFromBackend(email) {
+  try {
+    console.log('🔄 Syncing progress from backend for:', email);
+    
+    // ✅ STEP 1: Ambil data dari localStorage sebagai fallback
+    const localData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+    const localProgress = localData.gameProgress || {};
+    
+    console.log('📱 Local data:', localProgress);
+    
+    // ✅ STEP 2: Kirim request ke backend dengan data lokal sebagai konteks
+    const response = await axios.post(
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
+      { 
+        email, 
+        level: 'Level01Scene',
+        // Kirim data lokal untuk perbandingan
+        localProgress: localProgress
+      },
+      { timeout: 200000 }
+    );
+    
+    // ✅ STEP 3: Ambil data dari backend (PRIORITAS UTAMA)
+    const backendData = response.data;
+    const progress = backendData.progress || {};
+    
+    console.log('🌐 Backend data:', progress);
 
-       console.log('✅ Level01 progress synced:', { 
-        score: this.level01Score, 
-        highScore: this.level01HighScore 
-      });
-      
-      return {
-        success: true,
-        progress: progress,
-        level01Score: this.level01Score,
-        level01HighScore: this.level01HighScore
-      };
-      
-    } catch (err) {
-      console.error('❌ Level01 sync progress failed:', err);
-      return { success: false, error: err.message };
+    // ✅ STEP 4: SELALU GUNAKAN DATA BACKEND sebagai sumber truth
+    const finalData = {
+      level01Score: progress.level01Score || 0,
+      level01HighScore: progress.level01HighScore || 0,
+      totalPlays: progress.totalPlays || 0,
+      level01Completed: progress.level01Completed || false,
+      bestTime: progress.bestTime || 0,
+      averageTime: progress.averageTime || 0,
+      completionRate: progress.completionRate || 0,
+      perfectGames: progress.perfectGames || 0,
+      totalAttempts: progress.totalAttempts || 0,
+      gameOvers: progress.gameOvers || 0,
+      favoriteGiven: progress.favoriteGiven || false,
+      lastPlayedDate: progress.lastPlayedDate || new Date().toISOString()
+    };
+    
+    // ✅ STEP 5: Hitung user classification berdasarkan data backend
+    const newUser = finalData.totalPlays === 0;
+    const winUser = finalData.totalPlays > 0 && (finalData.level01Score > 0 || finalData.level01HighScore > 0);
+    const lossUser = finalData.totalPlays >= 3 && finalData.level01Score === 0 && finalData.level01HighScore === 0;
+
+    console.log(`👤 Backend user classification: newUser=${newUser}, winUser=${winUser}, lossUser=${lossUser}`);
+    
+    // ✅ STEP 6: UPDATE localStorage dengan data backend (FORCE UPDATE)
+    const updatedUserData = {
+      gameProgress: finalData,
+      newUser,
+      winUser,
+      lossUser,
+      lastSyncTime: new Date().toISOString(),
+      syncedFromBackend: true
+    };
+
+    // Update gameData
+    localStorage.setItem(`gameData-${email}`, JSON.stringify(updatedUserData));
+    
+    // Update score
+    localStorage.setItem(`score_${email}`, (finalData.level01Score || 0).toString());
+    
+    // Update game history
+    localStorage.setItem(`gameHistory_${email}`, JSON.stringify({
+      hasPlayedBefore: (finalData.totalPlays || 0) > 0,
+      totalGamesPlayed: finalData.totalPlays || 0,
+      highestScore: finalData.level01HighScore || 0,
+      gameOvers: finalData.gameOvers || 0,
+      lastPlayedDate: finalData.lastPlayedDate,
+      favoriteGiven: finalData.favoriteGiven || false,
+      newUser,
+      winUser,
+      lossUser
+    }));
+    
+    // ✅ STEP 7: UPDATE global variables
+    window.level01Score = finalData.level01Score || 0;
+    window.playerScore = finalData.level01Score || 0;
+    
+    // ✅ STEP 8: UPDATE UI jika scene sudah aktif
+    if (window.Phaser && window.game && window.game.scene) {
+      const level01 = window.game.scene.getScene('Level01Scene');
+      if (level01 && level01.scene && level01.scene.isActive()) {
+        // Update score di scene
+        if (level01.level01Score !== undefined) {
+          level01.level01Score = finalData.level01Score || 0;
+        }
+        // Update scoreText
+        if (level01.scoreText && typeof level01.scoreText.setText === 'function') {
+          level01.scoreText.setText((finalData.level01Score || 0).toString().padStart(5, '0'));
+        }
+        console.log('🎮 Scene updated with backend data');
+      }
     }
+
+    console.log('✅ Synced progress from backend - Final data:', finalData);
+    console.log('✅ User status:', { newUser, winUser, lossUser });
+    
+    return {
+      progress: finalData,
+      newUser,
+      winUser,
+      lossUser,
+      success: true
+    };
+    
+  } catch (err) {
+    console.error('❌ Failed to sync progress from backend:', err);
+    
+    // ✅ FALLBACK: Jika backend gagal, gunakan data lokal
+    const localData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+    const localProgress = localData.gameProgress || {};
+    
+    console.log('🔄 Using local fallback data:', localProgress);
+    
+    return {
+      progress: localProgress,
+      newUser: localData.newUser || false,
+      winUser: localData.winUser || false,  
+      lossUser: localData.lossUser || false,
+      success: false,
+      error: err.message
+    };
   }
+}
 
 // ✅ PERBAIKAN: HANDLE VISIBILITY CHANGE KHUSUS UNTUK LEVEL01
   setupVisibilityHandler() {

@@ -154,15 +154,15 @@ async getUserProgress(email) {
     };
 
     console.log(`👤 User classification FIXED: totalPlays=${totalPlays}, currentScore=${currentScore}, highScore=${highScore}`);
-    console.log(`👤 Classification: newUser=${newUser}, lossUser=${lossUser}, winUser=${winUser}`);
-    
+    console.log(`👤 Classification: newUser=${userStatus.newUser}, lossUser=${userStatus.lossUser}, winUser=${userStatus.winUser}`);
+
     return {
     success: response.data.success,
       progress: progress,
       user: response.data.user,
-      newUser,
-      winUser,
-      lossUser,
+      newUser: userStatus.newUser,
+      winUser: userStatus.winUser,
+      lossUser: userStatus.lossUser,
       totalPlays,
       level01Score: currentScore,
       level01HighScore: highScore
@@ -232,14 +232,13 @@ try {
     });
 
     // Hitung status user berdasarkan progress SETELAH UPDATE
-    const user = response.data.user || {};
     const finalTotalPlays = user.gameProgress.totalPlays || 0;
     const finalLevel01Score = user.gameProgress.level01Score || 0;
     const finalLevel01HighScore = user.gameProgress.level01HighScore || 0;
 
     // ✅ DEFINISIKAN currentScore & highScore
-    const currentScore = progress.finalLevel01Score || 0;  // API -> Frontend
-    const highScore = progress.finalLevel01HighScore || 0; // API -> Frontend
+    const currentScore = finalLevel01Score || 0;  // API -> Frontend
+    const highScore = finalLevel01HighScore || 0; // API -> Frontend
 
     const userStatus = {
      newUser: finalTotalPlays === 0,
@@ -271,6 +270,7 @@ try {
 
     // ✅ UPDATE LOCAL STORAGE DENGAN LOGIC YANG BENAR
     if (res.data.success) {
+      const user = res.data.user || {};
       // ✅ SELALU update current score
       this.level01Score = level01Score;
       localStorage.setItem(`score_${email}`, level01Score.toString());
@@ -435,8 +435,8 @@ async checkUserStatusAndGameOver(email) {
 }
 
 // Ambil progress user dengan variable yang benar
-const user = response.data.user || {};
-const progress = user.gameProgress || {};
+//const user = response.data.user || {};
+const progress = status.progress || {};
 const unlocked = progress?.[`${level.toLowerCase()}Completed`] || false;
 const level01Score = progress.level01Score || 0;
 const level01HighScore = progress.level01HighScore || 0;
@@ -454,10 +454,10 @@ const userStatus = {
 };
 
 console.log(`🔍 User status check: plays=${totalPlays}, score=${currentScore}, high=${highScore}`);
-console.log(`🎯 User type: new=${newUser}, win=${winUser}, loss=${lossUser}`);
+console.log(`🎯 User type: new=${userStatus.newUser}, win=${userStatus.winUser}, loss=${userStatus.lossUser}`);
 
 // ✅ UNTUK NEW USER: Aktifkan game
-  if (newUser) {
+  if (userStatus.newUser) {
     this.isGameOver = false;
     this.unblur10PuzzleButton && this.unblur10PuzzleButton();
     console.log('✅ User baru - game diaktifkan');
@@ -465,7 +465,7 @@ console.log(`🎯 User type: new=${newUser}, win=${winUser}, loss=${lossUser}`);
   }
 
 // ✅ UNTUK WIN USER: Selalu aktifkan game (sudah pernah menang)
-  if (winUser) {
+  if (userStatus.winUser) {
     this.isGameOver = false;
     this.unblur10PuzzleButton && this.unblur10PuzzleButton();
     if (this.playBtn) {
@@ -478,7 +478,7 @@ console.log(`🎯 User type: new=${newUser}, win=${winUser}, loss=${lossUser}`);
   }
 
   // ✅ UNTUK LOSS USER: Cek payment status
-   if (lossUser) {
+   if (userStatus.lossUser) {
   // Cek payment status
   const paymentData = await window.checkPaymentStatusFromBackend(email);
   const isPaid = paymentData && paymentData.isPaid === true;
@@ -528,8 +528,7 @@ async setGameOver(email, isGameOver = true, userStatus = { newUser: false, winUs
   try {
   // Ambil progress dan status user dengan variable yang benar
   const progressRes = await this.getUserProgress(email);
-  const user = progressRes.data.user || {};
-  const progress = user.gameProgress || {};
+  const progress = progressRes.progress || {};
   const unlocked = progress?.[`${level.toLowerCase()}Completed`] || false;
   const level01Score = progress.level01Score || 0;
   const level01HighScore = progress.level01HighScore || 0;
@@ -551,13 +550,13 @@ async setGameOver(email, isGameOver = true, userStatus = { newUser: false, winUs
       totalPlays,
       currentScore,
       highScore,
-      userStatus: finalUserStatus
+      userStatus: userStatus
     });
 
     // ✅ LANGKAH 5: KIRIM KE BACKEND DENGAN STATUS YANG BENAR
     const response = await axios.post(
     'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/set-gameover',
-      { email, isGameOver, userStatus: finalUserStatus},
+      { email, isGameOver, userStatus: userStatus},
       { timeout: 200000 }
     );
 
@@ -617,8 +616,6 @@ async checkGameOverStatusFromServer() {
   if (!email) return;
 
   // Ambil progress dan status user dengan variable yang benar
-  const user = response.data.user || {};
-  const progress = user.gameProgress || {};
   const unlocked = progress?.[`${level.toLowerCase()}Completed`] || false;
   const level01Score = progress.level01Score || 0;
   const level01HighScore = progress.level01HighScore || 0;
@@ -640,6 +637,7 @@ async checkGameOverStatusFromServer() {
       { email },
       { timeout: 200000 }  
     );
+    const progress = response.data.progress || {};
     const data = response.data;
     if (data.isGameOver) {
       this.isGameOver = true;
@@ -680,8 +678,8 @@ async checkGameOverStatusFromServer() {
 // 6. LOCK LEVEL (mengunci akses level untuk user)
 async lockLevel(email, level, userStatus = { newUser: false, winUser: false, lossUser: true }) {
   try {
-    const user = response.data.user || {};
-    const progress = user.gameProgress || {};
+    const progressRes = await this.getUserProgress(email);
+    const progress = progressRes.progress || {};
     const unlocked = progress?.[`${level.toLowerCase()}Completed`] || false;
     const level01Score = progress.level01Score || 0;
     const level01HighScore = progress.level01HighScore || 0;
@@ -872,9 +870,9 @@ async  syncProgressFromBackend(email) {
     };
     
     // ✅ STEP 5: Hitung user classification berdasarkan data backend
-    const newUser = totalPlays === 0;
-    const winUser = totalPlays > 0 && (currentScore > 0 || highScore > 0);
-    const lossUser = totalPlays >= 3 && currentScore === 0 && highScore === 0;
+    const newUser = finalData.totalPlays === 0;
+    const winUser = finalData.totalPlays > 0 && (finalData.level01Score > 0 || finalData.level01HighScore > 0);
+    const lossUser = finalData.totalPlays >= 3 && finalData.level01Score === 0 && finalData.level01HighScore === 0;
 
     console.log(`👤 Backend user classification: newUser=${newUser}, winUser=${winUser}, lossUser=${lossUser}`);
     
