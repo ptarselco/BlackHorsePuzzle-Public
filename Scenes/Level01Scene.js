@@ -2781,7 +2781,7 @@ async checkUserStatusAndGameOver(email) {
 // Ambil progress user dengan variable yang benar
 //const user = response.data.user || {};
 const progress = status.progress || {};
-const unlocked = progress?.level01sceneCompleted || false;
+const unlocked = progress?.level01Completed || false; // Perbaiki nama property
 const level01Score = progress.level01Score || 0;
 const level01HighScore = progress.level01HighScore || 0;
 const totalPlays = progress.totalPlays || 0;
@@ -2983,7 +2983,7 @@ async checkGameOverStatusFromServer() {
    lossUser: totalPlays >= 3 && currentScore === 0 && highScore === 0
   };
 
-  const data = response.data;
+    const data = response.data;
     if (data.isGameOver) {
       this.isGameOver = true;
        // Tampilkan pesan sesuai tipe user
@@ -3166,7 +3166,6 @@ async unlockedLevels(email, level) {
     return false;
   }
 }
-
 //========================================= BATAS 7 FUNGSI =========================================
 
 async  syncProgressFromBackend(email) {
