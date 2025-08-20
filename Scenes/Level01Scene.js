@@ -3503,9 +3503,9 @@ async checkPuzzle() {
       onComplete: () => congratsText.destroy()
     });
 
-    // ✅ DELAY 3 DETIK SEBELUM HIDE PUZZLE
-    this.time.delayedCall(3000, () => {
-      console.log('⏰ 3 seconds passed - now hiding puzzle pieces...');
+    // ✅ DELAY 2 DETIK SEBELUM HIDE PUZZLE
+    this.time.delayedCall(2000, () => {
+      console.log('⏰ 2 seconds passed - now hiding puzzle pieces...');
 
     // ✅ SEMBUNYIKAN SEMUA PUZZLE SETELAH MENANG
     for (let i = 0; i < 10; i++) {
