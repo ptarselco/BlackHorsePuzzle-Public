@@ -2575,16 +2575,6 @@ try {
       gameResult: progress.gameResult || 'unknown'
     });
 
-    // ✅ DEFINISIKAN currentScore & highScore
-    const currentScore = finalLevel01Score || 0;  // API -> Frontend
-    const highScore = finalLevel01HighScore || 0; // API -> Frontend
-
-    const userStatus = {
-     newUser: finalTotalPlays === 0,
-     winUser: finalTotalPlays > 0 && (currentScore > 0 || highScore > 0),
-     lossUser: finalTotalPlays >= 3 && currentScore === 0 && highScore === 0
-    };
-
     const res = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
       {
@@ -2614,28 +2604,39 @@ try {
      const finalTotalPlays = user.gameProgress.totalPlays || 0;
      const finalLevel01Score = user.gameProgress.level01Score || 0;
      const finalLevel01HighScore = user.gameProgress.level01HighScore || 0; 
+
+     // ✅ DEFINISIKAN currentScore & highScore
+     const currentScore = finalLevel01Score || 0;  // API -> Frontend
+     const highScore = finalLevel01HighScore || 0; // API -> Frontend
+
+    // ✅ HITUNG USER STATUS BERDASARKAN DATA BACKEND 
+    const userStatus = {
+     newUser: finalTotalPlays === 0,
+     winUser: finalTotalPlays > 0 && (currentScore > 0 || highScore > 0),
+     lossUser: finalTotalPlays >= 3 && currentScore === 0 && highScore === 0
+    }; 
+
+    // ✅ SELALU update current score
+    this.level01Score = level01Score;
+    localStorage.setItem(`score_${email}`, level01Score.toString());
       
-      // ✅ SELALU update current score
-      this.level01Score = level01Score;
-      localStorage.setItem(`score_${email}`, level01Score.toString());
-      
-     // ✅ UPDATE high score HANYA jika lebih tinggi
-     if (isNewHighScore) {
+    // ✅ UPDATE high score HANYA jika lebih tinggi
+    if (isNewHighScore) {
       this.level01HighScore = level01HighScore;
       localStorage.setItem(`highScore_${email}`, level01HighScore.toString());
       console.log(`🏆 NEW HIGH SCORE! ${existingHighScore} → ${level01HighScore}`);
         
-        // ✅ BISA TAMBAHKAN CELEBRATION EFFECT
+    // ✅ BISA TAMBAHKAN CELEBRATION EFFECT
         this.showNewHighScoreEffect && this.showNewHighScoreEffect(level01HighScore);
       } else {
         this.level01HighScore = existingHighScore;
         console.log(`📊 Current: ${level01Score}, High Score unchanged: ${existingHighScore}`);
       }
       
-      // ✅ Update gameData dengan kedua score
-      const updatedGameData = {
-        ...gameData,
-        gameProgress: {
+    // ✅ Update gameData dengan kedua score
+    const updatedGameData = {
+      ...gameData,
+      gameProgress: {
           ...gameData.gameProgress,
           level01Score: level01Score, // ✅ Current score (terakhir)
           level01HighScore: this.level01HighScore, // ✅ High score (tertinggi)
@@ -3480,12 +3481,12 @@ async checkPuzzle() {
     //this.startNextRound(); // akan start timer lagi
     }
 
-    // ✅ TAMPILKAN PUZZLE TERSUSUN DULU SELAMA 3 DETIK
-    console.log('🎯 Puzzle completed! Showing final result for 3 seconds...');
-    
+    // ✅ TAMPILKAN PUZZLE TERSUSUN DULU SELAMA 2 DETIK
+    console.log('🎯 Puzzle completed! Showing final result for 2 seconds...');
+
     // ✅ TAMPILKAN PESAN CONGRATULATIONS
     const congratsText = this.add.text(960, 300, 'PUZZLE COMPLETED!', {
-      fontSize: '48px',
+      fontSize: '36px',
       fill: '#FFD700',
       stroke: '#000000',
       strokeThickness: 3,
@@ -3499,13 +3500,13 @@ async checkPuzzle() {
       alpha: { from: 1, to: 0.5 },
       duration: 1000,
       yoyo: true,
-      repeat: 2,
+      repeat: 1,
       onComplete: () => congratsText.destroy()
     });
 
-    // ✅ DELAY 2 DETIK SEBELUM HIDE PUZZLE
-    this.time.delayedCall(2000, () => {
-      console.log('⏰ 2 seconds passed - now hiding puzzle pieces...');
+    // ✅ DELAY 3 DETIK SEBELUM HIDE PUZZLE
+    this.time.delayedCall(3000, () => {
+      console.log('⏰ 3 seconds passed - now hiding puzzle pieces...');
 
     // ✅ SEMBUNYIKAN SEMUA PUZZLE SETELAH MENANG
     for (let i = 0; i < 10; i++) {
@@ -3646,7 +3647,7 @@ showRonde3BonusMessage() {
   // Pesan bonus dengan animasi berkilau
   this.bonusMsg = this.add.text(960, 400,
     "🏆RONDE 3 WIN BONUS!🏆 \n\n⭐ +300 SCORE! ⭐", {
-    font: "bold 120px Segoe UI",
+    font: "bold 60px Segoe UI",
     fill: "#ffd700", // Gold color
     align: "center",
     stroke: "#fff",
@@ -3989,7 +3990,7 @@ if (email) {
 // ✅ PERBAIKAN dengan proteksi variable:
 // Pastikan semua variable terdefinisi dengan benar
 const currentRound = this.round || 1;
-const currentTimeLimit = timeLimit || 18;
+//const currentTimeLimit = timeLimit || 18;
 
 // Panggil showRoundMessage dengan parameter yang aman
 if (this.showRoundMessage && typeof this.showRoundMessage === 'function') {
