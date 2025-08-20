@@ -3439,28 +3439,19 @@ async checkPuzzle() {
     let scoreBonus = 100; // Default score R1 & R2
     let showBonusMessage = false;
 
-    // Reset ke R1 setelah menang di ronde manapun
-    this.round = 1;
-    this.currentRound = 1;
-    this.timeElapsed = 0;
-    this.startNextRound();
-
-     // ✅ STOP TIME ELAPSED agar tidak bertambah lagi
-    this.timeElapsed = this.timeElapsed; // Freeze time
-
-    console.log('🏆 PUZZLE COMPLETE! Timer stopped at:', this.timeElapsed);
-    console.log('🎯 Current round when winning:', this.round);
-
-    // ✅ HANYA BERIKAN BONUS 300 JIKA MENANG DI RONDE 3
-    if (this.round === 3) {
-      scoreBonus = 300; // ⭐ BONUS SCORE RONDE 3
-      showBonusMessage = true; // Flag untuk menampilkan pesan bonus
-      console.log('🔥 RONDE 3 WIN BONUS! +300 score(Player won in Round 3)');
-    } else {
-      console.log(`✅ Round ${this.round} win: +100 score (normal win)`);
-    }  
+    // ✅ CEK RONDE SAAT MENANG UNTUK BONUS
+  const currentRoundWhenWin = this.round; // Simpan ronde saat menang
   
-    // ✅ TAMBAH SCORE
+  // ✅ HANYA BERIKAN BONUS 300 JIKA MENANG DI RONDE 3
+  if (currentRoundWhenWin === 3) {
+    scoreBonus = 300; // ⭐ BONUS SCORE RONDE 3
+    showBonusMessage = true;
+    console.log('🔥 MENANG DI RONDE 3! +300 score bonus');
+  } else {
+    console.log(`✅ Menang di Round ${currentRoundWhenWin}: +100 score (normal win)`);
+  }
+
+   // ✅ TAMBAH SCORE
     //this.level01Score = (this.level01Score || 0) + 100;
     this.level01Score = (this.level01Score || 0) + scoreBonus;
     this.scoreText.setText(this.level01Score.toString().padStart(5, '0'));
@@ -3470,10 +3461,18 @@ async checkPuzzle() {
     if (showBonusMessage) {
       this.showRonde3BonusMessage();
     }
-   
+
     // Reset ke R1 setelah menang di ronde manapun
     this.round = 1;
     this.currentRound = 1;
+   //this.timeElapsed = 0;
+   //this.startNextRound();
+
+     // ✅ STOP TIME ELAPSED agar tidak bertambah lagi
+    //this.timeElapsed = this.timeElapsed; // Freeze time
+
+    //console.log('🏆 PUZZLE COMPLETE! Timer stopped at:', this.timeElapsed);
+    //console.log('🎯 Current round when winning:', this.round);
 
     // ✅ RESET TIMER KE 00:00 SETELAH MENANG JUGA
     this.timeElapsed = 0;
@@ -3859,8 +3858,6 @@ console.log('⏰ Time is up for round:', this.round);
   // ✅ PERBAIKAN UTAMA: CEK GAME OVER DULU SEBELUM LANJUT
   if ((this.level01Score || 0) <= 0) {
     console.log('💀 GAME OVER - Score habis, langsung tampilkan Game Over');
-    
-    // ✅ SET FLAGS GAME OVER
     this.isGameOver = true;
     
     // ✅ GUNAKAN FUNCTION YANG SUDAH ADA UNTUK GAME OVER
@@ -3996,7 +3993,9 @@ const currentRound = this.round || 1;
 
 // Panggil showRoundMessage dengan parameter yang aman
 if (this.showRoundMessage && typeof this.showRoundMessage === 'function') {
-  this.showRoundMessage(`ROUND ${currentRound} - ${currentTimeLimit}s - CLICK PLAY!`);
+  const currentRound = this.round || 1;
+  const timeLimit = this.roundTimeLimits[currentRound - 1] || 18;
+  this.showRoundMessage(`ROUND ${currentRound} - ${timeLimit}s - CLICK PLAY!`);
 } else {
   console.error('showRoundMessage function not found');
 }
