@@ -271,6 +271,10 @@ try {
     // ✅ UPDATE LOCAL STORAGE DENGAN LOGIC YANG BENAR
     if (res.data.success) {
       const user = res.data.user || {};
+      // Hitung status user berdasarkan progress SETELAH UPDATE
+      const finalTotalPlays = user.gameProgress.totalPlays || 0;
+      const finalLevel01Score = user.gameProgress.level01Score || 0;
+      const finalLevel01HighScore = user.gameProgress.level01HighScore || 0;
       // ✅ SELALU update current score
       this.level01Score = level01Score;
       localStorage.setItem(`score_${email}`, level01Score.toString());
@@ -529,7 +533,7 @@ async setGameOver(email, isGameOver = true, userStatus = { newUser: false, winUs
   // Ambil progress dan status user dengan variable yang benar
   const progressRes = await this.getUserProgress(email);
   const progress = progressRes.progress || {};
-  const unlocked = progress?.[`${level.toLowerCase()}Completed`] || false;
+  const unlocked = progress?.level01Completed || false;  
   const level01Score = progress.level01Score || 0;
   const level01HighScore = progress.level01HighScore || 0;
   const totalPlays = progress.totalPlays || 0;
@@ -1385,7 +1389,7 @@ window.manualSaveProgress = function(email, gameData) {
 } else if (loadingText) {
   loadingText.setText('Loading assets...');  
   }
-  
+
     // ========== LAZY LOAD LEVEL01 ASSETS ==========
       console.log('🎵 Lazy loading Level01 assets...');
       this.lazyLoadLevel01Assets(async () => {

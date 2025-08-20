@@ -2575,11 +2575,6 @@ try {
       gameResult: progress.gameResult || 'unknown'
     });
 
-    // Hitung status user berdasarkan progress SETELAH UPDATE
-    const finalTotalPlays = user.gameProgress.totalPlays || 0;
-    const finalLevel01Score = user.gameProgress.level01Score || 0;
-    const finalLevel01HighScore = user.gameProgress.level01HighScore || 0;
-
     // ✅ DEFINISIKAN currentScore & highScore
     const currentScore = finalLevel01Score || 0;  // API -> Frontend
     const highScore = finalLevel01HighScore || 0; // API -> Frontend
@@ -2614,13 +2609,18 @@ try {
 
     // ✅ UPDATE LOCAL STORAGE DENGAN LOGIC YANG BENAR
     if (res.data.success) {
-      const user = res.data.user || {};
+     // Hitung status user berdasarkan progress SETELAH UPDATE
+     const user = res.data.user || {};
+     const finalTotalPlays = user.gameProgress.totalPlays || 0;
+     const finalLevel01Score = user.gameProgress.level01Score || 0;
+     const finalLevel01HighScore = user.gameProgress.level01HighScore || 0; 
+      
       // ✅ SELALU update current score
       this.level01Score = level01Score;
       localStorage.setItem(`score_${email}`, level01Score.toString());
       
-    // ✅ UPDATE high score HANYA jika lebih tinggi
-    if (isNewHighScore) {
+     // ✅ UPDATE high score HANYA jika lebih tinggi
+     if (isNewHighScore) {
       this.level01HighScore = level01HighScore;
       localStorage.setItem(`highScore_${email}`, level01HighScore.toString());
       console.log(`🏆 NEW HIGH SCORE! ${existingHighScore} → ${level01HighScore}`);
@@ -2873,7 +2873,7 @@ async setGameOver(email, isGameOver = true, userStatus = { newUser: false, winUs
   // Ambil progress dan status user dengan variable yang benar
   const progressRes = await this.getUserProgress(email);
   const progress = progressRes.progress || {};
-  const unlocked = progress?.[`${level.toLowerCase()}Completed`] || false;
+  const unlocked = progress?.level01Completed || false; 
   const level01Score = progress.level01Score || 0;
   const level01HighScore = progress.level01HighScore || 0;
   const totalPlays = progress.totalPlays || 0;
@@ -3431,16 +3431,22 @@ async checkPuzzle() {
       this.roundTimer.remove(false);
       this.roundTimer = null;
     }
+   
+      // ✅ SCORE BONUS BERDASARKAN RONDE
+    let scoreBonus = 100; // Default score R1 & R2
+    let showBonusMessage = false;
+
+    // Reset ke R1 setelah menang di ronde manapun
+    this.round = 1;
+    this.currentRound = 1;
+    this.timeElapsed = 0;
+    this.startNextRound();
 
      // ✅ STOP TIME ELAPSED agar tidak bertambah lagi
     this.timeElapsed = this.timeElapsed; // Freeze time
 
     console.log('🏆 PUZZLE COMPLETE! Timer stopped at:', this.timeElapsed);
     console.log('🎯 Current round when winning:', this.round);
-
-    // ✅ SCORE BONUS BERDASARKAN RONDE
-    let scoreBonus = 100; // Default score R1 & R2
-    let showBonusMessage = false;
 
     // ✅ HANYA BERIKAN BONUS 300 JIKA MENANG DI RONDE 3
     if (this.round === 3) {
@@ -3461,8 +3467,7 @@ async checkPuzzle() {
     if (showBonusMessage) {
       this.showRonde3BonusMessage();
     }
-    //const email = localStorage.getItem('email');
-
+   
     // Reset ke R1 setelah menang di ronde manapun
     this.round = 1;
     this.currentRound = 1;
@@ -3474,6 +3479,34 @@ async checkPuzzle() {
       console.log('🏆 Win: Timer reset to 00:00 - Menu favorit unlocked');
     //this.startNextRound(); // akan start timer lagi
     }
+
+    // ✅ TAMPILKAN PUZZLE TERSUSUN DULU SELAMA 3 DETIK
+    console.log('🎯 Puzzle completed! Showing final result for 3 seconds...');
+    
+    // ✅ TAMPILKAN PESAN CONGRATULATIONS
+    const congratsText = this.add.text(960, 300, 'PUZZLE COMPLETED!', {
+      fontSize: '48px',
+      fill: '#FFD700',
+      stroke: '#000000',
+      strokeThickness: 3,
+      backgroundColor: 'rgba(0,0,0,0.7)',
+      padding: { left: 20, right: 20, top: 10, bottom: 10 }
+    }).setOrigin(0.5).setDepth(1000);
+    
+    // ✅ ANIMASI BERKEDIP
+    this.tweens.add({
+      targets: congratsText,
+      alpha: { from: 1, to: 0.5 },
+      duration: 1000,
+      yoyo: true,
+      repeat: 2,
+      onComplete: () => congratsText.destroy()
+    });
+
+    // ✅ DELAY 3 DETIK SEBELUM HIDE PUZZLE
+    this.time.delayedCall(3000, () => {
+      console.log('⏰ 3 seconds passed - now hiding puzzle pieces...');
+
     // ✅ SEMBUNYIKAN SEMUA PUZZLE SETELAH MENANG
     for (let i = 0; i < 10; i++) {
       let piece = this.puzzlePieces[i];
@@ -3495,6 +3528,7 @@ async checkPuzzle() {
     // ✅ RESET RIGHT BOARD SLOTS
     this.rightBoardSlots = Array(10).fill(null);
     console.log('✅ Win: Arena cleaned - all puzzles hidden');
+  });  
 
      // ✅ SIMPAN PROGRESS KE LOCALSTORAGE
     //let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
@@ -3517,7 +3551,7 @@ async checkPuzzle() {
     userData.gameProgress.perfectGames = true; // Atur sesuai logic kamu
     userData.gameProgress.totalAttempts = (userData.gameProgress.totalAttempts || 0) + 1;
 
-     localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+    localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
   
     // Setelah update localStorage
     //const newAverageTime = typeof this.timeElapsed === 'number' ? this.timeElapsed : 0;
@@ -5352,4 +5386,5 @@ closeDonationPopup() {
   }
 }
 }
+
 window.Level01Scene = Level01Scene;
