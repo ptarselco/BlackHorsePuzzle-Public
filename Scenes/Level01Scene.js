@@ -2601,9 +2601,11 @@ try {
     if (res.data.success) {
      // Hitung status user berdasarkan progress SETELAH UPDATE
      const user = res.data.user || {};
-     const finalTotalPlays = user.gameProgress.totalPlays || 0;
-     const finalLevel01Score = user.gameProgress.level01Score || 0;
-     const finalLevel01HighScore = user.gameProgress.level01HighScore || 0; 
+     const backendProgress = user.gameProgress || {};
+
+     const finalTotalPlays = backendProgress.totalPlays || 0;
+     const finalLevel01Score = backendProgress.level01Score || 0;
+     const finalLevel01HighScore = backendProgress.level01HighScore || 0;
 
      // ✅ DEFINISIKAN currentScore & highScore
      const currentScore = finalLevel01Score || 0;  // API -> Frontend
