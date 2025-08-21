@@ -208,6 +208,9 @@ class Level01Scene extends Phaser.Scene {
     };
   }
 
+  // Saat shutdown/destroy:
+  if (logoutBtn) logoutBtn.onclick = null;
+
   // Pastikan level01Score diinisialisasi
   this.level01Score = data.level01Score || 0;
 

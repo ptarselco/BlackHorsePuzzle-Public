@@ -1727,6 +1727,10 @@ async function handleScoreStatus(inputEmail, scoreStatus) {
   // ✅ SETUP LOGOUT BUTTON:
   const logoutBtn = document.getElementById('logoutBtn');
   if (logoutBtn) {
+    logoutBtn.onclick = () => {
+    localStorage.removeItem('email');
+    this.scene.start('SplashScene');
+  };
     logoutBtn.style.zIndex = '9990';
     logoutBtn.style.position = 'fixed';
     logoutBtn.style.pointerEvents = 'auto';

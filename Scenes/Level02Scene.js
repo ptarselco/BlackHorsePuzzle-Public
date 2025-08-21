@@ -135,6 +135,7 @@ backBtn.on('pointerdown', () => {
   }
   this.sound.stopAll();
   this.time.delayedCall(100, () => {
+    if (!this.scene.isActive('Level02Scene')) return;
     const currentData = this.scene.settings.data || {};
     this.scene.start('Level01Scene', {
       preserveGameOver: currentData.preserveGameOver || false,
@@ -166,6 +167,7 @@ backBtn.on('pointerdown', () => {
   
   // ✅ SMALL DELAY FOR CLEANUP
   this.time.delayedCall(100, () => {
+    if (!this.scene.isActive('Level02Scene')) return; // Pastikan scene masih aktif
     const currentData = this.scene.settings.data || {};
     console.log('🔄 Transitioning to Level01Scene...');
     
@@ -382,9 +384,10 @@ showDonationDisplay() {
     
     // ✅ DELAY TRANSITION
     this.time.delayedCall(100, () => {
+      if (!this.scene.isActive('Level02Scene')) return; // Pastikan scene masih aktif
       const currentData = this.scene.settings.data || {};
       console.log('🔄 Transitioning from close button...');
-      
+
       this.scene.start('Level01Scene', {
         preserveGameOver: currentData.preserveGameOver || false,
         returnFromLevel02: true
@@ -406,16 +409,17 @@ showDonationDisplay() {
   // ✅ REPLACE with safer timer:
   // Auto close after 20 seconds (with safety check)
   this.donationTimer = this.time.delayedCall(20000, () => {
-    console.log('⏰ Auto-close timer triggered');
-    
-    // ✅ CHECK IF STILL IN SAME SCENE
-    if (this.scene.isActive('Level02Scene') && this.donationOverlay) {
-      console.log('🧹 Auto-closing donation display...');
-      this.closeDonationDisplay();
-    } else {
-      console.log('⚠️ Scene changed or donation already closed');
-    }
-  });
+  if (!this.scene.isActive('Level02Scene')) return; // ⬅️ WAJIB, biar aman!
+  console.log('⏰ Auto-close timer triggered');
+  
+  if (this.donationOverlay) { // ⬅️ Cukup cek overlay saja di sini
+    console.log('🧹 Auto-closing donation display...');
+    this.closeDonationDisplay();
+  } else {
+    console.log('⚠️ Donation already closed');
+  }
+});
+  
   
   // Animation entrance
   this.tweens.add({
@@ -597,6 +601,32 @@ showExitPanelOnly() {
     this.scene.stop('Level02Scene');
     this.scene.start('SplashScene');
   });
+}
+
+
+shutdown() {
+  console.log('🛑 Level02Scene shutting down...');
+  if (this.donationTimer) {
+    this.donationTimer.destroy();
+    this.donationTimer = null;
+  }
+  this.closeDonationDisplay && this.closeDonationDisplay();
+  this.sound && this.sound.stopAll && this.sound.stopAll();
+  this.time && this.time.removeAllEvents && this.time.removeAllEvents();
+
+  // Hapus event listener DOM jika ada
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) logoutBtn.onclick = null;
+
+  // Hapus event listener visibilitychange
+  document.onvisibilitychange = null;
+
+  console.log('✅ Level02Scene shutdown complete');
+}
+
+// Tambahkan juga:
+destroy() {
+  this.shutdown();
 }
 }
  // ✅ CLOSING for Level02Scene class
