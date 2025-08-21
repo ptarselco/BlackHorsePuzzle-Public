@@ -551,17 +551,23 @@ shutdown() {
     this.donationTimer = null;
     console.log('⏰ Timer destroyed on shutdown');
   }
-  
-  // ✅ CLEANUP DONATION
-  this.closeDonationDisplay();
-  
-  // ✅ STOP ALL SOUNDS
-  this.sound.stopAll();
-  
-  // ✅ CLEAR ALL EVENTS
-  this.time.removeAllEvents();
-  
+  this.closeDonationDisplay && this.closeDonationDisplay();
+  this.sound && this.sound.stopAll && this.sound.stopAll();
+  this.time && this.time.removeAllEvents && this.time.removeAllEvents();
+
+    // Hapus event listener DOM jika ada
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) logoutBtn.onclick = null;
+
+  // Hapus event listener visibilitychange
+  document.onvisibilitychange = null;
+
   console.log('✅ Level02Scene shutdown complete');
+}
+
+// Tambahkan juga:
+destroy() {
+  this.shutdown();
 }
 
 showExitPanelOnly() {
@@ -601,32 +607,6 @@ showExitPanelOnly() {
     this.scene.stop('Level02Scene');
     this.scene.start('SplashScene');
   });
-}
-
-
-shutdown() {
-  console.log('🛑 Level02Scene shutting down...');
-  if (this.donationTimer) {
-    this.donationTimer.destroy();
-    this.donationTimer = null;
-  }
-  this.closeDonationDisplay && this.closeDonationDisplay();
-  this.sound && this.sound.stopAll && this.sound.stopAll();
-  this.time && this.time.removeAllEvents && this.time.removeAllEvents();
-
-  // Hapus event listener DOM jika ada
-  const logoutBtn = document.getElementById('logoutBtn');
-  if (logoutBtn) logoutBtn.onclick = null;
-
-  // Hapus event listener visibilitychange
-  document.onvisibilitychange = null;
-
-  console.log('✅ Level02Scene shutdown complete');
-}
-
-// Tambahkan juga:
-destroy() {
-  this.shutdown();
 }
 }
  // ✅ CLOSING for Level02Scene class
