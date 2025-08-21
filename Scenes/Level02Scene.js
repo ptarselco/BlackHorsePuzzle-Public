@@ -54,6 +54,10 @@ class Level02Scene extends Phaser.Scene {
   }
 
   const email = localStorage.getItem("email");
+  if (!email) {
+  this.scene.start('SplashScene');
+  return;
+}
   let playerScore = 0;
  // ✅ ENHANCED SAFETY CHECK in updateGameScore function:
     if (email) {

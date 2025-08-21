@@ -134,6 +134,10 @@ class Level01Scene extends Phaser.Scene {
   console.log("Level01 received data from SplashScene:", data); // ✅ Log data
   
   const email = localStorage.getItem("email");
+  if (!email) {
+  this.scene.start('SplashScene');
+  return;
+}
 
   // ✅ HANDLE DATA DARI SPLASHSCENE
   this.isGameOver = data.isGameOver || false;
@@ -2476,34 +2480,6 @@ async updateTaxInBackground(musicTitle, x, y) {
     }); // penutup playBtn.on
   }
 
-// ✅ Tambahkan function ini di dalam class Level01Scene:
-cleanupBeforeSceneChange() {
-  // Stop semua timer
-  if (this.gameTimer) {
-    this.gameTimer.destroy();
-    this.gameTimer = null;
-  }
-  if (this.roundTimer) {
-    this.roundTimer.remove(false);
-    this.roundTimer = null;
-  }
-  if (this.autoSaveInterval) {
-    clearInterval(this.autoSaveInterval);
-    this.autoSaveInterval = null;
-  }
-  if (this.paymentCheckInterval) {
-    clearInterval(this.paymentCheckInterval);
-    this.paymentCheckInterval = null;
-  }
-  // Stop semua musik
-  if (this.sound && this.sound.stopAll) this.sound.stopAll();
-  // Clear semua tweens
-  if (this.tweens && this.tweens.killAll) this.tweens.killAll();
-  // Clear semua timers
-  if (this.time && this.time.removeAllEvents) this.time.removeAllEvents();
-  console.log('✅ Scene cleanup completed');
-}
-
 // ==== 7 FUNCTIONS FOR SplashScene CONNECTED TO BACKEND ====
 // 1. GET FUNCTION FOR USER PROGRESS
 // ========== GANTI DENGAN FUNCTION getUserProgress YANG BENAR ==========
@@ -3208,7 +3184,33 @@ async unlockedLevels(email, level) {
   }
 }
 //========================================= BATAS 7 FUNGSI =========================================
-
+// ✅ Tambahkan function ini di dalam class Level01Scene:
+cleanupBeforeSceneChange() {
+  // Stop semua timer
+  if (this.gameTimer) {
+    this.gameTimer.destroy();
+    this.gameTimer = null;
+  }
+  if (this.roundTimer) {
+    this.roundTimer.remove(false);
+    this.roundTimer = null;
+  }
+  if (this.autoSaveInterval) {
+    clearInterval(this.autoSaveInterval);
+    this.autoSaveInterval = null;
+  }
+  if (this.paymentCheckInterval) {
+    clearInterval(this.paymentCheckInterval);
+    this.paymentCheckInterval = null;
+  }
+  // Stop semua musik
+  if (this.sound && this.sound.stopAll) this.sound.stopAll();
+  // Clear semua tweens
+  if (this.tweens && this.tweens.killAll) this.tweens.killAll();
+  // Clear semua timers
+  if (this.time && this.time.removeAllEvents) this.time.removeAllEvents();
+  console.log('✅ Scene cleanup completed');
+}
 async  syncProgressFromBackend(email) {
   try {
     console.log('🔄 Syncing progress from backend for:', email);
