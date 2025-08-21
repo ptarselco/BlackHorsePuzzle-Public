@@ -855,6 +855,8 @@ lv01Puzzle10Btn.on('pointerdown', async () => {
     }
   });
     
+  
+   
 //-------------------------------------------------------------------------------------------
       // Tombol close
       let closeBtn = this.add.text(1444, 18, "X", {
@@ -884,6 +886,8 @@ lv01Puzzle10Btn.on('pointerdown', async () => {
   // ✅ RESET WELCOME BACK FLAG before scene transition:
   //this.resetWelcomeBackFlag();
 
+      // ✅ CLEANUP SEBELUM TRANSITION
+      this.cleanupBeforeSceneChange();
       this.scene.start('SplashScene');
     });
 
@@ -898,7 +902,7 @@ lv01Puzzle10Btn.on('pointerdown', async () => {
 
   // ✅ RESET WELCOME BACK FLAG before scene transition:
   //this.resetWelcomeBackFlag();
-
+      this.cleanupBeforeSceneChange();
       this.scene.start('Level02Scene');
     });
 
@@ -995,6 +999,10 @@ this.donationBtn.on('pointerout', () => {
 
 // ✅ CLICK EFFECTS (Maju ke depan + cahaya spiral)
 this.donationBtn.on('pointerdown', () => { // ini 1 
+ this.time.delayedCall(2000, () => {
+  this.cleanupBeforeSceneChange();
+  this.scene.start('Level02Scene');
+ }); 
  // ✅ ADD GAME OVER PROTECTION: tidak perlu lock karena donasi
   //if (this.isGameOver) {
     //this.showHoldMessageAboveNotes(); // Show "Please buy favorite menu" message
@@ -1643,7 +1651,7 @@ showScoreBasedContinueMessage() {
     .setDepth(9999);
 
   // Title
-  const title = this.add.text(960, 500, "✅  WELCOME BACK!", {
+  const title = this.add.text(960, 500, "✅  WELCOME BACK!😄🎉", {
     font: "bold 56px Segoe UI",
     fill: "#00ff00",
     align: "center"
@@ -1680,6 +1688,8 @@ showScoreBasedContinueMessage() {
 
   // Continue button handler
   continueBtn.on('pointerdown', () => {
+    this.cleanupBeforeSceneChange();
+    this.scene.start('Level02Scene');
     // Remove this message
     overlay.destroy();
     messagePanel.destroy();
@@ -3486,7 +3496,7 @@ async checkPuzzle() {
     console.log('🎯 Puzzle completed! Showing final result for 2 seconds...');
 
     // ✅ TAMPILKAN PESAN CONGRATULATIONS
-    const congratsText = this.add.text(960, 300, 'PUZZLE COMPLETED!', {
+    const congratsText = this.add.text(960, 300, 'PUZZLE COMPLETED!😄', {
       fontSize: '36px',
       fill: '#FFD700',
       stroke: '#000000',
@@ -3647,7 +3657,7 @@ showRonde3BonusMessage() {
 
   // Pesan bonus dengan animasi berkilau
   this.bonusMsg = this.add.text(960, 400,
-    "🏆RONDE 3 WIN BONUS!🏆 \n\n⭐ +300 SCORE! ⭐", {
+    "🏆RONDE 3 WIN BONUS!🏆🤣 \n\n⭐ +300 SCORE!⭐😆", {
     font: "bold 60px Segoe UI",
     fill: "#ffd700", // Gold color
     align: "center",
@@ -3746,6 +3756,7 @@ createGoldParticles() {
 
   // ========== CLAIM HAT AFTER WIN ==========
   showClaimHat(callback) {
+    console.log('🎉😄 Player won! Time to celebrate! 🤣🏆');
     // Hapus claimHatBtn dan downloadHat jika ada
     if (this.claimHatBtn) {
       this.claimHatBtn.destroy();
@@ -3772,41 +3783,12 @@ createGoldParticles() {
         this.mainMusic.resume();
       }
     });
-    
-   
-    // Topi biru di tengah hanya muncul saat kemenangan pertama
-  //  if (!this.hasWonOnce) {
-    //  this.hasWonOnce = true;
-    //  this.claimHatBtn = this.add.image(1100, 650, 'claimHat').setScale(0.7).setInteractive();
-    //  this.claimHatBtn.on('pointerdown', () => {
-        // Hilangkan topi biru tengah setelah diklik
-    //    if (this.claimHatBtn) {
-    //      this.claimHatBtn.destroy();
-    //      this.claimHatBtn = null;
-      //  }
-        // (Opsional) Pesan info
-      //  if (this.claimHatMsg) this.claimHatMsg.destroy();
-      //  this.claimHatMsg = this.add.text(1100, 600, "Claim your hat below!", {
-      //    font: "bold 24px Segoe UI",
-      //    fill: "#00eaff",
-      //    backgroundColor: "#fff",
-      //    padding: { left: 20, right: 20, top: 10, bottom: 10 }
-      //  }).setOrigin(0.5).setDepth(2100);
-      //  this.time.delayedCall(1200, () => {
-      //    if (this.claimHatMsg) this.claimHatMsg.destroy();
-      //  });
-      //  if (callback) callback();
-      //});
-    //} else {
-      // Jika sudah pernah menang, langsung callback (tanpa topi biru tengah)
-      if (callback) callback();
+    if (callback) callback();
     }
-  //}
-
-
+  
   // filepath: [Level01Scene.js](https://_vscodecontentref_/2)
 async onTimeUp() {
-console.log('⏰ Time is up for round:', this.round);
+  console.log('⏰ Time is up for round:', this.round);
   
   // ✅ LANGSUNG STOP DAN DESTROY TIMER
   if (this.roundTimer) {
@@ -3823,6 +3805,15 @@ console.log('⏰ Time is up for round:', this.round);
   }
 
   this.sound.play('horseSnort');
+
+  // ✅ BENAR: Progresif turun ronde
+//  if (this.round === 1) {
+//    this.round = 2; // R1 kalah → ke R2
+//  } else if (this.round === 2) {
+//    this.round = 3; // R2 kalah → ke R3
+//  } else if (this.round >= 3) {
+//    this.round = 3; // R3 kalah → tetap R3
+//  }
 
   // Kurangi score jika gagal, minimal 0
   this.level01Score = Math.max(0, (this.level01Score || 0) - 100);
@@ -3857,13 +3848,42 @@ console.log('⏰ Time is up for round:', this.round);
 
   // ✅ PERBAIKAN UTAMA: CEK GAME OVER DULU SEBELUM LANJUT
   if ((this.level01Score || 0) <= 0) {
-    console.log('💀 GAME OVER - Score habis, langsung tampilkan Game Over');
+    // Only apply Game Over if level01Score is 0 or negative
     this.isGameOver = true;
-    
+    this.blur10PuzzleButton();
+    this.lockAllGameplayButtons();
+    this.showGameOverReturnMessage();
+    console.log('🔒 GAME OVER - All buttons locked, message shown ');
+   // return; // ✅ STOP EKSEKUSI DI SINI
+  //}
+
     // ✅ GUNAKAN FUNCTION YANG SUDAH ADA UNTUK GAME OVER
-    this.blur10PuzzleButton(); // Blur tombol 10 puzzle dan play button
-    this.lockAllGameplayButtons(); // Lock semua tombol gameplay
-  }
+    //this.blur10PuzzleButton(); // Blur tombol 10 puzzle dan play button
+    //this.lockAllGameplayButtons(); // Lock semua tombol gameplay
+  
+    console.log('🔒 Play & Puzzle buttons locked - Game Over triggered');
+  
+   // ✅ SAVE GAME OVER STATE TO LOCALSTORAGE:
+    const email = localStorage.getItem('email');
+    if (email) {
+    localStorage.setItem(`gameOver_${email}`, 'true');
+    console.log('💾 Game Over state saved - level01Score is 0');
+    }
+    } else {
+    // Player still has level01Score - don't apply full Game Over
+    console.log(`✅ Round > 3 but player has level01Score ${this.level01Score} - no Game Over saved`);
+    this.isGameOver = false;
+    // Just show low level01Score warning but allow playing
+    this.showLowScoreWarning();
+    }
+    this.timeElapsed = 0; //untuk mulai menu favorit saat timer over 00:00 19/06/25
+    if (this.timerText) this.timerText.setText("00:00"); 
+    // 1. Reset semua puzzle ke grid kiri, sembunyikan puzzle
+    for (let i = 0; i < 10; i++) {
+      let piece = this.puzzlePieces[i];
+      piece.setVisible(false);
+      this.puzzlePieceNumbers[i].setVisible(false);
+    }
 
 // ✅ GANTI DENGAN INI (setelah line email = localStorage.getItem('email')): 
 if (email) {
@@ -3914,41 +3934,11 @@ if (email) {
   }
 
   // ✅ TAMPILKAN GAME OVER MESSAGE DAN RETURN
-    this.showGameOverReturnMessage();
+  //  this.showGameOverReturnMessage();
     
-    console.log('🔒 GAME OVER - All buttons locked, message shown');
-    return; // ✅ STOP EKSEKUSI DI SINI, JANGAN LANJUT KE LOGIC RONDE
-  }
-
-
-  // ✅ KEMBALIKAN PLAYBTN KE KONDISI AWAL (BUREM & HARUS KLIK 10 PUZZLE)
-  //if (this.playBtn) {
-   // this.playBtn.setTexture('playSheriff');
-   // this.playBtn.setScale(0.3);
-   // this.playBtn.setAlpha(0.5); // ✅ BUREM
-   // this.playBtn.disableInteractive(); // ✅ NONAKTIF
-   // console.log('🎮 PlayBtn dikembalikan ke kondisi awal - User harus klik 10 Puzzle untuk main lagi');
+  //  console.log('🔒 GAME OVER - All buttons locked, message shown');
+  // return; // ✅ STOP EKSEKUSI DI SINI, JANGAN LANJUT KE LOGIC RONDE
   //}
-
-  // ✅ PERBAIKAN: Definisikan userData dulu, baru update backend
-// Sync ke localStorage (untuk score yang masih > 0)
-if (email) {
-  let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
-  userData.gameProgress = userData.gameProgress || {};
-  userData.gameProgress.level01Score = this.level01Score;
-  userData.gameProgress.level01HighScore = Math.max(userData.gameProgress.level01HighScore || 0, this.level01Score);
-  userData.gameProgress.totalPlays = (userData.gameProgress.totalPlays || 0) + 1;
-  localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
-
-
-  // Update ke backend
-  await this.updateUserProgress(email, {
-    level01Completed: true,
-    level01Score: this.level01Score,
-    level01HighScore: Math.max(this.level01Score, userData.gameProgress.level01HighScore || 0),
-    totalPlays: userData.gameProgress.totalPlays,
-    gameResult: 'timeout' // Kalah karena timeout
-  });
 
   // ✅ LOGIC FLOW YANG BENAR:
   // Destroy air jika masih ada dan score > 0
@@ -3964,15 +3954,23 @@ if (email) {
     this.isFavoritActive = false;
   }
 
+  // ✅ PERBAIKAN UTAMA: LOGIKA RONDE YANG BENAR
+  // R1 (18s) gagal → R2 (10s)
+  // R2 (10s) gagal → R3 (8s)  
+  // R3 (8s) gagal → tetap R3 (8s)
+  
   // ✅ ATUR RONDE SESUAI ALUR (HANYA JIKA SCORE > 0)
   // R1 -> R2 -> R3 -> R3 (loop) sampai menang atau score habis
   if (!this.round || this.round < 1) this.round = 1;
   if (this.round === 1) {
     this.round = 2; // Kalah di R1 → ke R2
+    console.log('😔 Failed R1 (18s) → Moving to R2 (10s)');
   } else if (this.round === 2) {
     this.round = 3; // Kalah di R2 → ke R3
+    console.log('😔 Failed R2 (10s) → Moving to R3 (8s)');
   } else if (this.round >= 3) {
     this.round = 3; // Kalah di R3 → tetap di R3
+    console.log('😔 Failed R3 (8s) → Staying in R3 (8s)');
   }
 
   // ✅ BENAR: Sesuai ronde R1=18s, R2=10s, R3=8s  
@@ -4008,14 +4006,14 @@ if (this.showHorseShakeHead && typeof this.showHorseShakeHead === 'function') {
 }
   
 // ✅ PLAYBTN KEMBALI KE KONDISI AWAL (BLUR, HARUS KLIK 10 PUZZLE)
-  if (this.playBtn) {
-    this.playBtn.setTexture('playSheriff');
-    this.playBtn.setScale(0.3);
-    this.playBtn.setAlpha(1); // ✅ BLUR
-    this.playBtn.setInteractive({ useHandCursor: true }); // ✅ TETAP AKTIF
-    this.playBtn.setVisible(true);
-    console.log('🎮 PlayBtn dikembalikan ke kondisi awal - User harus klik 10 Puzzle untuk main lagi');
-  }
+//  if (this.playBtn) {
+//    this.playBtn.setTexture('playSheriff');
+//    this.playBtn.setScale(0.3);
+//    this.playBtn.setAlpha(1); // ✅ BLUR
+//    this.playBtn.setInteractive({ useHandCursor: true }); // ✅ TETAP AKTIF
+//    this.playBtn.setVisible(true);
+//    console.log('🎮 PlayBtn dikembalikan ke kondisi awal - User harus klik 10 Puzzle untuk main lagi');
+// }
 
   console.log('🍎 Menu favorit sekarang bisa diakses karena timer = 00:00');
 
@@ -5200,8 +5198,6 @@ showExitPanelOnly() {
 
   exitBtn.on('pointerdown', async() => {
   // Tambahkan update level01Score ke backend sebelum keluar
-    //const email = localStorage.getItem('email');
-    //if (email) this.saveScoreToBackend(email, this.level01Score);
     const email = localStorage.getItem('email');
   if (email) {
     await this.updateUserProgress(email, {
@@ -5212,6 +5208,10 @@ showExitPanelOnly() {
       isPerfectGame: false
     });
   } 
+    // ✅ CLEANUP SEBELUM TRANSITION
+    this.cleanupBeforeSceneChange();
+    this.scene.start('SplashScene');
+
     // Hentikan autoSaveInterval jika aktif (autoSaveInterval ada di Level01Scene line 156)
     if (this.autoSaveInterval) clearInterval(this.autoSaveInterval);
 
