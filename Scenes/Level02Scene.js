@@ -164,20 +164,8 @@ backBtn.on('pointerdown', () => {
   
   // ✅ STOP ALL SOUNDS
   this.sound.stopAll();
-  
-  // ✅ SMALL DELAY FOR CLEANUP
-  this.time.delayedCall(100, () => {
-    if (!this.scene.isActive('Level02Scene')) return; // Pastikan scene masih aktif
-    const currentData = this.scene.settings.data || {};
-    console.log('🔄 Transitioning to Level01Scene...');
-    
-    this.scene.start('Level01Scene', {
-      preserveGameOver: currentData.preserveGameOver || false,
-      returnFromLevel02: true
-    });
-  });
-  });
-// ...existing code in create()...
+ });
+ 
 
 // PANGGIL INI DI DALAM create(data), SETELAH TOMBOL BACK DIBUAT
 if (this.scene.settings.data && this.scene.settings.data.showDonation) {
@@ -475,25 +463,7 @@ showDonationThankYou() {
 // ✅ CLOSE DONATION DISPLAY
 closeDonationDisplay() {
   console.log('🧹 closeDonationDisplay() called');
-  //if (this.donationOverlay) {
-    //this.donationOverlay.destroy();
-    
-    // Destroy all donation elements
-    //if (this.donationElements) {
-      //this.donationElements.forEach(element => {
-        //if (element) element.destroy();
-      //});
-    //}
-    
-    //if (this.donationTimer) this.donationTimer.destroy();
-    //if (this.thankYouText) this.thankYouText.destroy();
-    
-    // Clear references
-    //this.donationOverlay = null;
-    //this.donationElements = null;
-    //this.donationTimer = null;
-    //this.thankYouText = null;
-  
+ 
   // ✅ STOP TIMER FIRST (most important!)
   if (this.donationTimer) {
     this.donationTimer.destroy();
@@ -521,7 +491,7 @@ closeDonationDisplay() {
   if (this.donationElements) {
     this.donationElements.forEach((element, index) => {
       if (element && element.destroy) {
-        element.removeAllListeners();
+        if (element.removeAllListeners) element.removeAllListeners();
         element.destroy();
         console.log(`✅ Element ${index} destroyed`);
       }
@@ -605,8 +575,10 @@ showExitPanelOnly() {
     this.exitPanelGroup = null;
     this.isExitPanelShown = false;
     this.scene.stop('Level02Scene');
-    this.scene.start('SplashScene');
+    this.time.delayedCall(300, () => {
+      this.scene.start('SplashScene');
   });
+});
 }
 }
  // ✅ CLOSING for Level02Scene class
