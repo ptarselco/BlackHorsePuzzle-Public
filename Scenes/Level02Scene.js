@@ -44,7 +44,6 @@ class Level02Scene extends Phaser.Scene {
 } 
 }); 
 } 
-
   create() {
     console.log("Level02 create, login:", localStorage.getItem("email"));
     if (!localStorage.getItem("email")) {
