@@ -9,6 +9,20 @@ const PORT = process.env.PORT || 3000;
 const AUTH_USER = process.env.RENDER_USERNAME;
 const AUTH_PASS = process.env.RENDER_PASSWORD;
 
+// Validate required environment variables
+if (!AUTH_USER || !AUTH_PASS) {
+  console.error("❌ Missing required environment variables: RENDER_USERNAME, RENDER_PASSWORD");
+  process.exit(1);
+}
+
+// Security headers middleware
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  next();
+});
+
 // Tambahkan endpoint untuk email registration
 app.post('/api/register-email', async (req, res) => {
   try {
@@ -23,20 +37,6 @@ app.post('/api/register-email', async (req, res) => {
     console.error('Email registration error:', error);
     res.status(500).json({ success: false, message: 'Failed to register email' });
   }
-});
-
-// Validate required environment variables
-if (!AUTH_USER || !AUTH_PASS) {
-  console.error("❌ Missing required environment variables: RENDER_USERNAME, RENDER_PASSWORD");
-  process.exit(1);
-}
-
-// Security headers middleware
-app.use((req, res, next) => {
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
-  next();
 });
 
 // Middleware Basic Auth sederhana
