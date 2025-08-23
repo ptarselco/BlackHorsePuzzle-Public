@@ -5,9 +5,8 @@
   "main": "serverFrontend.js",
  
   "scripts": {
-    "start": "node serverFrontend.js",
-    "build": "CI=false react-scripts build"
-  },
+    "start": "node serverFrontend.js"
+    },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ptarselco/BlackHorsePuzzle-Public.git"
