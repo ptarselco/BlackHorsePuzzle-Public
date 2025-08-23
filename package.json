@@ -1,0 +1,24 @@
+{
+  "name": "blackhorsepuzzle-public",
+  "version": "1.0.0",
+  "description": "This game is designed to train **concentration**, **memory**, and **balance of hand movements with the mind**.",
+  "main": "serverFrontend.js",
+  "scripts": {
+    "start": "node serverFrontend.js"
+   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ptarselco/BlackHorsePuzzle-Public.git"
+  },
+  "keywords": ["game", "puzzle", "concentration", "memory", "black-horse", "black-horse-puzzle"],
+  "author": "Lusi (Arselco)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ptarselco/BlackHorsePuzzle-Public/issues"
+  },
+  "homepage": "https://github.com/ptarselco/BlackHorsePuzzle-Public#readme",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
+
