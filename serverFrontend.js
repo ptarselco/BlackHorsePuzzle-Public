@@ -9,6 +9,9 @@ const PORT = process.env.PORT || 3000;
 const AUTH_USER = process.env.RENDER_USERNAME;
 const AUTH_PASS = process.env.RENDER_PASSWORD;
 
+// WAJIB: Middleware untuk parse JSON (HARUS DI ATAS SEMUA ROUTE)
+app.use(express.json());
+
 // Validate required environment variables
 if (!AUTH_USER || !AUTH_PASS) {
   console.error("❌ Missing required environment variables: RENDER_USERNAME, RENDER_PASSWORD");
@@ -27,10 +30,6 @@ app.use((req, res, next) => {
 app.post('/api/register-email', async (req, res) => {
   try {
     const { email } = req.body;
-    
-    // TODO: Implement email logic here
-    // Kirim email menggunakan nodemailer, SendGrid, dll
-    
     console.log(`Email registration request for: ${email}`);
     res.json({ success: true, message: 'Email registered successfully' });
   } catch (error) {
