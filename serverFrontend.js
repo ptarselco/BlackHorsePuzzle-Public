@@ -1,6 +1,7 @@
-const express = require("express");
-const path = require("path");
-const { readFile } = require("fs/promises");
+import express from "express";
+import { readFile } from "fs/promises";
+import path from "path";
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
