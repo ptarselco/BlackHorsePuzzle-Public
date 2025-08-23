@@ -5,7 +5,8 @@
   "main": "serverFrontend.js",
   "type": "module",
   "scripts": {
-    "start": "node serverFrontend.js"
+    "start": "node serverFrontend.js",
+    "build": "react-scripts build"
    },
   "repository": {
     "type": "git",

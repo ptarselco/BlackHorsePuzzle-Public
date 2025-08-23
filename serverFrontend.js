@@ -45,8 +45,8 @@ app.use((req, res, next) => {
   return res.status(401).send("Authentication required.");
 });
 
-// Sajikan file statis dari dist/
-app.use(express.static("dist", { 
+// Sajikan file statis dari build/
+app.use(express.static("build", { 
     extensions: ["html"],
     maxAge: process.env.NODE_ENV === "production" ? "1d" : "0"
 }));
@@ -54,7 +54,7 @@ app.use(express.static("dist", {
 // Fallback ke index.html untuk SPA routes
 app.get("*", async (_req, res) => {
   try {
-    const indexPath = path.join(process.cwd(), "dist", "index.html");
+    const indexPath = path.join(process.cwd(), "build", "index.html");
     const html = await readFile(indexPath, "utf8");
     res.setHeader("Content-Type", "text/html; charset=UTF-8");
     res.send(html);
