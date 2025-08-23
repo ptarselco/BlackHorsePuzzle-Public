@@ -7,12 +7,19 @@
   "scripts": {
     "start": "node serverFrontend.js",
     "build": "react-scripts build"
-   },
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ptarselco/BlackHorsePuzzle-Public.git"
   },
-  "keywords": ["game", "puzzle", "concentration", "memory", "black-horse", "black-horse-puzzle"],
+  "keywords": [
+    "game",
+    "puzzle",
+    "concentration",
+    "memory",
+    "black-horse",
+    "black-horse-puzzle"
+  ],
   "author": "Lusi (Arselco)",
   "license": "ISC",
   "bugs": {
@@ -20,7 +27,21 @@
   },
   "homepage": "https://github.com/ptarselco/BlackHorsePuzzle-Public#readme",
   "dependencies": {
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-scripts": "^5.0.1"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }
-
