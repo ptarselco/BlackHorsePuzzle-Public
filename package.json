@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "This game is designed to train **concentration**, **memory**, and **balance of hand movements with the mind**.",
   "main": "serverFrontend.js",
+  "type": "module",
   "scripts": {
     "start": "node serverFrontend.js"
    },
