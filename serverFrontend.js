@@ -1,4 +1,3 @@
-serverFrontend.js
 import express from "express";
 import { readFile } from "fs/promises";
 import path from "path";
