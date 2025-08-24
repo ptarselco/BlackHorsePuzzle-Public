@@ -24,9 +24,7 @@
     <link rel="icon" type="image/webp" sizes="192x192" href="android-chrome-192x192.png">
     <link rel="icon" type="image/webp" sizes="512x512" href="android-chrome-512x512.png">
     <link rel="shortcut icon" href="favicon.ico">
-  <!-- Load Phaser from CDN first -->
-  <script src="https://cdn.jsdelivr.net/npm/phaser@3/build/phaser.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/axios/build/axios.min.js"></script>
+
 
   <style>
      html,body {
@@ -275,7 +273,9 @@
   </div>
 </div>
 
-  <!-- Load game scenes and main.js after Phaser is loaded -->
+  <!-- Load Phaser and Axios from CDN, then game scenes and main.js, all with defer -->
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3/build/phaser.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/build/axios.min.js" defer></script>
   <script src="Scenes/SplashScene.js" defer></script>
   <script src="Scenes/Level01Scene.js" defer></script>
   <script src="Scenes/Level02Scene.js" defer></script>
