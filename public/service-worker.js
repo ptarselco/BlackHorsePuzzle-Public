@@ -1,3 +1,6 @@
+// Import cache assets
+importScripts('cache-assets.js');
+
 const CACHE_NAME = 'blackhorse-seri1-v1';
 //const urlsToCache = [
 // 🎯 ASSETS UNTUK SERI 1 SAJA (10 PUZZLES)
