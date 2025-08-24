@@ -216,7 +216,7 @@ async getUserStatus(email, level = 'Level01Scene') {
   try {
     const response = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/status',
-      { email: email.toLowerCase().trim(), level },
+      { email, level: 'Level01Scene' },
       { timeout: 200000 }
     );
     return response.data;
@@ -468,7 +468,7 @@ async  syncProgressFromBackend(email) {
         // Kirim data lokal untuk perbandingan
         localProgress: localProgress
       },
-      { timeout: 30000 }
+      { timeout: 200000 }
     );
     
     // ✅ STEP 3: Ambil data dari backend (PRIORITAS UTAMA)
