@@ -13,7 +13,7 @@ class Level02Scene extends Phaser.Scene {
      
     // Load puzzle pieces dan background board
    //for (let i = 1; i <= 16; i++) {
-     // this.load.image(`hex${i}`, "../Puzzle-Assets/Level02/Lv.02 Hex-" + i.toString().padStart(2, '0') + ".webp");
+     // this.load.image(`hex${i}`, "Puzzle-Assets/Level02/Lv.02 Hex-" + i.toString().padStart(2, '0') + ".webp");
     //}
     this.load.image("board", "Puzzle-Assets/Level02/Bord Game Puzzle Level-02.webp");
    // this.load.image("cowboyHat", "Puzzle-Assets/Level02/cowboy-black-hat-win.webp");
