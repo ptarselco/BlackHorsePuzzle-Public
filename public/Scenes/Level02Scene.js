@@ -15,20 +15,24 @@ class Level02Scene extends Phaser.Scene {
    //for (let i = 1; i <= 16; i++) {
      // this.load.image(`hex${i}`, "../Puzzle-Assets/Level02/Lv.02 Hex-" + i.toString().padStart(2, '0') + ".webp");
     //}
-    this.load.image("board", "../Puzzle-Assets/Level02/Bord Game Puzzle Level-02.webp");
-   // this.load.image("cowboyHat", "../Puzzle-Assets/Level02/cowboy-black-hat-win.webp");
-     this.load.image('donationPanel', './Puzzle-Assets/UI/BLACK-HORSE-DONATION-PANEL.webp'); // Your donation image
+    this.load.image("board", "Puzzle-Assets/Level02/Bord Game Puzzle Level-02.webp");
+   // this.load.image("cowboyHat", "Puzzle-Assets/Level02/cowboy-black-hat-win.webp");
+     this.load.image('donationPanel', 'Puzzle-Assets/UI/Black Horse Donation Panel.png'); // Your donation image
       this.load.on('filecomplete-image-donationPanel', () => {
     console.log('✅ donationPanel loaded!');
     });
 
-    
-     // Load semua efek suara untuk Level 02
-    this.load.audio("neigh", "../Puzzle-Assets/Sfx/sound/horse-neigh.mp3");
-    this.load.audio("snort", "../Puzzle-Assets/Sfx/sound/horse-snort.mp3");
-    this.load.audio("hoof", "../Puzzle-Assets/Sfx/sound/hoof-step.mp3");
-    this.load.audio("gallop", "../Puzzle-Assets/Sfx/sound/blackhorse-gallop.mp3");
-    this.load.audio("win", "../Puzzle-Assets/Sfx/scenes/win-in-the-video-game.mp3");
+    this.load.image('donationPanel', 'Puzzle-Assets/UI/Black Horse Donation Panel.png'); // Your donation image
+    this.load.on('filecomplete-image-donationPanel', () => {
+      console.log('✅ donationPanel loaded!');
+    });
+
+    // Load semua efek suara untuk Level 02
+    this.load.audio("neigh", "Puzzle-Assets/Sfx/sound/horse-neigh.mp3");
+    this.load.audio("snort", "Puzzle-Assets/Sfx/sound/horse-snort.mp3");
+    this.load.audio("hoof", "Puzzle-Assets/Sfx/sound/hoof-step.mp3");
+    this.load.audio("gallop", "Puzzle-Assets/Sfx/sound/blackhorse-gallop.mp3");
+    this.load.audio("win", "Puzzle-Assets/Sfx/scenes/win-in-the-video-game.mp3");
  
 
  // Sembunyikan loader please wait (dari Co)
@@ -247,10 +251,11 @@ showDonationDisplay() {
     }
   });
 
-  // ✅ DONATION IMAGE CLICK - OPEN PAYPAL.ME
+  // ✅ DONATION IMAGE CLICK - PayPal.Me
   this.donationImage.on('pointerdown', () => {
     // Replace with your actual PayPal.me link
-    const paypalLink = 'https://paypal.me/lusibiz?country.x=ID&locale.x=en_US';
+   // const paypalLink = 'https://paypal.me/lusibiz?country.x=ID&locale.x=en_US';
+    const paypalLink = 'https://paypal.me/arselco';
     window.open(paypalLink, '_blank');
     
     // Show thank you message
@@ -328,7 +333,8 @@ showDonationDisplay() {
   
   // PayPal button click
   paypalBtn.on('pointerdown', () => {
-    const paypalLink = 'https://paypal.me/lusibiz?country.x=ID&locale.x=en_US';
+    //const paypalLink = 'https://paypal.me/lusibiz?country.x=ID&locale.x=en_US';//yang dibajak
+     const paypalLink = 'https://paypal.me/arselco';
 
     window.open(paypalLink, '_blank');
     this.showDonationThankYou();
