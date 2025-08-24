@@ -1,37 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-
-   <!-- ADD ini di <head> section index.html: -->
-<link rel="manifest" href="/site.webmanifest">
-<meta name="theme-color" content="#046064">
-<meta name="background-color" content="#0891b2">
-
-<!-- PWA meta tags -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Black Horse Puzzle">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="application-name" content="BlackHorse">
-
-<!-- Existing favicon links tetap ada -->
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-<link rel="manifest" href="/site.webmanifest"> 
-   
-<!-- ✅ FAVICONS: yang lama -->
+<!-- ✅ HANYA META TAGS, FAVICONS, DAN CSS DI HEAD -->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes">
     <title>Black Horse Puzzle</title>
+
+       <!-- ADD ini di <head> section index.html: -->
+    <!-- PWA meta tags -->    
+    <meta name="theme-color" content="#046064">
+    <meta name="background-color" content="#0891b2">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Black Horse Puzzle">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="BlackHorse">
+
+     <!-- ✅ FAVICONS: yang lama -->
+    <link rel="manifest" href="site.webmanifest">    
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
     <link rel="icon" type="image/webp" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/webp" sizes="16x16" href="favicon-16x16.png">
     <link rel="icon" type="image/webp" sizes="192x192" href="android-chrome-192x192.png">
     <link rel="icon" type="image/webp" sizes="512x512" href="android-chrome-512x512.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-    <link rel="manifest" href="site.webmanifest">
     <link rel="shortcut icon" href="favicon.ico">
-      
+ 
     <style>
      html,body {
         margin: 0;
@@ -215,38 +208,98 @@
     </style>
   </head>
 
+<body>
+    <!-- Game Container -->
+  <div id="game-container"></div>
+
+   <!-- 🐎 Loading Screen -->
+<div id="loader" style="
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: #034054;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  font-family: 'Segoe UI', sans-serif;
+  color: #00eaff;
+  font-size: 1.2em;
+">
+  
+ <div class="loader-text" >
+    <img src="Black Horse-Please Wait.webp" alt="Black Horse" style="height: 300px; margin: 0 auto 16px auto; display: block;">
+    <div class="loader-wait"></div>
+    Please wait... Preparing the BLACK HORSE GAME PUZZLE FUTURISTIC.<br>
+    Silahkan tunggu...mempersiapkan Black Horse Game Puzzle Futuristik.<br><br>
+   </div>
+    <div class="loader-gap"></div>
+    <div class="loader-message">
+    <span style="color:#fff;">
+    Best on desktop or laptop for full experience.<br>
+    On Mobile, use the <b>Google</b> browser or "Add to Home Screen" for fullscreen.<br>
+    <br>
+    Pengalaman terbaik memainkan Game ini di desktop atau laptop.<br> 
+    Di ponsel, gunakan browser <b>Google</b> atau "Tambahkan ke Layar Utama" untuk layar penuh.</b>
+  </span>
+  </div>
+  </div>
+ 
+  <!-- ✅ SINGLE LOGOUT BUTTON - PROPER PLACEMENT -->
+      <button id="logoutBtn" style="display:none; position: fixed; top: 18px; right: 32px; z-index: 99999;background: #222; color: #fff; border: 1px solid #00eaff; border-radius: 7px; padding: 7px 16px; font-size: 0.95em; cursor: pointer; box-shadow: 0 0 8px #00eaff60; pointer-events: auto;">
+      Logout
+    </button>
+  
+    <!-- 🐎 Login Box -->
+     <!-- Login Box: hanya email dan tombol login -->
+<div id="loginBox" style="display:block;">
+  <div class="login-row">
+    <input type="text" id="emailInput" placeholder="Email" autocomplete="off" />
+    <button id="loginBtn">Login</button>
+  </div>
+</div>
+
+<!-- Verification Box: kode verifikasi, tombol verify, dan resend -->
+<div id="verificationBox" style="display:none;">
+  <div class="login-row">
+    <input type="text" id="verificationCodeInput" placeholder="Verification Code" autocomplete="off" />
+    <button id="verifyBtn">Verify</button>
+  </div>
+  <div class="login-row">
+    <button id="resendVerificationBtn">Resend Code</button>
+    <button id="logoutBtn" style="display:none;">Logout</button>
+  </div>
+</div>
+ <script src="https://cdn.jsdelivr.net/npm/phaser@3/build/phaser.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/build/axios.min.js"></script>
+
+    <script src="Scenes/SplashScene.js"></script>
+    <script src="Scenes/Level01Scene.js"></script>
+    <script src="Scenes/Level02Scene.js"></script>
+
+    <!-- Load main.js -->
+    <script src="main.js"></script>
+
 
 <script>
+ // Wait for Phaser to be ready before executing any game-related code
+        if (typeof Phaser !== 'undefined') {
+            console.log('✅ Phaser is ready - initializing game systems...');
+
 // 🔧 Service Worker Registration - Seri 1
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js')
       .then((registration) => {
         console.log('✅ Service Worker registered successfully:', registration.scope);
-        
-        // Handle updates
-        registration.addEventListener('updatefound', () => {
-          const newWorker = registration.installing;
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              console.log('🔄 New Service Worker available - ready to update');
-              // Optionally show update notification to user
-            }
-          });
-        });
       })
       .catch((error) => {
         console.warn('⚠️ Service Worker registration failed:', error);
         // Game will work without Service Worker, just no offline support
       });
-      
-    // Handle Service Worker messages
-    navigator.serviceWorker.addEventListener('message', (event) => {
-      if (event.data && event.data.type === 'CACHE_UPDATED') {
-        console.log('✅ Game assets cached - ready for offline play!');
-      }
     });
-  });
+  };
 } else {
   console.log('⚠️ Service Worker not supported in this browser');
 }
@@ -499,80 +552,6 @@ window.checkPaymentStatus = async function(email) {
   return result;
 };
 </script>
-
-
-  <body>
-    <!-- Game Container -->
-  <div id="game-container"></div>
-
-   <!-- 🐎 Loading Screen -->
-<div id="loader" style="
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  background: #034054;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-  font-family: 'Segoe UI', sans-serif;
-  color: #00eaff;
-  font-size: 1.2em;
-">
-  
- <div class="loader-text" >
-    <img src="Black Horse-Please Wait.webp" alt="Black Horse" style="height: 300px; margin: 0 auto 16px auto; display: block;">
-    <div class="loader-wait"></div>
-    Please wait... Preparing the BLACK HORSE GAME PUZZLE FUTURISTIC.<br>
-    Silahkan tunggu...mempersiapkan Black Horse Game Puzzle Futuristik.<br><br>
-   </div>
-    <div class="loader-gap"></div>
-    <div class="loader-message">
-    <span style="color:#fff;">
-    Best on desktop or laptop for full experience.<br>
-    On Mobile, use the <b>Google</b> browser or "Add to Home Screen" for fullscreen.<br>
-    <br>
-    Pengalaman terbaik memainkan Game ini di desktop atau laptop.<br> 
-    Di ponsel, gunakan browser <b>Google</b> atau "Tambahkan ke Layar Utama" untuk layar penuh.</b>
-  </span>
-  </div>
-  </div>
- 
-  <!-- ✅ SINGLE LOGOUT BUTTON - PROPER PLACEMENT -->
-      <button id="logoutBtn" style="display:none; position: fixed; top: 18px; right: 32px; z-index: 99999;background: #222; color: #fff; border: 1px solid #00eaff; border-radius: 7px; padding: 7px 16px; font-size: 0.95em; cursor: pointer; box-shadow: 0 0 8px #00eaff60; pointer-events: auto;">
-      Logout
-    </button>
-  
-    <!-- 🐎 Login Box -->
-     <!-- Login Box: hanya email dan tombol login -->
-<div id="loginBox" style="display:block;">
-  <div class="login-row">
-    <input type="text" id="emailInput" placeholder="Email" autocomplete="off" />
-    <button id="loginBtn">Login</button>
-  </div>
-</div>
-
-<!-- Verification Box: kode verifikasi, tombol verify, dan resend -->
-<div id="verificationBox" style="display:none;">
-  <div class="login-row">
-    <input type="text" id="verificationCodeInput" placeholder="Verification Code" autocomplete="off" />
-    <button id="verifyBtn">Verify</button>
-  </div>
-  <div class="login-row">
-    <button id="resendVerificationBtn">Resend Code</button>
-    <button id="logoutBtn" style="display:none;">Logout</button>
-  </div>
-</div>
- <script src="https://cdn.jsdelivr.net/npm/phaser@3/build/phaser.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/build/axios.min.js"></script>
-
-    <script src="Scenes/SplashScene.js"></script>
-    <script src="Scenes/Level01Scene.js"></script>
-    <script src="Scenes/Level02Scene.js"></script>
-
-    <!-- Load main.js -->
-    <script src="main.js"></script>
 
   
    <script>
