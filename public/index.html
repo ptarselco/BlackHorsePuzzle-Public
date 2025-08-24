@@ -271,13 +271,11 @@
     <button id="logoutBtn" style="display:none;">Logout</button>
   </div>
 </div>
- <script src="https://cdn.jsdelivr.net/npm/phaser@3/build/phaser.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3/build/phaser.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/build/axios.min.js"></script>
-
     <script src="Scenes/SplashScene.js"></script>
     <script src="Scenes/Level01Scene.js"></script>
     <script src="Scenes/Level02Scene.js"></script>
-
     <!-- Load main.js -->
     <script src="main.js"></script>
 
@@ -286,6 +284,20 @@
  // Wait for Phaser to be ready before executing any game-related code
         if (typeof Phaser !== 'undefined') {
             console.log('✅ Phaser is ready - initializing game systems...');
+
+ // ✅ 1. TAMBAH getUserProgress FUNCTION PERTAMA
+    window.getUserProgress = async function(email) {
+      try {
+        const response = await axios.get(
+          `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
+          { timeout: 30000 }
+        );
+        return response.data;
+      } catch (error) {
+        console.error('❌ Failed to get user progress:', error);
+        return null;
+      }
+    };           
 
 // 🔧 Service Worker Registration - Seri 1
 if ('serviceWorker' in navigator) {
@@ -298,12 +310,11 @@ if ('serviceWorker' in navigator) {
         console.warn('⚠️ Service Worker registration failed:', error);
         // Game will work without Service Worker, just no offline support
       });
-    });
-  };
+  });
 } else {
   console.log('⚠️ Service Worker not supported in this browser');
 }
-
+}
 // Fallback function for checking payment status
 window.checkPaymentStatusFromBackend = async function(email) {
   try {
