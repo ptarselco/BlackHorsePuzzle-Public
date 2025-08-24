@@ -24,8 +24,11 @@
     <link rel="icon" type="image/webp" sizes="192x192" href="android-chrome-192x192.png">
     <link rel="icon" type="image/webp" sizes="512x512" href="android-chrome-512x512.png">
     <link rel="shortcut icon" href="favicon.ico">
- 
-    <style>
+  <!-- Load Phaser from CDN first -->
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3/build/phaser.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/build/axios.min.js"></script>
+
+  <style>
      html,body {
         margin: 0;
         padding: 0;
@@ -271,9 +274,7 @@
     <button id="logoutBtn" style="display:none;">Logout</button>
   </div>
 </div>
-  <!-- Load Phaser from CDN first -->
-  <script src="https://cdn.jsdelivr.net/npm/phaser@3/build/phaser.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/axios/build/axios.min.js"></script>
+
   <!-- Load game scenes and main.js after Phaser is loaded -->
   <script src="Scenes/SplashScene.js"></script>
   <script src="Scenes/Level01Scene.js"></script>
