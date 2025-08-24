@@ -13,23 +13,27 @@ class Level02Scene extends Phaser.Scene {
      
     // Load puzzle pieces dan background board
    //for (let i = 1; i <= 16; i++) {
-     // this.load.image(`hex${i}`, "../Puzzle-Assets/Level02/Lv.02 Hex-" + i.toString().padStart(2, '0') + ".webp");
+     // this.load.image(`hex${i}`, "./Puzzle-AssetsLevel02/Lv.02 Hex-" + i.toString().padStart(2, '0') + ".webp");
     //}
-    this.load.image("board", "../Puzzle-Assets/Level02/Bord Game Puzzle Level-02.webp");
-   // this.load.image("cowboyHat", "../Puzzle-Assets/Level02/cowboy-black-hat-win.webp");
-     this.load.image('donationPanel', './Puzzle-Assets/UI/BLACK-HORSE-DONATION-PANEL.webp'); // Your donation image
+    this.load.image("board", "./Puzzle-AssetsLevel02/Bord Game Puzzle Level-02.webp");
+   // this.load.image("cowboyHat", "./Puzzle-AssetsLevel02/cowboy-black-hat-win.webp");
+     this.load.image('donationPanel', './Puzzle-AssetsUI/Black Horse Donation Panel.png'); // Your donation image
       this.load.on('filecomplete-image-donationPanel', () => {
     console.log('✅ donationPanel loaded!');
     });
 
-    
-     // Load semua efek suara untuk Level 02
-    this.load.audio("neigh", "../Puzzle-Assets/Sfx/sound/horse-neigh.mp3");
-    this.load.audio("snort", "../Puzzle-Assets/Sfx/sound/horse-snort.mp3");
-    this.load.audio("hoof", "../Puzzle-Assets/Sfx/sound/hoof-step.mp3");
-    this.load.audio("gallop", "../Puzzle-Assets/Sfx/sound/blackhorse-gallop.mp3");
-    this.load.audio("win", "../Puzzle-Assets/Sfx/scenes/win-in-the-video-game.mp3");
- 
+    this.load.image('donationPanel', './Puzzle-AssetsUI/Black Horse Donation Panel.png'); // Your donation image
+    this.load.on('filecomplete-image-donationPanel', () => {
+      console.log('✅ donationPanel loaded!');
+    });
+
+    // Load semua efek suara untuk Level 02
+    this.load.audio("neigh", "./Puzzle-Assets/Sfx/sound/horse-neigh.mp3");
+    this.load.audio("snort", "./Puzzle-Assets/Sfx/sound/horse-snort.mp3");
+    this.load.audio("hoof", "./Puzzle-Assets/Sfx/sound/hoof-step.mp3");
+    this.load.audio("gallop", "./Puzzle-Assets/Sfx/sound/blackhorse-gallop.mp3");
+    this.load.audio("win", "./Puzzle-Assets/Sfx/scenes/win-in-the-video-game.mp3");
+
 
  // Sembunyikan loader please wait (dari Co)
   this.load.on('complete', () => {
@@ -44,7 +48,6 @@ class Level02Scene extends Phaser.Scene {
 } 
 }); 
 } 
-
   create() {
     console.log("Level02 create, login:", localStorage.getItem("email"));
     if (!localStorage.getItem("email")) {
@@ -54,6 +57,10 @@ class Level02Scene extends Phaser.Scene {
   }
 
   const email = localStorage.getItem("email");
+  if (!email) {
+  this.scene.start('SplashScene');
+  return;
+}
   let playerScore = 0;
  // ✅ ENHANCED SAFETY CHECK in updateGameScore function:
     if (email) {
@@ -68,18 +75,9 @@ class Level02Scene extends Phaser.Scene {
     syncProgressFromBackend(email); // ← panggil di sini
   }
   
-   // Update progress ke backend saat tab ditutup atau pindah
-  window.addEventListener('beforeunload', () => {
-    if (!email) return;
-    const progress = {
-      level01Score: this.level01Score || 0,
-      totalPlays: this.totalPlays || 0,
-      isGameOver: this.isGameOver || false
-      // Tambahkan field lain sesuai kebutuhan
-    };
-    const url = `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`;
-    navigator.sendBeacon(url, JSON.stringify(progress));
-  });
+ 
+
+  // Update progress ke backend saat tab ditutup atau pindah
 
   // Tambahkan juga untuk visibilitychange (tab pindah/fokus hilang)
   document.addEventListener('visibilitychange', () => {
@@ -141,6 +139,7 @@ backBtn.on('pointerdown', () => {
   }
   this.sound.stopAll();
   this.time.delayedCall(100, () => {
+    if (!this.scene.isActive('Level02Scene')) return;
     const currentData = this.scene.settings.data || {};
     this.scene.start('Level01Scene', {
       preserveGameOver: currentData.preserveGameOver || false,
@@ -169,19 +168,8 @@ backBtn.on('pointerdown', () => {
   
   // ✅ STOP ALL SOUNDS
   this.sound.stopAll();
-  
-  // ✅ SMALL DELAY FOR CLEANUP
-  this.time.delayedCall(100, () => {
-    const currentData = this.scene.settings.data || {};
-    console.log('🔄 Transitioning to Level01Scene...');
-    
-    this.scene.start('Level01Scene', {
-      preserveGameOver: currentData.preserveGameOver || false,
-      returnFromLevel02: true
-    });
-  });
-  });
-// ...existing code in create()...
+ });
+ 
 
 // PANGGIL INI DI DALAM create(data), SETELAH TOMBOL BACK DIBUAT
 if (this.scene.settings.data && this.scene.settings.data.showDonation) {
@@ -223,6 +211,8 @@ this.input.keyboard.on('keydown-ESC', () => {
     this.time.addEvent({ delay: 9000, callback: () => this.sound.play("hoof"), repeat: 4 });
     this.time.addEvent({ delay: 12000, callback: () => this.sound.play("gallop"), repeat: 2 });
   }
+
+
   // ✅ DONATION DISPLAY FUNCTION dengan CLICKABLE PAYPAL LINK
 showDonationDisplay() {
   // Create donation overlay
@@ -261,10 +251,11 @@ showDonationDisplay() {
     }
   });
 
-  // ✅ DONATION IMAGE CLICK - OPEN PAYPAL.ME
+  // ✅ DONATION IMAGE CLICK - PayPal.Me
   this.donationImage.on('pointerdown', () => {
     // Replace with your actual PayPal.me link
-    const paypalLink = 'https://paypal.me/lusibiz?country.x=ID&locale.x=en_US';
+   // const paypalLink = 'https://paypal.me/lusibiz?country.x=ID&locale.x=en_US';
+    const paypalLink = 'https://paypal.me/arselco';
     window.open(paypalLink, '_blank');
     
     // Show thank you message
@@ -342,7 +333,8 @@ showDonationDisplay() {
   
   // PayPal button click
   paypalBtn.on('pointerdown', () => {
-    const paypalLink = 'https://paypal.me/lusibiz?country.x=ID&locale.x=en_US';
+    //const paypalLink = 'https://paypal.me/lusibiz?country.x=ID&locale.x=en_US';//yang dibajak
+     const paypalLink = 'https://paypal.me/arselco';
 
     window.open(paypalLink, '_blank');
     this.showDonationThankYou();
@@ -386,9 +378,10 @@ showDonationDisplay() {
     
     // ✅ DELAY TRANSITION
     this.time.delayedCall(100, () => {
+      if (!this.scene.isActive('Level02Scene')) return; // Pastikan scene masih aktif
       const currentData = this.scene.settings.data || {};
       console.log('🔄 Transitioning from close button...');
-      
+
       this.scene.start('Level01Scene', {
         preserveGameOver: currentData.preserveGameOver || false,
         returnFromLevel02: true
@@ -410,16 +403,17 @@ showDonationDisplay() {
   // ✅ REPLACE with safer timer:
   // Auto close after 20 seconds (with safety check)
   this.donationTimer = this.time.delayedCall(20000, () => {
-    console.log('⏰ Auto-close timer triggered');
-    
-    // ✅ CHECK IF STILL IN SAME SCENE
-    if (this.scene.isActive('Level02Scene') && this.donationOverlay) {
-      console.log('🧹 Auto-closing donation display...');
-      this.closeDonationDisplay();
-    } else {
-      console.log('⚠️ Scene changed or donation already closed');
-    }
-  });
+  if (!this.scene.isActive('Level02Scene')) return; // ⬅️ WAJIB, biar aman!
+  console.log('⏰ Auto-close timer triggered');
+  
+  if (this.donationOverlay) { // ⬅️ Cukup cek overlay saja di sini
+    console.log('🧹 Auto-closing donation display...');
+    this.closeDonationDisplay();
+  } else {
+    console.log('⚠️ Donation already closed');
+  }
+});
+  
   
   // Animation entrance
   this.tweens.add({
@@ -475,25 +469,7 @@ showDonationThankYou() {
 // ✅ CLOSE DONATION DISPLAY
 closeDonationDisplay() {
   console.log('🧹 closeDonationDisplay() called');
-  //if (this.donationOverlay) {
-    //this.donationOverlay.destroy();
-    
-    // Destroy all donation elements
-    //if (this.donationElements) {
-      //this.donationElements.forEach(element => {
-        //if (element) element.destroy();
-      //});
-    //}
-    
-    //if (this.donationTimer) this.donationTimer.destroy();
-    //if (this.thankYouText) this.thankYouText.destroy();
-    
-    // Clear references
-    //this.donationOverlay = null;
-    //this.donationElements = null;
-    //this.donationTimer = null;
-    //this.thankYouText = null;
-  
+ 
   // ✅ STOP TIMER FIRST (most important!)
   if (this.donationTimer) {
     this.donationTimer.destroy();
@@ -521,7 +497,7 @@ closeDonationDisplay() {
   if (this.donationElements) {
     this.donationElements.forEach((element, index) => {
       if (element && element.destroy) {
-        element.removeAllListeners();
+        if (element.removeAllListeners) element.removeAllListeners();
         element.destroy();
         console.log(`✅ Element ${index} destroyed`);
       }
@@ -551,17 +527,23 @@ shutdown() {
     this.donationTimer = null;
     console.log('⏰ Timer destroyed on shutdown');
   }
-  
-  // ✅ CLEANUP DONATION
-  this.closeDonationDisplay();
-  
-  // ✅ STOP ALL SOUNDS
-  this.sound.stopAll();
-  
-  // ✅ CLEAR ALL EVENTS
-  this.time.removeAllEvents();
-  
+  this.closeDonationDisplay && this.closeDonationDisplay();
+  this.sound && this.sound.stopAll && this.sound.stopAll();
+  this.time && this.time.removeAllEvents && this.time.removeAllEvents();
+
+    // Hapus event listener DOM jika ada
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) logoutBtn.onclick = null;
+
+  // Hapus event listener visibilitychange
+  document.onvisibilitychange = null;
+
   console.log('✅ Level02Scene shutdown complete');
+}
+
+// Tambahkan juga:
+destroy() {
+  this.shutdown();
 }
 
 showExitPanelOnly() {
@@ -599,8 +581,10 @@ showExitPanelOnly() {
     this.exitPanelGroup = null;
     this.isExitPanelShown = false;
     this.scene.stop('Level02Scene');
-    this.scene.start('SplashScene');
+    this.time.delayedCall(300, () => {
+      this.scene.start('SplashScene');
   });
+});
 }
 }
  // ✅ CLOSING for Level02Scene class
