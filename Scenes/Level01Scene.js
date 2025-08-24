@@ -43,78 +43,78 @@ class Level01Scene extends Phaser.Scene {
     // Puzzle pieces
     for (let i = 1; i <= 10; i++) {
       const num = i.toString().padStart(2, '0');
-      this.load.image(`hex${i}`, `./Puzzle-Assets/Level01/Lv.01 Hex-${num}.webp`);
+      this.load.image(`hex${i}`, `./Puzzle-Assets/Level01/Lv.01 Hex-${num}.webp`); 
     }
     // Board & UI
-    this.load.image('boardLevel01', 'Puzzle-Assets/Level01/Board Game Puzzle Level-01.webp');
+    this.load.image('boardLevel01', './Puzzle-Assets/Level01/Board Game Puzzle Level-01.webp');
     // Puzzle pieces (essential saja dulu)
     // Favorit
-    this.load.image('water1', 'Puzzle-Assets/UI/FW. Water1.webp');
-    this.load.image('water2', 'Puzzle-Assets/UI/FW. Water2.webp');
-    this.load.image('water3', 'Puzzle-Assets/UI/FW. Water3.webp');
-    this.load.image('grass', 'Puzzle-Assets/UI/FG. Grass04.webp');
-    this.load.image('carrot', 'Puzzle-Assets/UI/FC. Carrot.webp');
-    this.load.image('apple1', 'Puzzle-Assets/UI/FA. Appel1.webp');
-    this.load.image('apple2', 'Puzzle-Assets/UI/FA. Appel2.webp');
-    this.load.image('apple3', 'Puzzle-Assets/UI/FA. Appel3.webp');
-    this.load.image('apple4', 'Puzzle-Assets/UI/FA. Appel4.webp');
-    this.load.image('musicNoteB', 'Puzzle-Assets/UI/FN. Not Blue Cyan.webp');
-    this.load.image('musicNoteG', 'Puzzle-Assets/UI/FN. Not Green.webp');
-    this.load.image('musicNoteR', 'Puzzle-Assets/UI/FN. Not Red.webp');
-    this.load.image('help_en_1', 'Puzzle-Assets/Level01/Lv.01 Help - English (Page1).webp');
-    this.load.image('help_en_2', 'Puzzle-Assets/Level01/Lv.01 Help - English (Page2).webp');
-    this.load.image('help_id_1', 'Puzzle-Assets/Level01/Lv.01 Help - Indonesia (Page1).webp');
-    this.load.image('help_id_2', 'Puzzle-Assets/Level01/Lv.01 Help - Indonesia (Page2).webp');
-    this.load.image('help_other_0', 'Puzzle-Assets/Level01/Lv.01 Help - Other (Code).webp');  
-    this.load.image('help_other_1', 'Puzzle-Assets/Level01/Lv.01 Help - Other (Page1).webp');  
-    this.load.image('help_other_2', 'Puzzle-Assets/Level01/Lv.01 Help - Other (Page2).webp');    
-    this.load.image('helpBtn', 'Puzzle-Assets/UI/GM. Help.webp');
-    this.load.image('back', 'Puzzle-Assets/UI/GM. Back.webp');
-    this.load.image('next', 'Puzzle-Assets/UI/GM. Next.webp');
-    this.load.image('playSheriff', 'Puzzle-Assets/UI/GM. Play.webp');
-    this.load.image('playSheriffL', 'Puzzle-Assets/UI/GM. Play Light.webp');
-    this.load.image('lv01Puzzle10', 'Puzzle-Assets/UI/GM. L01-10 Puzzle.webp');
-    this.load.image('lv01Puzzle20', 'Puzzle-Assets/UI/GM. L01-20 Puzzle.webp');
-    this.load.image('paypalQR', 'Puzzle-Assets/UI/Black Horse Fa-qrcode.png');
-    //this.load.audio('gameoverSound', 'Puzzle-Assets/Sfx/scenes/game-over-elements-impact.mp3'); // utk 20 Puzzle
-    this.load.image('textGlow02', 'Puzzle-Assets/UI/Sp. Text Level 02 Glow.webp');
-    this.load.image('hexSlot01', 'Puzzle-Assets/UI/GM. Slot Hexa01.webp');
-    this.load.image('hexSlot02', 'Puzzle-Assets/UI/GM. Slot Hexa02.webp');
-    this.load.image('hexSlot03', 'Puzzle-Assets/UI/GM. Slot Hexa03.webp');
-    this.load.image('hexSlot04', 'Puzzle-Assets/UI/GM. Slot Hexa04.webp');
-    this.load.image('hexSlot05', 'Puzzle-Assets/UI/GM. Slot Hexa05.webp');
-    this.load.image('hexSlot06', 'Puzzle-Assets/UI/GM. Slot Hexa06.webp');
-    this.load.image('hexSlot07', 'Puzzle-Assets/UI/GM. Slot Hexa07.webp');
-    this.load.image('hexSlot08', 'Puzzle-Assets/UI/GM. Slot Hexa08.webp');
-    this.load.image('hexSlot09', 'Puzzle-Assets/UI/GM. Slot Hexa09.webp');
-    this.load.image('hexSlot010', 'Puzzle-Assets/UI/GM. Slot Hexa10.webp');
-  //  this.load.image('horse', 'Puzzle-Assets/UI/GM. Black Horse Run Behind.webp');
-    this.load.image('blankBhL1', 'Puzzle-Assets/UI/Blank Black Horse Level01.webp');
-    this.load.image('bhAngguk1', 'Puzzle-Assets/UI/GM. BH Head Angguk1.webp');
-    this.load.image('bhAngguk2', 'Puzzle-Assets/UI/GM. BH Head Angguk2.webp');
-    this.load.image('bhAngguk3', 'Puzzle-Assets/UI/GM. BH Head Angguk3.webp');
-    this.load.image('bhGeleng1', 'Puzzle-Assets/UI/GM. BH Head Geleng1.webp');
-    this.load.image('bhGeleng2', 'Puzzle-Assets/UI/GM. BH Head Geleng2.webp');
-    this.load.image('bhGeleng3', 'Puzzle-Assets/UI/GM. BH Head Geleng3.webp');
-    this.load.image('download', 'Puzzle-Assets/UI/GM. Cowboy-brown-hat-win.png');
-    this.load.image('claimHat', 'Puzzle-Assets/UI/GM. Claim Hat.webp')
-    this.load.image('claimHatC', 'Puzzle-Assets/UI/GM. Claim Hat Coklat.webp');
-    //this.load.image('gameOver', 'Puzzle-Assets/UI/GM. Game Over.webp');
+    this.load.image('water1', './Puzzle-Assets/UI/FW. Water1.webp');  
+    this.load.image('water2', './Puzzle-Assets/UI/FW. Water2.webp');
+    this.load.image('water3', './Puzzle-Assets/UI/FW. Water3.webp');
+    this.load.image('grass', './Puzzle-Assets/UI/FG.  Grass04.webp');
+    this.load.image('carrot', './Puzzle-Assets/UI/FC. Carrot.webp');
+    this.load.image('apple1', './Puzzle-Assets/UI/FA. Appel1.webp');
+    this.load.image('apple2', './Puzzle-Assets/UI/FA. Appel2.webp');
+    this.load.image('apple3', './Puzzle-Assets/UI/FA. Appel3.webp');
+    this.load.image('apple4', './Puzzle-Assets/UI/FA. Appel4.webp');
+    this.load.image('musicNoteB', './Puzzle-Assets/UI/FN. Not Blue Cyan.webp');
+    this.load.image('musicNoteG', './Puzzle-Assets/UI/FN. Not Green.webp');
+    this.load.image('musicNoteR', './Puzzle-Assets/UI/FN. Not Red.webp');
+    this.load.image('help_en_1', './Puzzle-Assets/Level01/Lv.01 Help - English (Page1).webp');
+    this.load.image('help_en_2', './Puzzle-Assets/Level01/Lv.01 Help - English (Page2).webp');
+    this.load.image('help_id_1', './Puzzle-Assets/Level01/Lv.01 Help - Indonesia (Page1).webp');
+    this.load.image('help_id_2', './Puzzle-Assets/Level01/Lv.01 Help - Indonesia (Page2).webp');
+    this.load.image('help_other_0', './Puzzle-Assets/Level01/Lv.01 Help - Other (Code).webp');
+    this.load.image('help_other_1', './Puzzle-Assets/Level01/Lv.01 Help - Other (Page1).webp');
+    this.load.image('help_other_2', './Puzzle-Assets/Level01/Lv.01 Help - Other (Page2).webp');
+    this.load.image('helpBtn', './Puzzle-Assets/UI/GM. Help.webp');
+    this.load.image('back', './Puzzle-Assets/UI/GM. Back.webp');
+    this.load.image('next', './Puzzle-Assets/UI/GM. Next.webp');
+    this.load.image('playSheriff', './Puzzle-Assets/UI/GM. Play.webp');
+    this.load.image('playSheriffL', './Puzzle-Assets/UI/GM. Play Light.webp');
+    this.load.image('lv01Puzzle10', './Puzzle-Assets/UI/GM. L01-10 Puzzle.webp');
+    this.load.image('lv01Puzzle20', './Puzzle-Assets/UI/GM. L01-20 Puzzle.webp');
+    this.load.image('paypalQR', './Puzzle-Assets/UI/Black Horse Fa-qrcode.png');
+    //this.load.audio('gameoverSound', './Puzzle-AssetsSfx/scenes/game-over-elements-impact.mp3'); // utk 20 Puzzle
+    this.load.image('textGlow02', './Puzzle-Assets/UI/Sp. Text Level 02 Glow.webp');
+    this.load.image('hexSlot01', './Puzzle-Assets/UI/GM. Slot Hexa01.webp');
+    this.load.image('hexSlot02', './Puzzle-Assets/UI/GM. Slot Hexa02.webp');
+    this.load.image('hexSlot03', './Puzzle-Assets/UI/GM. Slot Hexa03.webp');
+    this.load.image('hexSlot04', './Puzzle-Assets/UI/GM. Slot Hexa04.webp');
+    this.load.image('hexSlot05', './Puzzle-Assets/UI/GM. Slot Hexa05.webp');
+    this.load.image('hexSlot06', './Puzzle-Assets/UI/GM. Slot Hexa06.webp');
+    this.load.image('hexSlot07', './Puzzle-Assets/UI/GM. Slot Hexa07.webp');
+    this.load.image('hexSlot08', './Puzzle-Assets/UI/GM. Slot Hexa08.webp');
+    this.load.image('hexSlot09', './Puzzle-Assets/UI/GM. Slot Hexa09.webp');
+    this.load.image('hexSlot010', './Puzzle-Assets/UI/GM. Slot Hexa10.webp');
+  //  this.load.image('horse', './Puzzle-Assets/UI/GM. Black Horse Run Behind.webp');
+    this.load.image('blankBhL1', './Puzzle-Assets/UI/Blank Black Horse Level01.webp');
+    this.load.image('bhAngguk1', './Puzzle-Assets/UI/GM. BH Head Angguk1.webp');
+    this.load.image('bhAngguk2', './Puzzle-Assets/UI/GM. BH Head Angguk2.webp');
+    this.load.image('bhAngguk3', './Puzzle-Assets/UI/GM. BH Head Angguk3.webp');
+    this.load.image('bhGeleng1', './Puzzle-Assets/UI/GM. BH Head Geleng1.webp');
+    this.load.image('bhGeleng2', './Puzzle-Assets/UI/GM. BH Head Geleng2.webp');
+    this.load.image('bhGeleng3', './Puzzle-Assets/UI/GM. BH Head Geleng3.webp');
+    this.load.image('download', './Puzzle-Assets/UI/GM. Cowboy-brown-hat-win.png');
+    this.load.image('claimHat', './Puzzle-Assets/UI/GM. Claim Hat.webp')
+    this.load.image('claimHatC', './Puzzle-Assets/UI/GM. Claim Hat Coklat.webp');
+    //this.load.image('gameOver', './Puzzle-Assets/UI/GM. Game Over.webp');
     // Audio and Sound
-    this.load.image('soundOn', 'Puzzle-Assets/UI/GM. Sound On.webp');
-    this.load.image('soundOnL', 'Puzzle-Assets/UI/GM. Sound On Light.webp');
-    this.load.image('soundOff', 'Puzzle-Assets/UI/GM. Sound Off.webp');
-    this.load.image('soundOffL', 'Puzzle-Assets/UI/GM. Sound Off Light.webp');
-    this.load.audio('introMusic', 'Puzzle-Assets/Sfx/scenes/level01-1-herdhorses-guitar-intro-ident.mp3');
-    this.load.audio('mainMusic', 'Puzzle-Assets/Sfx/scenes/level01-2 music-favorite-sunset-dreams.mp3');
-    this.load.audio('winMusic', 'Puzzle-Assets/Sfx/scenes/win-in-the-video-game.mp3');
-    this.load.audio('horseNeigh', 'Puzzle-Assets/Sfx/sound/horse-neigh.mp3');
-    this.load.audio('horseSnort', 'Puzzle-Assets/Sfx/sound/horse-snort.mp3');
-    this.load.audio('horseHoof', 'Puzzle-Assets/Sfx/sound/hoof-run.mp3');
-    this.load.audio('horsehoofstep', 'Puzzle-Assets/Sfx/sound/hoof-step.mp3');
-    this.load.audio('horseGallop', 'Puzzle-Assets/Sfx/sound/blackhorse-gallop.mp3');
-    this.load.audio('herdGallop', 'Puzzle-Assets/Sfx/sound/herd-gallop.mp3');
-    
+    this.load.image('soundOn', './Puzzle-Assets/UI/GM. Sound On.webp');
+    this.load.image('soundOnL', './Puzzle-Assets/UI/GM. Sound On Light.webp');
+    this.load.image('soundOff', './Puzzle-Assets/UI/GM. Sound Off.webp');
+    this.load.image('soundOffL', './Puzzle-Assets/UI/GM. Sound Off Light.webp');
+    this.load.audio('introMusic', './Puzzle-Assets/Sfx/scenes/level01-1-herdhorses-guitar-intro-ident.mp3');
+    this.load.audio('mainMusic', './Puzzle-Assets/Sfx/scenes/level01-2 music-favorite-sunset-dreams.mp3');
+    this.load.audio('winMusic', './Puzzle-Assets/Sfx/scenes/win-in-the-video-game.mp3');
+    this.load.audio('horseNeigh', './Puzzle-Assets/Sfx/sound/horse-neigh.mp3');
+    this.load.audio('horseSnort', './Puzzle-Assets/Sfx/sound/horse-snort.mp3');
+    this.load.audio('horseHoof', './Puzzle-Assets/Sfx/sound/hoof-run.mp3');
+    this.load.audio('horsehoofstep', './Puzzle-Assets/Sfx/sound/hoof-step.mp3');
+    this.load.audio('horseGallop', './Puzzle-Assets/Sfx/sound/blackhorse-gallop.mp3');
+    this.load.audio('herdGallop', './Puzzle-Assets/Sfx/sound/herd-gallop.mp3');
+
     // Sembunyikan loader please wait (dari Co)
   this.load.on('complete', () => {
   document.getElementById('loader').style.display = 'none';
@@ -306,11 +306,11 @@ if (!userData.gameProgress) {
     // Musik favorit
     for (let i = 1; i <= 5; i++) {
     //this.load.audio(`musicFav${i}`, `./Puzzle-Assets/Sfx/music favorites/music-favorite-${i}.mp3`);
-      this.load.audio('musicfav03', 'Puzzle-Assets/Sfx/music favorites/music-favorite-easy-country-music-intro-outro.mp3');
-      this.load.audio('musicfav04', 'Puzzle-Assets/Sfx/music favorites/music-favorite-golden-sunset-piano.mp3');
-      this.load.audio('musicfav05', 'Puzzle-Assets/Sfx/music favorites/music-favorite-horsepower.mp3');
-      this.load.audio('musicfav06', 'Puzzle-Assets/Sfx/music favorites/music-favorite-musique-west-cowboy.mp3');
-      this.load.audio('musicfav07', 'Puzzle-Assets/Sfx/music favorites/music-favorite-old-west.mp3');
+      this.load.audio('musicfav03', './Puzzle-AssetsSfx/music favorites/music-favorite-easy-country-music-intro-outro.mp3');
+      this.load.audio('musicfav04', './Puzzle-AssetsSfx/music favorites/music-favorite-golden-sunset-piano.mp3');
+      this.load.audio('musicfav05', './Puzzle-AssetsSfx/music favorites/music-favorite-horsepower.mp3');
+      this.load.audio('musicfav06', './Puzzle-AssetsSfx/music favorites/music-favorite-musique-west-cowboy.mp3');
+      this.load.audio('musicfav07', './Puzzle-AssetsSfx/music favorites/music-favorite-old-west.mp3');
     //}
       this.load.once('complete', () => {
       console.log('✅ Favorite music loaded in background!');
@@ -938,7 +938,7 @@ lv01Puzzle10Btn.on('pointerdown', async () => {
 
         // Langsung download topi
         const link = document.createElement("a");
-        link.href = "Puzzle-Assets/UI/GM. Cowboy-brown-hat-win.png";
+        link.href = "./Puzzle-AssetsUI/GM. Cowboy-brown-hat-win.png";
         link.download = "GM. Cowboy-brown-hat-win.png";
         document.body.appendChild(link);
         link.click();
@@ -1986,11 +1986,11 @@ backgroundLoadFavoriteMusic() {
   
   // Load favorite music assets in background
   const musicAssets = [
-    { key: 'musicfav03', path: 'Puzzle-Assets/Sfx/music favorites/music-favorite-easy-country-music-intro-outro.mp3' },
-    { key: 'musicfav04', path: 'Puzzle-Assets/Sfx/music favorites/music-favorite-golden-sunset-piano.mp3' },
-    { key: 'musicfav05', path: 'Puzzle-Assets/Sfx/music favorites/music-favorite-horsepower.mp3' },
-    { key: 'musicfav06', path: 'Puzzle-Assets/Sfx/music favorites/music-favorite-musique-west-cowboy.mp3' },
-    { key: 'musicfav07', path: 'Puzzle-Assets/Sfx/music favorites/music-favorite-old-west.mp3' }
+    { key: 'musicfav03', path: './Puzzle-AssetsSfx/music favorites/music-favorite-easy-country-music-intro-outro.mp3' },
+    { key: 'musicfav04', path: './Puzzle-AssetsSfx/music favorites/music-favorite-golden-sunset-piano.mp3' },
+    { key: 'musicfav05', path: './Puzzle-AssetsSfx/music favorites/music-favorite-horsepower.mp3' },
+    { key: 'musicfav06', path: './Puzzle-AssetsSfx/music favorites/music-favorite-musique-west-cowboy.mp3' },
+    { key: 'musicfav07', path: './Puzzle-AssetsSfx/music favorites/music-favorite-old-west.mp3' }
   ];
   
   // Load each music file

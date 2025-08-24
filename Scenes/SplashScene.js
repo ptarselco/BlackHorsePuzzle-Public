@@ -18,17 +18,17 @@ class SplashScene extends Phaser.Scene {
     document.getElementById('loader').style.display = 'flex';
 
     // ========== LOAD PRIORITAS TINGGI (Essential Splash) ==========
-    this.load.image("coverBlank", "Puzzle-Assets/Splash/Cover Blank.webp");
-    this.load.image("text1", "Puzzle-Assets/UI/Text Level 01.webp");
-    this.load.image("text1glow", "Puzzle-Assets/UI/Sp. Text Level 01 Glow.webp");
-    this.load.image("btnBlue", "Puzzle-Assets/UI/Sp. Button Blue Level 01.webp");
-    this.load.audio("cinematic", "Puzzle-Assets/Sfx/scenes/splash01_music_cinematic.mp3");
-    
+    this.load.image("coverBlank", "./Puzzle-Assets/Splash/Cover Blank.webp");
+    this.load.image("text1", "./Puzzle-Assets/UI/Text Level 01.webp");
+    this.load.image("text1glow", "./Puzzle-Assets/UI/Sp. Text Level 01 Glow.webp");
+    this.load.image("btnBlue", "./Puzzle-Assets/UI/Sp. Button Blue Level 01.webp");
+    this.load.audio("cinematic", "./Puzzle-Assets/Sfx/scenes/splash01_music_cinematic.mp3");
+
     // Essential horse animation
-    this.load.spritesheet("blackHorse", "Puzzle-Assets/Splash/BlackHorseRun.webp", {
+    this.load.spritesheet("blackHorse", "./Puzzle-Assets/Splash/BlackHorseRun.webp", {
       frameWidth: 750, frameHeight: 750
     });
-    this.load.image("dust", "Puzzle-Assets/Splash/Grain Dust.webp");
+    this.load.image("dust", "./Puzzle-Assets/Splash/Grain Dust.webp");
     
     
     // Sembunyikan loader setelah essential loading selesai
@@ -1420,28 +1420,28 @@ window.manualSaveProgress = function(email, gameData) {
   // ========== LAZY LOAD BACKGROUND ASSETS (Non-blocking) ==========
   lazyLoadBackgroundAssets() {
     // Load decorative assets di background
-    this.load.image("cover", "Puzzle-Assets/Splash/Cover Black Horse and His Herd R300.webp");
-    //this.load.image("text2", "Puzzle-Assets/UI/Text Level 02.webp");
-    this.load.audio("music", "Puzzle-Assets/Sfx/scenes/splash02_music_cowboy_western_background.mp3");
-    this.load.audio("herdGallop", "Puzzle-Assets/Sfx/sound/herd_gallop.mp3");
-    this.load.image("flower", "Puzzle-Assets/Splash/Flower orange red.webp");
-    this.load.image("flowerR", "Puzzle-Assets/Splash/Red Cactus Flower.webp");
-    this.load.image("grass", "Puzzle-Assets/Splash/Cutting Grass.webp");
-    this.load.image("grass02", "Puzzle-Assets/Splash/Grass02.webp");
-    //this.load.image("text2glow", "Puzzle-Assets/UI/Sp. Text Level 02 Glow.webp");
-    this.load.image("btnRed", "Puzzle-Assets/UI/Sp. Button Red Level 02.webp");
-    
+    this.load.image("cover", "./Puzzle-Assets/Splash/Cover Black Horse and His Herd R300.webp");
+    //this.load.image("text2", "./Puzzle-AssetsUI/Text Level 02.webp");
+    this.load.audio("music", "./Puzzle-Assets/Sfx/scenes/splash02_music_cowboy_western_background.mp3");
+    this.load.audio("herdGallop", "./Puzzle-Assets/Sfx/sound/herd_gallop.mp3");
+    this.load.image("flower", "./Puzzle-Assets/Splash/Flower orange red.webp");
+    this.load.image("flowerR", "./Puzzle-Assets/Splash/Red Cactus Flower.webp");
+    this.load.image("grass", "./Puzzle-Assets/Splash/Cutting Grass.webp");
+    this.load.image("grass02", "./Puzzle-Assets/Splash/Grass02.webp");
+    //this.load.image("text2glow", "./Puzzle-AssetsUI/Sp. Text Level 02 Glow.webp");
+    this.load.image("btnRed", "./Puzzle-Assets/UI/Sp. Button Red Level 02.webp");
+
     // Load additional horses
-    this.load.spritesheet("brownHorse01", "Puzzle-Assets/Splash/BrownHorseRun01.webp", {
+    this.load.spritesheet("brownHorse01", "./Puzzle-Assets/Splash/BrownHorseRun01.webp", {
       frameWidth: 750, frameHeight: 750
     });
-    this.load.spritesheet("brownHorse02", "Puzzle-Assets/Splash/BrownHorseRun02.webp", {
+    this.load.spritesheet("brownHorse02", "./Puzzle-Assets/Splash/BrownHorseRun02.webp", {
       frameWidth: 750, frameHeight: 750
     });
-    this.load.spritesheet("brownHorse03", "Puzzle-Assets/Splash/BrownHorseRun03.webp", {
+    this.load.spritesheet("brownHorse03", "./Puzzle-Assets/Splash/BrownHorseRun03.webp", {
       frameWidth: 750, frameHeight: 750
     });
-    this.load.spritesheet("ladyhorse", "Puzzle-Assets/Splash/LadyHorseRun.webp", {
+    this.load.spritesheet("ladyhorse", "./Puzzle-Assets/Splash/LadyHorseRun.webp", {
       frameWidth: 750, frameHeight: 750
     });
 
@@ -1460,20 +1460,20 @@ window.manualSaveProgress = function(email, gameData) {
 
     // ✅ LOAD ESSENTIAL LEVEL01 ASSETS (UNCOMMENT YANG DIBUTUHKAN):
     // Music Level01
-    //this.load.audio('introMusic', 'Puzzle-Assets/Sfx/scenes/level01-1-herdhorses-guitar-intro-ident.mp3');
-    //this.load.audio('mainMusic', 'Puzzle-Assets/Sfx/scenes/level01-2 music-favorite-sunset-dreams.mp3');
-    //this.load.audio('winMusic', 'Puzzle-Assets/Sfx/scenes/win-in-the-video-game.mp3');
-    //this.load.audio('horseNeigh', 'Puzzle-Assets/Sfx/sound/horse-neigh.mp3');
-    //this.load.audio('horseSnort', 'Puzzle-Assets/Sfx/sound/horse-snort.mp3');
-    //this.load.audio('horseHoof', 'Puzzle-Assets/Sfx/sound/hoof-run.mp3');
-    //this.load.audio('horsehoofstep', 'Puzzle-Assets/Sfx/sound/hoof-step.mp3');
-    //this.load.audio('horseGallop', 'Puzzle-Assets/Sfx/sound/blackhorse-gallop.mp3');
-    //this.load.audio('herdGallop', 'Puzzle-Assets/Sfx/sound/herd-gallop.mp3');
-    
-    
+    //this.load.audio('introMusic', './Puzzle-Assets/Sfx/scenes/level01-1-herdhorses-guitar-intro-ident.mp3');
+    //this.load.audio('mainMusic', './Puzzle-Assets/Sfx/scenes/level01-2 music-favorite-sunset-dreams.mp3');
+    //this.load.audio('winMusic', './Puzzle-Assets/Sfx/scenes/win-in-the-video-game.mp3');
+    //this.load.audio('horseNeigh', './Puzzle-Assets/Sfx/sound/horse-neigh.mp3');
+    //this.load.audio('horseSnort', './Puzzle-Assets/Sfx/sound/horse-snort.mp3');
+    //this.load.audio('horseHoof', './Puzzle-Assets/Sfx/sound/hoof-run.mp3');
+    //this.load.audio('horsehoofstep', './Puzzle-Assets/Sfx/sound/hoof-step.mp3');
+    //this.load.audio('horseGallop', './Puzzle-Assets/Sfx/sound/blackhorse-gallop.mp3');
+    //this.load.audio('herdGallop', './Puzzle-Assets/Sfx/sound/herd-gallop.mp3');
+
+
     // Essential Level01 images
-    //this.load.image('horse', 'Puzzle-Assets/UI/GM. Black Horse Run Behind.webp');
-    // this.load.image('paypalQR', 'Puzzle-Assets/UI/paypal-qr.webp');
+    //this.load.image('horse', './Puzzle-Assets/UI/GM. Black Horse Run Behind.webp');
+    // this.load.image('paypalQR', './Puzzle-Assets/UI/paypal-qr.webp');
 
    // ✅ EVENT LISTENER UNTUK LOADING COMPLETE: 
    this.load.once('complete', () => {

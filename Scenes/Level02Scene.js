@@ -13,27 +13,27 @@ class Level02Scene extends Phaser.Scene {
      
     // Load puzzle pieces dan background board
    //for (let i = 1; i <= 16; i++) {
-     // this.load.image(`hex${i}`, "Puzzle-Assets/Level02/Lv.02 Hex-" + i.toString().padStart(2, '0') + ".webp");
+     // this.load.image(`hex${i}`, "./Puzzle-AssetsLevel02/Lv.02 Hex-" + i.toString().padStart(2, '0') + ".webp");
     //}
-    this.load.image("board", "Puzzle-Assets/Level02/Bord Game Puzzle Level-02.webp");
-   // this.load.image("cowboyHat", "Puzzle-Assets/Level02/cowboy-black-hat-win.webp");
-     this.load.image('donationPanel', 'Puzzle-Assets/UI/Black Horse Donation Panel.png'); // Your donation image
+    this.load.image("board", "./Puzzle-AssetsLevel02/Bord Game Puzzle Level-02.webp");
+   // this.load.image("cowboyHat", "./Puzzle-AssetsLevel02/cowboy-black-hat-win.webp");
+     this.load.image('donationPanel', './Puzzle-AssetsUI/Black Horse Donation Panel.png'); // Your donation image
       this.load.on('filecomplete-image-donationPanel', () => {
     console.log('✅ donationPanel loaded!');
     });
 
-    this.load.image('donationPanel', 'Puzzle-Assets/UI/Black Horse Donation Panel.png'); // Your donation image
+    this.load.image('donationPanel', './Puzzle-AssetsUI/Black Horse Donation Panel.png'); // Your donation image
     this.load.on('filecomplete-image-donationPanel', () => {
       console.log('✅ donationPanel loaded!');
     });
 
     // Load semua efek suara untuk Level 02
-    this.load.audio("neigh", "Puzzle-Assets/Sfx/sound/horse-neigh.mp3");
-    this.load.audio("snort", "Puzzle-Assets/Sfx/sound/horse-snort.mp3");
-    this.load.audio("hoof", "Puzzle-Assets/Sfx/sound/hoof-step.mp3");
-    this.load.audio("gallop", "Puzzle-Assets/Sfx/sound/blackhorse-gallop.mp3");
-    this.load.audio("win", "Puzzle-Assets/Sfx/scenes/win-in-the-video-game.mp3");
- 
+    this.load.audio("neigh", "./Puzzle-Assets/Sfx/sound/horse-neigh.mp3");
+    this.load.audio("snort", "./Puzzle-Assets/Sfx/sound/horse-snort.mp3");
+    this.load.audio("hoof", "./Puzzle-Assets/Sfx/sound/hoof-step.mp3");
+    this.load.audio("gallop", "./Puzzle-Assets/Sfx/sound/blackhorse-gallop.mp3");
+    this.load.audio("win", "./Puzzle-Assets/Sfx/scenes/win-in-the-video-game.mp3");
+
 
  // Sembunyikan loader please wait (dari Co)
   this.load.on('complete', () => {

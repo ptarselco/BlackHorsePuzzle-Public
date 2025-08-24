@@ -271,25 +271,24 @@
     <button id="logoutBtn" style="display:none;">Logout</button>
   </div>
 </div>
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3/build/phaser.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/build/axios.min.js"></script>
-    <script src="Scenes/SplashScene.js"></script>
-    <script src="Scenes/Level01Scene.js"></script>
-    <script src="Scenes/Level02Scene.js"></script>
+    <script src="./https://cdn.jsdelivr.net/npm/phaser@3/build/phaser.js"></script>
+    <script src="./https://cdn.jsdelivr.net/npm/axios/build/axios.min.js"></script>
+    <script src="./Scenes/SplashScene.js"></script>
+    <script src="./Scenes/Level01Scene.js"></script>
+    <script src="./Scenes/Level02Scene.js"></script>
     <!-- Load main.js -->
-    <script src="main.js"></script>
+    <script src="./main.js"></script>
 
 
 <script>
  // Wait for Phaser to be ready before executing any game-related code
         if (typeof Phaser !== 'undefined') {
             console.log('✅ Phaser is ready - initializing game systems...');
-
-// 🔧 Service Worker Registration - Seri 1
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
-      .then((registration) => {
+            // 🔧 Service Worker Registration - Seri 1
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/service-worker.js')
+                        .then((registration) => {
         console.log('✅ Service Worker registered successfully:', registration.scope);
       })
       .catch((error) => {
