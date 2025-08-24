@@ -31,24 +31,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
     <link rel="manifest" href="site.webmanifest">
     <link rel="shortcut icon" href="favicon.ico">
-
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3/build/phaser.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/build/axios.min.js"></script>
-
-    <script src="Scenes/SplashScene.js"></script>
-    <script src="Scenes/Level01Scene.js"></script>
-    <script src="Scenes/Level02Scene.js"></script>
-
-    <!-- Load main.js -->
-    <script src="main.js"></script>
     <script>
-    if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('service-worker.js')
-        .then(reg => console.log('Service Worker registered ✅', reg))
-        .catch(err => console.log('Service Worker failed ⛔', err));
-      });
-    }
    </script>
   
     <style>
@@ -580,12 +563,19 @@ window.checkPaymentStatus = async function(email) {
   </div>
   <div class="login-row">
     <button id="resendVerificationBtn">Resend Code</button>
+    <button id="logoutBtn" style="display:none;">Logout</button>
   </div>
 </div>
+ <script src="https://cdn.jsdelivr.net/npm/phaser@3/build/phaser.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/build/axios.min.js"></script>
 
-<!--
-<button id="logoutBtn" style="display:none;">Logout</button>-->
-    <!-- === End form login === style="margin-left:10px;" dikeluarkan dari Resend Code === -->
+    <script src="Scenes/SplashScene.js"></script>
+    <script src="Scenes/Level01Scene.js"></script>
+    <script src="Scenes/Level02Scene.js"></script>
+
+    <!-- Load main.js -->
+    <script src="main.js"></script>
+
   
    <script>
       // Agar mouse wheel di atas canvas tetap scroll halaman, walau canvas diganti/direfresh Phaser
