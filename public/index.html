@@ -509,12 +509,6 @@ window.checkPaymentStatus = async function(email) {
   console.log('💳 Payment check result:', result);
   return result;
 };
-
- // Client-side handling of payment status
-//if (payment === "cancelled") {
-  //console.warn("❌ Payment cancelled by user.");
-  // (optional) localStorage.setItem('paymentCancelled', 'true');
-//}
 </script>
 
 
@@ -581,18 +575,16 @@ window.checkPaymentStatus = async function(email) {
   </div>
 </div>
 
-
-
 <!--
 <button id="logoutBtn" style="display:none;">Logout</button>-->
     <!-- === End form login === style="margin-left:10px;" dikeluarkan dari Resend Code === -->
    
-    <script src="./Scenes/SplashScene.js"></script>
-    <script src="./Scenes/Level01Scene.js"></script>
-    <script src="./Scenes/Level02Scene.js"></script>
+    <script src="Scenes/SplashScene.js"></script>
+    <script src="Scenes/Level01Scene.js"></script>
+    <script src="Scenes/Level02Scene.js"></script>
     
     <!-- Load main.js -->
-    <script src="./main.js"></script>
+    <script src="main.js"></script>
 
    <script>
       // Agar mouse wheel di atas canvas tetap scroll halaman, walau canvas diganti/direfresh Phaser
