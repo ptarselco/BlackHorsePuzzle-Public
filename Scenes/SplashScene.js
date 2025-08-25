@@ -419,8 +419,8 @@ showNewHighScoreEffect(newHighScore) {
 async getUserStatus(email, level = 'Level01Scene') {
   try {
     const response = await axios.post(
-    'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/status',
-    { email, level: level },
+      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/status',
+      { email, level: 'Level01Scene' },
       { timeout: 200000 }
     );
     return response.data;
