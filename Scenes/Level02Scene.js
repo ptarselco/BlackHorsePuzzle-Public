@@ -219,7 +219,7 @@ showDonationDisplay() {
   // ✅ DONATION IMAGE CLICK - OPEN PAYPAL.ME
   this.donationImage.on('pointerdown', () => {
     // Replace with your actual PayPal.me link
-    const paypalLink = 'https://paypal.me/lusibiz?country.x=ID&locale.x=en_US';
+    const paypalLink = 'https://paypal.me/arselco';
     window.open(paypalLink, '_blank');
     
     // Show thank you message
@@ -297,7 +297,7 @@ showDonationDisplay() {
   
   // PayPal button click
   paypalBtn.on('pointerdown', () => {
-    const paypalLink = 'https://paypal.me/lusibiz?country.x=ID&locale.x=en_US';
+    const paypalLink = 'https://paypal.me/arselco';
 
     window.open(paypalLink, '_blank');
     this.showDonationThankYou();

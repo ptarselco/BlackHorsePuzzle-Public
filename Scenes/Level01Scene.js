@@ -63,7 +63,7 @@ class Level01Scene extends Phaser.Scene {
     this.load.image('playSheriffL', './Puzzle-Assets/UI/GM. Play Light.webp');
     this.load.image('lv01Puzzle10', './Puzzle-Assets/UI/GM. L01-10 Puzzle.webp');
     this.load.image('lv01Puzzle20', './Puzzle-Assets/UI/GM. L01-20 Puzzle.webp');
-    this.load.image('paypalQR', './Puzzle-Assets/UI/Menu Favorite -qrcode.png');
+    this.load.image('paypalQR', './Puzzle-Assets/UI/Black Horse Fa-qrcode.png');
     //this.load.audio('gameoverSound', './Puzzle-Assets/Sfx/scenes/game-over-elements-impact.mp3'); // utk 20 Puzzle
     this.load.image('textGlow02', './Puzzle-Assets/UI/Sp. Text Level 02 Glow.webp');
     this.load.image('hexSlot01', './Puzzle-Assets/UI/GM. Slot Hexa01.webp');
@@ -1647,8 +1647,10 @@ unblur10PuzzleButton() {
   
   // Restore play button  
   if (this.playBtn) {
-    this.playBtn.setAlpha(1);
-    this.playBtn.setInteractive();
+    this.playBtn.setAlpha(0.5);
+    this.playBtn.disableInteractive();
+    this.playBtn.setVisible(true);
+    //this.playBtn.setInteractive();
   }
   
   console.log('✅ 10 Puzzle and Play buttons restored');
@@ -3657,7 +3659,7 @@ return;
 // account ini untuk donasi
 // window.open('https://www.paypal.com/ncp/payment/7MARDZW8BDWVG', '_blank'); //ini tanpa harga dan tanpa variant 
 // PAY handler with dynamic PayPal amount
-const paypalWindow = window.open('https://www.paypal.com/ncp/payment/ZVFL3ND789CVE');
+const paypalWindow = window.open('https://www.paypal.com/ncp/payment/67JBKE7YCLQDU');
 //window.open('https://your-xsolla-link', '_blank');  // belum selesai paystationnya
 this.showWaitingForPaymentMessage();
 
@@ -3892,7 +3894,7 @@ return;
   // account ini untuk donasi
   // window.open('https://www.paypal.com/ncp/payment/7MARDZW8BDWVG', '_blank'); //ini tanpa harga dan tanpa variant 
   // PAY handler with dynamic PayPal amount
-  const paypalWindow = window.open('https://www.paypal.com/ncp/payment/ZVFL3ND789CVE');
+  const paypalWindow = window.open('https://www.paypal.com/ncp/payment/67JBKE7YCLQDU');
   //window.open('https://your-xsolla-link', '_blank');  // belum selesai paystationnya
   this.showWaitingForPaymentMessage();
 
@@ -4262,45 +4264,86 @@ showDonationPopup() {
   }).setOrigin(0.5).setDepth(5002);
   this.donationPopupGroup.add(instructions);
 
-  // PayPal.me button (memanjang)
-  const paypalBtn = this.add.text(960, 1150, "💳 PAYPAL.ME- CLICK TO DONATE", {
-    font: "bold 36px Segoe UI",
-    fill: "#ffffff",
-    backgroundColor: "#0070ba", // PayPal blue
-    padding: { left: 30, right: 30, top: 12, bottom: 12 }
+  // ✅ ADD DONATION AMOUNT BUTTONS (positioned below donation image)
+  const donationAmounts = [
+    { amount: 1, label: "$1", color: "#28a745" },    // Green
+    { amount: 5, label: "$5", color: "#007bff" },    // Blue  
+    { amount: 10, label: "$10", color: "#dc3545" }   // Red
+  ];
+
+  // Create donation buttons horizontally (below the donation image)
+  donationAmounts.forEach((option, index) => {
+    const xPos = 820 + (index * 140); // Horizontal spacing: 820, 960, 1100
+    const yPos = 1150; // Below donation image panel
+    
+    const donationBtn = this.add.text(xPos, yPos, option.label, {
+      font: "bold 36px Segoe UI",
+      fill: "#ffffff",
+      backgroundColor: option.color,
+      padding: { left: 25, right: 25, top: 12, bottom: 12 }
+    })
+      .setOrigin(0.5)
+      .setDepth(5002)
+      .setInteractive({ useHandCursor: true });
+    this.donationPopupGroup.add(donationBtn);
+
+    // Hover effects
+    donationBtn.on('pointerover', () => {
+      donationBtn.setScale(1.1);
+      donationBtn.setShadow(0, 0, option.color, 12, true, true);
+    });
+
+    donationBtn.on('pointerout', () => {
+      donationBtn.setScale(1);
+      donationBtn.setShadow(0, 0, "", 0, false, false);
+    });
+
+    // Click handler - opens PayPal with specific amount
+    donationBtn.on('pointerdown', () => {
+      // PayPal payment link dengan amount parameter yang tepat
+      const paypalDonationURL = `https://www.paypal.com/ncp/payment/LAPGGSZ6ET6NS?amount=${option.amount}&currency_code=USD`;
+      window.open(paypalDonationURL, '_blank');
+      
+      // Show thank you message
+      this.showDonationThankYou(option.amount);
+      
+      // Redirect to Level 02 after delay
+      this.time.delayedCall(3000, () => {
+        this.cleanupBeforeSceneChange();
+        this.scene.start('Level02Scene');
+      });
+    });
+  });
+
+    // ✅ ADD CUSTOM AMOUNT BUTTON (below the 3 main buttons)
+  const customBtn = this.add.text(960, 1200, "💰 CUSTOM AMOUNT", {
+    font: "bold 28px Segoe UI", 
+    fill: "#ffd700",
+    backgroundColor: "#6c757d", // Gray
+    padding: { left: 20, right: 20, top: 8, bottom: 8 }
   })
     .setOrigin(0.5)
     .setDepth(5002)
     .setInteractive({ useHandCursor: true });
-  this.donationPopupGroup.add(paypalBtn);
+  this.donationPopupGroup.add(customBtn);
 
-  // PayPal button hover effect
-  paypalBtn.on('pointerover', () => {
-    paypalBtn.setScale(1.05);
-    paypalBtn.setBackgroundColor("#005ea6"); // Darker blue
+  customBtn.on('pointerover', () => {
+    customBtn.setScale(1.05);
+    customBtn.setBackgroundColor("#5a6268");
   });
 
-  paypalBtn.on('pointerout', () => {
-    paypalBtn.setScale(1);
-    paypalBtn.setBackgroundColor("#0070ba"); // Back to PayPal blue
+  customBtn.on('pointerout', () => {
+    customBtn.setScale(1);
+    customBtn.setBackgroundColor("#6c757d");
   });
 
-  // PayPal button click - open PayPal.me
-  paypalBtn.on('pointerdown', () => {
-    // Open PayPal.me in new tab
-    window.open('https://paypal.me/lusibiz?country.x=ID&locale.x=en_US');
-    
-    // Show thank you message
-    this.showDonationThankYou();
-    
-    // Redirect to Level 02 after short delay
-    this.time.delayedCall(2000, () => {
-      this.scene.start('Level02Scene');
-    });
+  customBtn.on('pointerdown', () => {
+    // This will redirect to Level02 where PayPal.me is available
+    this.showCustomAmountMessage();
   });
 
   // Continue to Level 02 button
-  const continueBtn = this.add.text(1200, 1220, "⏭️ CONTINUE TO LEVEL 02", {
+  const continueBtn = this.add.text(1200, 1270, "⏭️ CONTINUE TO LEVEL 02", {
     font: "bold 32px Segoe UI",
     fill: "#00eaff",
     backgroundColor: "#181c24",
@@ -4312,6 +4355,7 @@ showDonationPopup() {
   this.donationPopupGroup.add(continueBtn);
 
   continueBtn.on('pointerdown', () => {
+    this.cleanupBeforeSceneChange();
     this.scene.start('Level02Scene');
   });
 
@@ -4334,14 +4378,16 @@ showDonationPopup() {
   });
 }
 
-// Thank you message for donation
-showDonationThankYou() {
+// ✅ ADD UPDATED showDonationThankYou function to handle different amounts:
+showDonationThankYou(amount) {
   // Remove existing thank you message
   if (this.thankYouText) this.thankYouText.destroy();
 
+  const amountText = amount === "custom" ? "your generous contribution" : `$${amount}`;
+  
   this.thankYouText = this.add.text(960, 500, 
-    "🙏 THANK YOU FOR SUPPORTING BLACK HORSE PUZZLE!\n" +
-    "🚀 Your donation helps us create LEVEL 02!\n" +
+    `🙏 THANK YOU FOR YOUR ${amountText.toUpperCase()} DONATION!\n` +
+    "🚀 Your support helps us create LEVEL 02!\n" +
     "⏭️ Redirecting to Level 02...", {
     font: "bold 42px Segoe UI",
     fill: "#ffd700",
@@ -4362,7 +4408,41 @@ showDonationThankYou() {
   });
 }
 
-// Close donation popup
+// ✅ ADD NEW function to show custom amount message:
+showCustomAmountMessage() {
+  // Remove existing message
+  if (this.customAmountMsg) this.customAmountMsg.destroy();
+  if (this.customAmountMsgBg) this.customAmountMsgBg.destroy();
+
+  // Background
+  this.customAmountMsgBg = this.add.rectangle(960, 400, 1000, 300, 0x023d3f, 1)
+    .setStrokeStyle(4, 0x00eaff)
+    .setDepth(5998);
+
+  // Message
+  this.customAmountMsg = this.add.text(960, 400,
+    "💰 CUSTOM AMOUNT DONATION\n\n" +
+    "For custom donation amounts, please proceed to\n" +
+    "LEVEL 02 where PayPal.me is available.\n\n" +
+    "Click CONTINUE TO LEVEL 02 below!", {
+    font: "bold 32px Segoe UI",
+    fill: "#ffffff",
+    align: "center",
+    wordWrap: { width: 900 }
+  }).setOrigin(0.5).setDepth(5999);
+
+  // Auto-hide after 4 seconds
+  this.time.delayedCall(4000, () => {
+    if (this.customAmountMsg) {
+      this.customAmountMsg.destroy();
+      this.customAmountMsgBg.destroy();
+      this.customAmountMsg = null;
+      this.customAmountMsgBg = null;
+    }
+  });
+}
+
+// Keep the existing closeDonationPopup function as is
 closeDonationPopup() {
   if (this.donationPopupGroup) {
     this.donationPopupGroup.clear(true, true);
@@ -4372,89 +4452,15 @@ closeDonationPopup() {
     this.thankYouText.destroy();
     this.thankYouText = null;
   }
+  if (this.customAmountMsg) {
+    this.customAmountMsg.destroy();
+    this.customAmountMsg = null;
+  }
+  if (this.customAmountMsgBg) {
+    this.customAmountMsgBg.destroy();
+    this.customAmountMsgBg = null;
+  }
 }
-//Batas Donation Popup
-//-----------------------------------------------------------------------------------------
-// Bagian ini belum di gunakan cocok untuk 20 puzzle
-  startPuzzleSpin() {
-    if (!this.isFavoritActive) return;
-
-    // Mulai sound gallop jika belum berjalan
-    if (this.horseGallop && !this.horseGallop.isPlaying) {
-      this.horseGallop.play({ loop: true });
-    }
-
-    for (let i = 0; i < this.puzzlePieces.length; i++) {
-      let piece = this.puzzlePieces[this.order[i]];
-      this.tweens.add({
-        targets: piece,
-        angle: piece.angle + Phaser.Math.Between(90, 360),
-        duration: 700,
-        ease: 'Sine.easeInOut',
-        onComplete: () => {
-          if (this.isFavoritActive) {
-            this.startPuzzleSpin();
-          } else {
-            // Stop sound gallop jika spin selesai
-            if (this.horseGallop && this.horseGallop.isPlaying) {
-              this.horseGallop.stop();
-            }
-          }
-        }
-      });
-    }
-
-
-    if (this.playBtn) {
-      this.playBtn.setInteractive();
-      this.playBtn.setAlpha(1);
-    }
-  }
-
-  transformPuzzleToHorse() {
-    // Sembunyikan semua puzzle
-    this.puzzlePieces.forEach(piece => piece.setVisible(false));
-    this.puzzlePieceNumbers.forEach(num => num.setVisible(false));
-
-    // Tampilkan gambar black horse utuh di tengah grid kiri
-    if (this.blackHorseSprite) this.blackHorseSprite.destroy();
-    this.blackHorseSprite = this.add.image(850, 600, 'horse')
-      .setScale(0.2)
-      .setDepth(100);
-
-
-    // Animasi berlari keliling grid kiri (persegi panjang)
-    const path = [
-      { x: this.puzzlePositions[0].x, y: this.puzzlePositions[0].y },
-      { x: this.puzzlePositions[2].x, y: this.puzzlePositions[2].y },
-      { x: this.puzzlePositions[8].x, y: this.puzzlePositions[8].y },
-      { x: this.puzzlePositions[6].x, y: this.puzzlePositions[6].y },
-      { x: this.puzzlePositions[0].x, y: this.puzzlePositions[0].y }
-    ];
-    let idx = 0;
-    this.isFavoritActive = true;
-    const loopRun = () => {
-      let next = (idx + 1) % path.length;
-      this.tweens.add({
-        targets: this.blackHorseSprite,
-        x: path[next].x,
-        y: path[next].y,
-        duration: 1000,
-        ease: 'Sine.easeInOut',
-        onComplete: () => {
-          idx = next;
-          if (!this.isFavoritActive) return; // stop jika sudah beli air
-          loopRun();
-        }
-      });
-    };
-    loopRun();
-
-    // Setelah beberapa detik, tampilkan panel favorit (air)
-    this.time.delayedCall(2000, () => {
-      this.showFavoritPanel();
-    });
-  }
 }
 
 window.Level01Scene = Level01Scene;
