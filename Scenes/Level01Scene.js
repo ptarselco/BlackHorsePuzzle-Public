@@ -1,0 +1,5511 @@
+class Level01Scene extends Phaser.Scene {
+  constructor() {
+    super('Level01Scene');
+    this.isPaid = false; // Default, belum bayar
+    this.currentFavMusic = null;
+    this.favMusicTimeLeft = 0; // total detik favorit aktif
+    this.favMusicTimer = null;
+    this.hasClaimedHat = false; // untuk menyimpan status klaim topi
+    this.hasWonOnce = false; // atau this.winUser = false;
+    this.backendUrl = 'https://backend-paypalblackhorsepuzzle.onrender.com'; 
+    this.userCountry = 'ID'; // FIXED :Default
+    
+    // Inisialisasi properti favorit
+    this.airBtn = null;
+    this.grassBtn = null;
+    this.carrotBtn = null;
+    this.carrotLeaf = null;
+    this.appleBtn = null;
+    // Untuk menyimpan status favorit yang dibeli
+    this.favoritItemBought = null;
+    this.favoritItemBtnRef = null;
+  
+    // ✅ TAMBAHKAN PROPERTIES UNTUK PROTEKSI
+    this.level01Score = 0;
+    this.level01HighScore = 0;
+    this.timeElapsed = 0;
+    this.gameCompleted = false;
+    this.gameOver = false;
+    this.gameWon = false;
+    this.hasUserInput = false; // ✅ FLAG PENTING: cek apakah user sudah input
+    this.gameStarted = false; // ✅ FLAG: cek apakah game sudah dimulai
+    this.gameTimer = null;
+    this.timerText = null;
+    this.scoreText = null;
+    this.isGameLocked = false;
+  }
+
+  preload() {
+   // Loader untuk text saat loading --> please wait (Co)
+   document.getElementById('loader').style.display = 'flex';
+
+ 
+    // Puzzle pieces
+    for (let i = 1; i <= 10; i++) {
+      const num = i.toString().padStart(2, '0');
+      this.load.image(`hex${i}`, `./Puzzle-Assets/Level01/Lv.01 Hex-${num}.webp`); 
+    }
+    // Board & UI
+    this.load.image('boardLevel01', './Puzzle-Assets/Level01/Board Game Puzzle Level-01.webp');
+    // Puzzle pieces (essential saja dulu)
+    // Favorit
+    this.load.image('water1', './Puzzle-Assets/UI/FW. Water1.webp');  
+    this.load.image('water2', './Puzzle-Assets/UI/FW. Water2.webp');
+    this.load.image('water3', './Puzzle-Assets/UI/FW. Water3.webp');
+    this.load.image('grass', './Puzzle-Assets/UI/FG.  Grass04.webp');
+    this.load.image('carrot', './Puzzle-Assets/UI/FC. Carrot.webp');
+    this.load.image('apple1', './Puzzle-Assets/UI/FA. Appel1.webp');
+    this.load.image('apple2', './Puzzle-Assets/UI/FA. Appel2.webp');
+    this.load.image('apple3', './Puzzle-Assets/UI/FA. Appel3.webp');
+    this.load.image('apple4', './Puzzle-Assets/UI/FA. Appel4.webp');
+    this.load.image('musicNoteB', './Puzzle-Assets/UI/FN. Not Blue Cyan.webp');
+    this.load.image('musicNoteG', './Puzzle-Assets/UI/FN. Not Green.webp');
+    this.load.image('musicNoteR', './Puzzle-Assets/UI/FN. Not Red.webp');
+    this.load.image('help_en_1', './Puzzle-Assets/Level01/Lv.01 Help - English (Page1).webp');
+    this.load.image('help_en_2', './Puzzle-Assets/Level01/Lv.01 Help - English (Page2).webp');
+    this.load.image('help_id_1', './Puzzle-Assets/Level01/Lv.01 Help - Indonesia (Page1).webp');
+    this.load.image('help_id_2', './Puzzle-Assets/Level01/Lv.01 Help - Indonesia (Page2).webp');
+    this.load.image('help_other_0', './Puzzle-Assets/Level01/Lv.01 Help - Other (Code).webp');
+    this.load.image('help_other_1', './Puzzle-Assets/Level01/Lv.01 Help - Other (Page1).webp');
+    this.load.image('help_other_2', './Puzzle-Assets/Level01/Lv.01 Help - Other (Page2).webp');
+    this.load.image('helpBtn', './Puzzle-Assets/UI/GM. Help.webp');
+    this.load.image('back', './Puzzle-Assets/UI/GM. Back.webp');
+    this.load.image('next', './Puzzle-Assets/UI/GM. Next.webp');
+    this.load.image('playSheriff', './Puzzle-Assets/UI/GM. Play.webp');
+    this.load.image('playSheriffL', './Puzzle-Assets/UI/GM. Play Light.webp');
+    this.load.image('lv01Puzzle10', './Puzzle-Assets/UI/GM. L01-10 Puzzle.webp');
+    this.load.image('lv01Puzzle20', './Puzzle-Assets/UI/GM. L01-20 Puzzle.webp');
+    this.load.image('paypalQR', './Puzzle-Assets/UI/Black Horse Fa-qrcode.png');
+    //this.load.audio('gameoverSound', './Puzzle-AssetsSfx/scenes/game-over-elements-impact.mp3'); // utk 20 Puzzle
+    this.load.image('textGlow02', './Puzzle-Assets/UI/Sp. Text Level 02 Glow.webp');
+    this.load.image('hexSlot01', './Puzzle-Assets/UI/GM. Slot Hexa01.webp');
+    this.load.image('hexSlot02', './Puzzle-Assets/UI/GM. Slot Hexa02.webp');
+    this.load.image('hexSlot03', './Puzzle-Assets/UI/GM. Slot Hexa03.webp');
+    this.load.image('hexSlot04', './Puzzle-Assets/UI/GM. Slot Hexa04.webp');
+    this.load.image('hexSlot05', './Puzzle-Assets/UI/GM. Slot Hexa05.webp');
+    this.load.image('hexSlot06', './Puzzle-Assets/UI/GM. Slot Hexa06.webp');
+    this.load.image('hexSlot07', './Puzzle-Assets/UI/GM. Slot Hexa07.webp');
+    this.load.image('hexSlot08', './Puzzle-Assets/UI/GM. Slot Hexa08.webp');
+    this.load.image('hexSlot09', './Puzzle-Assets/UI/GM. Slot Hexa09.webp');
+    this.load.image('hexSlot010', './Puzzle-Assets/UI/GM. Slot Hexa10.webp');
+  //  this.load.image('horse', './Puzzle-Assets/UI/GM. Black Horse Run Behind.webp');
+    this.load.image('blankBhL1', './Puzzle-Assets/UI/Blank Black Horse Level01.webp');
+    this.load.image('bhAngguk1', './Puzzle-Assets/UI/GM. BH Head Angguk1.webp');
+    this.load.image('bhAngguk2', './Puzzle-Assets/UI/GM. BH Head Angguk2.webp');
+    this.load.image('bhAngguk3', './Puzzle-Assets/UI/GM. BH Head Angguk3.webp');
+    this.load.image('bhGeleng1', './Puzzle-Assets/UI/GM. BH Head Geleng1.webp');
+    this.load.image('bhGeleng2', './Puzzle-Assets/UI/GM. BH Head Geleng2.webp');
+    this.load.image('bhGeleng3', './Puzzle-Assets/UI/GM. BH Head Geleng3.webp');
+    this.load.image('download', './Puzzle-Assets/UI/GM. Cowboy-brown-hat-win.png');
+    this.load.image('claimHat', './Puzzle-Assets/UI/GM. Claim Hat.webp')
+    this.load.image('claimHatC', './Puzzle-Assets/UI/GM. Claim Hat Coklat.webp');
+    //this.load.image('gameOver', './Puzzle-Assets/UI/GM. Game Over.webp');
+    // Audio and Sound
+    this.load.image('soundOn', './Puzzle-Assets/UI/GM. Sound On.webp');
+    this.load.image('soundOnL', './Puzzle-Assets/UI/GM. Sound On Light.webp');
+    this.load.image('soundOff', './Puzzle-Assets/UI/GM. Sound Off.webp');
+    this.load.image('soundOffL', './Puzzle-Assets/UI/GM. Sound Off Light.webp');
+    this.load.audio('introMusic', './Puzzle-Assets/Sfx/scenes/level01-1-herdhorses-guitar-intro-ident.mp3');
+    this.load.audio('mainMusic', './Puzzle-Assets/Sfx/scenes/level01-2 music-favorite-sunset-dreams.mp3');
+    this.load.audio('winMusic', './Puzzle-Assets/Sfx/scenes/win-in-the-video-game.mp3');
+    this.load.audio('horseNeigh', './Puzzle-Assets/Sfx/sound/horse-neigh.mp3');
+    this.load.audio('horseSnort', './Puzzle-Assets/Sfx/sound/horse-snort.mp3');
+    this.load.audio('horseHoof', './Puzzle-Assets/Sfx/sound/hoof-run.mp3');
+    this.load.audio('horsehoofstep', './Puzzle-Assets/Sfx/sound/hoof-step.mp3');
+    this.load.audio('horseGallop', './Puzzle-Assets/Sfx/sound/blackhorse-gallop.mp3');
+    this.load.audio('herdGallop', './Puzzle-Assets/Sfx/sound/herd-gallop.mp3');
+
+    // Sembunyikan loader please wait (dari Co)
+  this.load.on('complete', () => {
+  document.getElementById('loader').style.display = 'none';
+      // Tampilkan loginBox jika user belum login
+ if (!localStorage.getItem("email")) {
+  document.getElementById("loginBox").style.display = "block";
+   document.getElementById("logoutBtn").style.display = "none";
+} else {
+  document.getElementById("loginBox").style.display = "none";    document.getElementById("logoutBtn").style.display = "inline-block";
+ }
+});  
+}
+ // create() {
+ create(data = {}) {
+  console.log("Level01 create, login:", localStorage.getItem("email"));
+  console.log("Level01 received data from SplashScene:", data); // ✅ Log data
+  
+  const email = localStorage.getItem("email");
+  if (!email) {
+  this.scene.start('SplashScene');
+  return;
+}
+
+  // ✅ HANDLE DATA DARI SPLASHSCENE
+  this.isGameOver = data.isGameOver || false;
+  this.userType = data.userType || 'default';
+  this.isPaid = data.isPaid || false;
+  this.level01Score = data.level01Score || 0;
+
+  // ✅ RESPONS BERDASARKAN USER TYPE DARI SPLASHSCENE
+  if (this.userType === 'newUser') {
+    console.log('👶 New User detected in Level01 - ready to play');
+    // PlayBtn tetap disabled sampai user klik 10 Puzzle (behavior normal)
+    this.unblur10PuzzleButton();
+  }
+
+  if (this.userType === 'winUser') {
+    console.log('🏆 Win User detected in Level01 - game unlocked');
+    // PlayBtn tetap disabled sampai user klik 10 Puzzle (behavior normal)
+    this.unblur10PuzzleButton();
+  }
+
+  if (this.userType === 'lossUser') {
+    console.log('💀 Loss User detected in Level01');
+    
+    if (this.isGameOver && !this.isPaid) {
+      console.log('🔒 Loss User - Game Over state, showing purchase options');
+    
+    // ✅ LOCK EVERYTHING KECUALI MENU FAVORIT
+    this.blur10PuzzleButton();        // Lock 10 puzzle + playBtn
+    this.lockAllGameplayButtons();    // Lock semua tombol gameplay
+    this.showGameOverReturnMessage(); // Tampilkan pesan "Close X"
+    this.showGameOverPuzzleMessage(); // Tampilkan pesan "Klik 10 Puzzle"  
+
+    // Level01Scene sudah punya:
+    // - showGameOverPuzzleMessage() akan muncul saat klik 10 puzzle
+    // - blur10PuzzleButton() sudah menglock puzzle + playBtn
+    // - Menu favorit (Air, Rumput, Wortel, Apel, Musik) tetap bisa diklik
+     
+    console.log('🛒 Purchase options available via favorite menu');  
+
+   // Menu favorit tetap bisa diklik (showPaymentPanel & showFavoritPayPanel)
+   } else if (this.isPaid) {
+    console.log('💳 Loss User but paid - game unlocked');
+      // Lock hanya puzzle buttons (10 puzzle + playBtn)
+      this.unblurPuzzleButtons();
+      this.unlockGameAfterPurchase();
+
+      // Process unlock akan dilakukan oleh fungsi unlockedLevels() di backend
+    console.log('🎮 Game unlocked for paid loss user'); 
+    }
+  }
+
+  // ✅ UPDATE SCORE UI
+  if (this.scoreText) {
+    this.scoreText.setText(this.level01Score.toString().padStart(5, '0'));
+  }
+
+  // Validasi login dulu
+  if (!email) {
+    console.log("Belum login, kembali ke SplashScene"); 
+    this.scene.start('SplashScene');
+    return;
+  }
+
+   const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.onclick = () => {
+      localStorage.removeItem('email');
+      this.scene.start('SplashScene');
+    };
+  }
+
+  // Saat shutdown/destroy:
+  if (logoutBtn) logoutBtn.onclick = null;
+
+  // Pastikan level01Score diinisialisasi
+  this.level01Score = data.level01Score || 0;
+
+   // ✅ SYNC PROGRESS DARI BACKEND
+   //const email = localStorage.getItem('email');
+   if (email) {
+      this.syncProgressFromBackend(email);
+    }
+
+// ✅ SETUP VISIBILITY HANDLER
+this.setupVisibilityHandler();
+
+// Deklarasi variabel utama
+let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+
+// Panggil fungsi async tanpa await
+this.initUserData(email, userData);
+
+// Pastikan gameProgress selalu ada
+if (!userData.gameProgress) {
+  userData.gameProgress = {
+    level01Score: 0,
+    // tambahkan field lain jika perlu
+  };
+}
+
+ // Tambahkan validasi score di sini
+ // if (typeof userData.gameProgress.level01Score !== 'number' || isNaN(userData.gameProgress.level01Score)) {
+ // userData.gameProgress.level01Score = 0;
+ // }
+ // this.level01Score = userData.gameProgress.level01Score;
+
+  //const history = window.getPlayerGameHistory ? window.getPlayerGameHistory(email) : null;
+  //const newUser = !history || !history.hasPlayedBefore || (history.totalGamesPlayed || 0) < 3;
+  //const lossUser = localStorage.getItem(`gameOver_${email}`);
+  //const winUser = history && history.hasPlayedBefore && (history.totalGamesPlayed || 0) >= 3 && (this.level01Score || 0) > 0;
+  
+  // ✅ SESSION-BASED WELCOME BACK FLAG:
+  // Only check once per browser session, not per scene load
+  if (!this.registry.get('welcomeBackShown')) { 
+    this.hasShownWelcomeBack = false; 
+  } else { 
+    this.hasShownWelcomeBack = true; 
+  } 
+
+  // ✅ ADD CONSOLE LOG HERE (after all Game Over logic):
+  console.log(`🔍 Game state check:
+- Email: ${email}
+- level01Score: ${this.level01Score}  
+- Game Over State: ${lossUser}
+- newUser: ${newUser}
+- Total Games Played: ${history?.totalGamesPlayed}
+- Final isGameOver: ${this.isGameOver}`);
+ 
+// Auto-save progress ke backend setiap 10 detik
+  this.autoSaveInterval = setInterval(() => {
+    const email = localStorage.getItem('email');
+    if (!email) return;
+
+    // ✅ Start auto-sync setiap 1 menit jika user sudah login
+    if (email) {
+    window.startAutoSync(email);
+    }   
+
+   // Ambil progress dari localStorage
+  const userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+  const progress = userData.gameProgress || {}; 
+
+  const level01Completed = progress.level01Completed ?? false;
+
+  this.updateUserProgress(email, {
+      level01Completed: level01Completed,
+      level01Score: this.level01Score,
+      completionTime: this.timeElapsed,
+      isPerfectGame: false
+    });
+  }, 10000);
+
+   // Event shutdown untuk clear interval
+  this.events.on('shutdown', () => {
+    if (this.autoSaveInterval) clearInterval(this.autoSaveInterval);
+  });
+
+
+ //-------------------------------------------------------------
+    // Background & board
+    // Background load musik favorit setelah 3 detik
+    this.time.delayedCall(3000, () => {
+      console.log('🎵 Background loading favorite music...');
+      this.backgroundLoadFavoriteMusic();
+    });
+ //-------------------------------------------------------------   
+    // Musik favorit
+    for (let i = 1; i <= 5; i++) {
+    //this.load.audio(`musicFav${i}`, `./Puzzle-Assets/Sfx/music favorites/music-favorite-${i}.mp3`);
+      this.load.audio('musicfav03', './Puzzle-AssetsSfx/music favorites/music-favorite-easy-country-music-intro-outro.mp3');
+      this.load.audio('musicfav04', './Puzzle-AssetsSfx/music favorites/music-favorite-golden-sunset-piano.mp3');
+      this.load.audio('musicfav05', './Puzzle-AssetsSfx/music favorites/music-favorite-horsepower.mp3');
+      this.load.audio('musicfav06', './Puzzle-AssetsSfx/music favorites/music-favorite-musique-west-cowboy.mp3');
+      this.load.audio('musicfav07', './Puzzle-AssetsSfx/music favorites/music-favorite-old-west.mp3');
+    //}
+      this.load.once('complete', () => {
+      console.log('✅ Favorite music loaded in background!');
+      this.favoriteAssetsReady = true;
+    });
+
+    this.load.start();
+    }
+    //Posisi background dan board
+    this.add.image(960, 640, "boardLevel01").setDepth(0);
+    this.sound.stopAll();
+    this.add.rectangle(0, 0, 1960, 1280, 0x181c24).setOrigin(0).setAlpha(0.01);
+
+    // UI & horse
+    //this.add.image(250, 250, 'horse').setScale(0.6);
+    this.timerText = this.add.text(563, 40, "00:00", { font: "50px Segoe UI", fill: "#fff" });
+    //this.add.image(9640, 400, 'gameOver').setOrigin(0.5).setDepth(200).setScale(1);
+    // Menghitung mundur waktu yang dibeli
+    //this.add.image(620,105, 'countdown').setOrigin(0.5).setDepth(200).setScale(0.4);
+    this.countdownText = this.add.text(510, 110, "", {
+      font: "bold 28px Segoe UI",
+      fill: "#00eaff"
+    }).setDepth(9999).setVisible(false); // text countdown
+
+
+    // Variabel untuk menghitung salah berturut-turut
+    this.salahBerturut = 0;
+
+
+    // Tambahkan property di create():
+    this.bhHead = this.add.image(248, 250, 'bhGeleng2').setScale(0.5).setDepth(10);
+    this.bhAngguk2 = this.add.image(248, 250, 'bhAngguk2').setScale(0.5).setDepth(10);
+    this.blankBhL1 = this.add.image(248, 250, 'blankBhL1').setScale(0.7).setDepth(9);
+
+    this.scoreText = this.add.text(1716, 40, "00000", { font: "50px Segoe UI", fill: "#fff" }).setDepth(9999);
+    this.scoreText.setText(
+    (this.level01Score !== undefined && this.level01Score !== null ? this.level01Score : 0).toString().padStart(5, '0')
+    );
+
+    //Atur Ronde untuk Game Over (ATUR WAKTU DI TIMER)
+    this.round = 1;
+    this.currentRound = 1; // Mulai dari ronde 1
+    this.roundTimeLimits = [18, 10, 8]; // index 0 = ronde 1, index 1 = ronde 2, index 2 = ronde 3 
+
+  //-----------------------------MULAI 10 PUZZLE-------------------------------------  
+    // Tombol-tombol UI
+    this.add.image(1410, 1100, 'lv01Puzzle20').setScale(0.3).setInteractive().setDepth(999);
+   
+    // Deklarasi lv01Puzzle10Btn 10 puzzle  
+    // filepath: [Level01Scene.js](http://_vscodecontentref_/0)    
+    const lv01Puzzle10Btn = this.add.image(1270, 1100, 'lv01Puzzle10').setScale(0.3).setInteractive().setDepth(999);
+    // Event handler untuk lv01Puzzle10Btn - Play 10 Puzzle
+    
+lv01Puzzle10Btn.on('pointerdown', async () => {
+  if (this.isGameOver) {
+    this.showGameOverPuzzleMessage();
+    return;
+  }
+  const email = localStorage.getItem('email');
+  if (!email) {
+    alert('Please login first!');
+    return;
+  } 
+    
+ // ✅ SETELAH USER KLIK 10 PUZZLE, BARU AKTIFKAN playBtn:
+  console.log('🎮 User mengklik 10 Puzzle - Mengaktifkan playBtn...'); 
+  if (this.playBtn) {
+    this.playBtn.setInteractive({ useHandCursor: true });
+    this.playBtn.setAlpha(1);
+    this.playBtn.setVisible(true);
+    console.log('✅ PlayBtn telah diaktifkan setelah klik 10 Puzzle');
+  }
+  // Toggle pesan: jika sudah ada, hilangkan; jika belum, tampilkan
+  if (this.welcomeMsgRect && this.welcomeMsgRect.visible) {
+    this.welcomeMsgRect.destroy();
+    this.welcomeMsgText.destroy();
+    this.welcomeMsgRect = null;
+    this.welcomeMsgText = null;
+    if (this.welcomeMsgTimer) this.welcomeMsgTimer.remove();
+    return;
+  }
+  
+      // Efek sinar (glow/scale)
+      this.tweens.add({
+        targets: lv01Puzzle10Btn,
+        scale: 0.35,
+        duration: 200,
+        yoyo: true,
+        repeat: 2,
+        ease: 'Sine.easeInOut'
+      });
+
+ 
+
+  // Rectangle pesan
+  this.welcomeMsgRect = this.add.rectangle(960, 350, 1200, 500, 0x023d3f, 0.95)
+    .setStrokeStyle(4, 0x00eaff)
+    .setDepth(2001).setInteractive()
+    .on('pointerdown', () => {
+      if (this.welcomeMsgRect) this.welcomeMsgRect.destroy();
+      if (this.welcomeMsgText) this.welcomeMsgText.destroy();
+      this.welcomeMsgRect = null;
+      this.welcomeMsgText = null;
+      if (this.welcomeMsgTimer) this.welcomeMsgTimer.remove();
+    });
+  
+    // Pesan bilingual
+    const pesanEN = "Welcome, Conquerors!\nUse 5 seconds to observe the Puzzle and arrange Black Horse's face.\n3 consecutive mistakes will trigger a reaction Black Horse. Read Help before Click Play!";
+    const pesanID = "Selamat datang para Penakluk!\nGunakan 5 detik untuk memperhatikan Puzzle dan susun wajah Black Horse.\n3 kesalahan berturut-turut akan memicu reaksi Black Horse. Baca Bantuan sebelum Klik Play!";
+    
+    this.welcomeMsgText = this.add.text(960, 350,
+    pesanEN + "\n\n" + pesanID,
+    {
+      font: "bold 38px Imprint MT Shadow, serif",
+      fill: "#fff",
+      align: "center",
+      wordWrap: { width: 1000 }
+    }
+  ).setOrigin(0.5).setDepth(2002);
+  // Auto-hide setelah 3 detik
+  this.welcomeMsgTimer = this.time.delayedCall(3000, () => {
+    if (this.welcomeMsgRect) this.welcomeMsgRect.destroy();
+    if (this.welcomeMsgText) this.welcomeMsgText.destroy();
+    this.welcomeMsgRect = null;
+    this.welcomeMsgText = null;
+  });
+
+    const progressRes = await this.getUserProgress(email);
+    const { newUser, winUser, lossUser, level01Score } = progressRes;
+
+    // Update nilai ke property scene >>> ini menghapus score setiap x klik start (10 puzzle)
+    //this.level01Score = level01Score || 0;
+
+    // Mulai game 10 puzzle
+    // Misal: reset ronde, level01Score, timer, dan tampilkan puzzle
+    this.round = 1;
+    this.scoreText.setText(this.level01Score.toString().padStart(5, '0'));
+
+    // FILTER USER: Tambahkan pengecekan login user sebelum mengaktifkan tombol Play
+    if (localStorage.getItem("email")) {
+    // Panggil fungsi mulai game, misal:
+    if (this.isPaid === true || newUser === true || winUser === true || this.hasClaimedHat === true) {
+    //if (this.playBtn) {
+      //this.playBtn.setTexture('playSheriffL');
+      //this.playBtn.setInteractive({ useHandCursor: true });
+      //this.playBtn.setAlpha(1);
+      //this.playBtn.setVisible(true);
+    //}
+    console.log('✅ User valid - PlayBtn sudah aktif');
+    } else if (lossUser === true) {
+     // lossUser Belum bayar Play tetap burem
+    if (this.playBtn) {
+      this.playBtn.disableInteractive();
+      this.playBtn.setAlpha(0.5);
+      this.playBtn.setVisible(true);
+    }
+    // ✅ SPECIAL CHECK: If Game Over was closed but not cleared (level01Score = 0)
+   if (this.isGameOverClosed && (this.level01Score || 0) === 0) {
+    this.showGameOverPuzzleMessage();
+    return;
+    }
+   }
+  }
+});
+//-----------------------------BATAS 10 PUZZLE-------------------------------------
+   
+// DEKLARASI TOMBOL 20 PUZZLE (COMING SOON) 
+    // filepath: [Level02Scene.js]
+    const lv01Puzzle20Btn = this.add.image(1410, 1100, 'lv01Puzzle20').setScale(0.3).setInteractive().setDepth(999);
+    lv01Puzzle20Btn.on('pointerdown', () => {
+     // ✅ ADD GAME OVER PROTECTION:
+    //if (this.isGameOver) {
+    // Show specific Game Over message
+    //this.showGameOverPuzzleMessage();
+    //return;
+  //} 
+
+  
+     // Jika pesan sudah ada, klik akan menghilangkan
+  if (this.comingSoonText && this.comingSoonText.visible) {
+    this.comingSoonText.destroy();
+    this.comingSoonRect.destroy();
+    this.comingSoonText = null;
+    this.comingSoonRect = null;
+    if (this.comingSoonTimer) this.comingSoonTimer.remove();
+    return;
+  } 
+      
+    // Rectangle background
+  this.comingSoonRect = this.add.rectangle(1160, 600, 700, 150, 0x023d3f, 0.95)
+    .setStrokeStyle(4, 0x00eaff)
+    .setDepth(2000)
+    .setInteractive()
+    .on('pointerdown', () => {
+      if (this.comingSoonText) this.comingSoonText.destroy();
+      if (this.comingSoonRect) this.comingSoonRect.destroy();
+      this.comingSoonText = null;
+      this.comingSoonRect = null;
+      if (this.comingSoonTimer) this.comingSoonTimer.remove();
+    });
+
+  // Pesan Coming Soon
+  this.comingSoonText = this.add.text(1160, 600, "20 Puzzle - Coming Soon!", {
+    font: "bold 60px Segoe UI",
+    fill: "#00eaff",
+    align: "center"
+  }).setOrigin(0.5).setDepth(2001);
+
+  // Auto-hide setelah 2 detik
+  this.comingSoonTimer = this.time.delayedCall(2000, () => {
+    if (this.comingSoonText) this.comingSoonText.destroy();
+    if (this.comingSoonRect) this.comingSoonRect.destroy();
+    this.comingSoonText = null;
+    this.comingSoonRect = null;
+  });
+});
+
+
+// Di dalam create()
+//--------------------------------------------------------------------------------------
+    // Deklarasi Title dan Menu Text--> Mulai Help
+   
+    let helpTitle, menuText;
+    
+    this.helpBtn = this.add.image(240, 1010, 'helpBtn').setScale(0.9).setDepth(3100).setInteractive({ useHandCursor: true }); 
+    
+    this.helpBtn.on('pointerdown', () => {
+      // Hapus help panel lama jika ada
+      if (this.helpPanelGroup) {
+        this.helpPanelGroup.clear(true, true);
+        this.helpPanelGroup = null;
+        helpTitle = null;
+        menuText = null;
+        }
+
+        this.helpPanelGroup = this.add.group();   
+
+      // Array gambar help
+     const helpImages = {
+     en: ['help_en_1', 'help_en_2'],
+     id: ['help_id_1', 'help_id_2'],
+     other: ['help_other_0', 'help_other_1', 'help_other_2']
+     };
+   
+     // --- FUNGSI PILIH KEY GAMBAR ---
+     function getHelpImageKey(lang) {
+     if (lang === 'en' || lang === 'id') return lang;
+     return 'other';
+     }
+
+    // --- VARIABEL BAHASA & PAGE ---
+    let currentLang = window.currentLang || 'en';
+    let currentPage = 0;
+    // let helpImg, helpTitle, menuText, infoText;
+
+
+    // Tampilkan help pertama
+    let helpImg; 
+    let key = (currentLang === 'en' || currentLang === 'id') ? currentLang : 'other';
+    this.helpImg = this.add.image(960, 640, helpImages[key][currentPage]).setDepth(3001);
+    this.helpPanelGroup.add(this.helpImg);
+    
+
+      // Tombol EN
+      let enBtn = this.add.text(890, 47, "EN", {
+        font: "bold 55px Segoe UI", fill: "#00eaff", //backgroundColor: "#fff"
+      }).setInteractive({ useHandCursor: true }).setDepth(3002);
+      this.helpPanelGroup.add(enBtn);
+
+      // Tombol ID
+      let idBtn = this.add.text(1050, 47, "ID", {
+        font: "bold 55px Segoe UI", fill: "#00eaff", //backgroundColor: "#fff"
+      }).setInteractive({ useHandCursor: true }).setDepth(3002);
+      this.helpPanelGroup.add(idBtn);
+
+      // Tombol OTHER
+      let otherBtn = this.add.text(1210, 47, "OTHER", {
+        font: "bold 55px Segoe UI", fill: "#00eaff", //backgroundColor: "#fff"
+      }).setInteractive({ useHandCursor: true }).setDepth(3002);
+      this.helpPanelGroup.add(otherBtn);
+    
+       // 1. Tambahkan gambar template ---> menampilkan gambar help other page1 dan page2
+       helpImg = this.add.image(960, 640, helpImages[getHelpImageKey(currentLang)][currentPage]).setDepth(3001);
+       this.helpPanelGroup.add(helpImg);
+
+        // --- TAMPILKAN TEKS JIKA OTHER ---
+        //Jika OTHER, tambahkan teks di atas gambar / Fallback ke bahasa lain
+    //    if (getHelpImageKey(currentLang) === 'other') {
+    //    let t1 = window.helpText1[currentLang] || window.helpText1['other'];
+    //    let t2 = window.helpText2[currentLang] || window.helpText2['other'];
+        
+        // Pilih data sesuai halaman aktif
+    //    let title = currentPage === 0 ? t1.title : t2.title;
+    //    let menu = currentPage === 0 ? t1.menu : t2.menu;
+    //   }
+      
+
+      
+       // Buat rectangle di samping template
+       let rect = this.add.rectangle(1707, 503, 450, 1600, 0x023d3f, 0.7)
+       //.setStrokeStyle(4, 0x00eaff)
+       .setDepth(3002);
+       this.helpPanelGroup.add(rect);
+
+        // --- TOMBOL PILIHAN BAHASA LAIN (muncul jika klik OTHER) ---
+        this. otherLangBtns = [];
+        const supportedLangs = ['zh', 'ja', 'ko', 'hi', 'ur', 'ar', 'es', 'pt', 'fr', 'de', 'ru', 'it', 'tr'];
+
+        const languageMap = {
+        zh: 'CHINA',
+        ja: 'JAPAN',
+        ko: 'KOREA',
+        hi: 'INDIA',
+        ur: 'PAKISTAN',
+        ar: 'ARAB',
+        es: 'SPAIN',
+        pt: 'PORTUGAL',
+        fr: 'FRANCE',
+        de: 'GERMANY',
+        ru: 'RUSSIA',
+        it: 'ITALY',
+        tr: 'TURKEY'
+        };
+
+       // --- STATUS AKTIF ---
+       //let currentLang = null; // null = belum pilih negara
+       let isOtherMode = false;
+       
+
+        //function showOtherLangs() {
+        const showOtherLangs = () => {
+         // Hapus tombol bahasa lain jika sudah ada
+        if (this.helpTitle) { this.helpTitle.destroy(); this.helpTitle = null; }
+        if (this.menuText) { this.menuText.destroy(); this.menuText = null; }
+        if (this.helpImg) { this.helpImg.destroy(); this.helpImg = null; }
+        this.otherLangBtns.forEach(btn => btn.destroy());
+        this.otherLangBtns = [];
+        // Tampilkan tombol bahasa lain
+        supportedLangs.forEach((lang, idx) => {
+        let negara = languageMap[lang];
+        let kode = lang.toUpperCase();
+        let negaraText = this.add.text(1620, 300 + idx * 65, negara, {
+        font: "bold 48px Segoe UI", fill: "#00eaff", align: "left"
+        }).setDepth(3003);
+
+        let kodeText = this.add.text(1510, 300 + idx * 65, kode, {
+        font: "bold 48px Segoe UI", fill: "#00eaff", align: "right"
+        }).setDepth(3003);
+      
+        // Simpan text bahasa yang terakhir ditampilkan
+        //this.lastBahasaText = null;
+
+       
+
+        //Event tombol inisial bahasa lain (ZH, JA, KO, dst)
+        [negaraText, kodeText].forEach(btn => { // ini untuk klik Negara   
+        btn.setInteractive({ useHandCursor: true });
+        btn.on('pointerdown', () => {
+        currentLang = lang;
+        isOtherMode = true;
+        currentPage = 0; // reset ke page 1
+        console.log('Isi tombol sebelum destroy:', this.otherLangBtns);
+        this.otherLangBtns.forEach(b => b.destroy());
+        this.otherLangBtns = [];
+        updateHelpPanel();
+        });
+      
+      
+       // Saat klik OTHER:
+       otherBtn.on('pointerdown', () => { // ini untuk Title dan Menu
+            // Hapus text bahasa sebelumnya jika ada
+        if (this.helpPanelGroup) {
+        this.helpPanelGroup.clear(true, true);
+        this.helpPanelGroup = null;
+      }
+        
+        if (this.helpTitle) { this.helpTitle.destroy(); this.helpTitle = null; }
+        if (this.menuText) { this.menuText.destroy(); this.menuText = null; }
+        if (this.helpImg) { this.helpImg.destroy(); this.helpImg = null; }
+        this.otherLangBtns.forEach(btn => btn.destroy());
+        this.otherLangBtns = [];
+
+        if (this.helpTitle) {
+        this.helpTitle.destroy();
+        this.helpTitle = null;
+        }
+        if (this.menuText) {
+        this.menuText.destroy();
+        this.menuText = null;
+        }
+        if (this.helpImg) {
+        this.helpImg.destroy();
+        this.helpImg = null;
+        }
+        this.otherLangBtns.forEach(btn => btn.destroy());
+        this.otherLangBtns = [];
+      
+        currentLang = 'other';
+        currentPage = 1; // <-- WAJIB! Selalu kembali ke page 0 (negara/kode)
+        updateHelpPanel(); 
+       });
+       this.helpPanelGroup.add(btn);
+       this.otherLangBtns.push(btn);
+       });
+        });
+      // });
+       return;
+        }
+      
+//------------------------------------------------------------------------------      
+
+// --- FUNGSI UPDATE HELP PANEL ---
+  const updateHelpPanel = () => {
+  let menu = '';
+  let title = '';
+  helpImg.setTexture(helpImages[getHelpImageKey(currentLang)][currentPage]);
+
+  if (getHelpImageKey(currentLang) === 'other') {
+    let t1 = window.helpText1[currentLang] || window.helpText1['other'];
+    let t2 = window.helpText2[currentLang] || window.helpText2['other'];
+    title = currentPage === 0 ? t1.title : t2.title;
+    menu = currentPage === 0 ? t1.menu : t2.menu;
+
+    // Tampilkan title
+    if (!helpTitle) {
+      helpTitle = this.add.text(500, 80, title, {
+        font: "bold 50px Segoe UI",
+        fill: "#fff",
+        align: "left",
+        wordWrap: { width: 900 }
+      }).setOrigin(0.0).setDepth(3020);
+      this.helpPanelGroup.add(helpTitle);
+    } else {
+      helpTitle.setText(title);
+    }
+
+    // Tampilkan menu
+    if (!menuText) {
+      menuText = this.add.text(500, 300, menu, {
+        font: "30px Segoe UI",
+        fill: "#fff",
+        align: "left",
+        wordWrap: { width: 900 }
+      }).setOrigin(0.0).setDepth(3020);
+      this.helpPanelGroup.add(menuText);
+    } else {
+      menuText.setText(menu);
+    }
+  } else {
+    // Jika bukan OTHER, sembunyikan teks
+    if (helpTitle) helpTitle.setText('');
+    if (menuText) menuText.setText('');
+
+    // Khusus Jepang, tampilkan menuText dengan font Jepang
+    if (currentLang === 'ja') {
+      let fontFamily = "Noto Sans JP, Arial, sans-serif";
+      let fontSize = "40px";
+      if (!menuText) {
+        menuText = this.add.text(80, 180, menu, {
+          font: `${fontSize} ${fontFamily}`,
+          fill: "#00eaff",
+          align: "left",
+          wordWrap: { width: 800 }
+        }).setOrigin(0, 0);
+        this.helpPanelGroup.add(menuText);
+      } else {
+        menuText.setText(menu);
+        menuText.setFont(`${fontSize} ${fontFamily}`);
+        menuText.setFill("#00eaff");
+      }
+    }
+  }
+};  
+    
+  
+    // Tombol Prev
+    let prevBtn = this.add.text(600, 1219, "Prev", {
+    font: "bold 52px Segoe UI", fill: "#00eaff", //mirip cyan tapi lebih gelap kalau kuning #ffff00
+    stroke: "#fff",  // outline putih
+    strokeThickness: 8, // tebal outline
+    shadow: {
+    offsetX: 0,
+    offsetY: 0,
+    color: "#fff",
+    blur: 10,
+    fill: true
+  }
+  }).setInteractive({ useHandCursor: true }).setDepth(3002);
+  this.helpPanelGroup.add(prevBtn);
+
+  // Tombol Next
+  let nextBtn = this.add.text(1220, 1219, "Next", {
+    font: "bold 52px Segoe UI", fill: "#00eaff",
+    stroke: "#fff",  // outline putih
+    strokeThickness: 8, // tebal outline
+    shadow: {
+    offsetX: 0,
+    offsetY: 0,
+    color: "#fff",
+    blur: 10,
+    fill: true
+  }
+  }).setInteractive({ useHandCursor: true }).setDepth(3002);
+  this.helpPanelGroup.add(nextBtn);
+
+  // Fungsi update gambar help
+  function updateHelpImage() {
+    helpImg.setTexture(helpImages[currentLang][currentPage]);
+  }
+
+  // Event tombol EN
+  enBtn.on('pointerdown', () => {
+    currentLang = 'en';
+    currentPage = 0;
+    updateHelpPanel();
+  });
+
+  // Event tombol ID
+  idBtn.on('pointerdown', () => {
+    currentLang = 'id';
+    currentPage = 0;
+    updateHelpPanel();
+  });
+
+   // Event tombol OTHER --> ini untuk Tombol OTHER
+   otherBtn.on('pointerdown', () => { 
+    currentLang = 'other';
+    currentPage = 0; // reset ke page 1
+    showOtherLangs.call(this);
+    updateHelpPanel();
+  });
+
+  // Event tombol Prev
+  prevBtn.on('pointerdown', () => {
+    if (currentPage > 0) {
+      currentPage--;
+      updateHelpPanel();
+    }
+  });
+
+  // Event tombol Next
+  nextBtn.on('pointerdown', () => {
+   // if (currentPage < helpImages[currentLang].length - 1) {
+      const key = getHelpImageKey(currentLang); // 'en', 'id', atau 'other'
+      if (currentPage < helpImages[key].length - 1) {
+      currentPage++;
+      updateHelpPanel();
+    }
+  });
+    
+  
+   
+//-------------------------------------------------------------------------------------------
+      // Tombol close
+      let closeBtn = this.add.text(1444, 18, "X", {
+        font: "bold 56px Segoe UI", fill: "#fff", backgroundColor: "#e00"
+      }).setInteractive({ useHandCursor: true }).setDepth(3002);
+      this.helpPanelGroup.add(closeBtn);
+
+      closeBtn.on('pointerdown', () => {
+        this.helpPanelGroup.clear(true, true);
+        this.helpPanelGroup = null;
+        if (helpTitle) { helpTitle.destroy(); helpTitle = null; }
+        if (menuText) { menuText.destroy(); menuText = null; }
+      });
+    });
+   // }
+    // Batas akhir help
+    //---------------------------------------------------------------------------------------------------------
+    // Aktifkan tombol BACK
+    const backBtn = this.add.image(100, 1010, 'back').setScale(0.9).setInteractive({ useHandCursor: true });
+    backBtn.on('pointerdown', () => {
+     // ✅ ADD GAME OVER PROTECTION:
+  if (this.isGameOver) {
+    this.showHoldMessageAboveNotes(); // Show "Please buy favorite menu" message
+    return; // Block BACK button if game over
+  } 
+
+  // ✅ RESET WELCOME BACK FLAG before scene transition:
+  //this.resetWelcomeBackFlag();
+
+      // ✅ CLEANUP SEBELUM TRANSITION
+      this.cleanupBeforeSceneChange();
+      this.scene.start('SplashScene');
+    });
+
+    // Aktifkan tombol NEXT
+    const nextBtn = this.add.image(380, 1010, 'next').setScale(0.9).setInteractive({ useHandCursor: true });
+    nextBtn.on('pointerdown', () => {
+     // ✅ ADD GAME OVER PROTECTION:
+  if (this.isGameOver) {
+    this.showHoldMessageAboveNotes(); // Show "Please buy favorite menu" message
+    return; // Block NEXT button if game over
+  } 
+
+  // ✅ RESET WELCOME BACK FLAG before scene transition:
+  //this.resetWelcomeBackFlag();
+      this.cleanupBeforeSceneChange();
+      this.scene.start('Level02Scene');
+    });
+
+
+    // Inisialisasi tombol sound di create() ganti dengan ada variable soundOnBtn, soundOnLightBtn, soundOffBtn, soundOffLightBtn
+    this.soundOnBtn = this.add.image(1550, 1102, 'soundOn').setScale(0.7).setInteractive().setDepth(999);
+    this.soundOnLightBtn = this.add.image(1550, 1102, 'soundOnL').setScale(0.7).setInteractive().setDepth(1000).setVisible(false);
+    this.soundOffBtn = this.add.image(1670, 1115, 'soundOff').setScale(0.7).setInteractive().setDepth(999);
+    this.soundOffLightBtn = this.add.image(1671, 1106, 'soundOffL').setScale(0.7).setInteractive().setDepth(1000).setVisible(false);
+
+
+    // === CLAIM HAT BAWAH ===
+    // Inisialisasi tombol claimHat bawah
+    this.hasClaimedHat = this.registry.get('hasClaimedHat') || false;
+    this.claimHatBottomBtn = this.add.image(1820, 1113, this.hasClaimedHat ? 'claimHatC' : 'claimHat')
+      .setScale(this.hasClaimedHat ? 0.3 : 0.7) // <-- scale biru dan coklat bisa beda
+      .setInteractive({ useHandCursor: true })
+      .setDepth(1000);
+
+    this.claimHatBottomBtn.on('pointerdown', () => {
+      //if (!this.hasClaimedHat && (this.level01Score || 0) >= 100) { // yang ini sekali download
+      if ((this.level01Score || 0) >= 100) {
+        // Selalu download topi coklat
+        this.hasClaimedHat = true;
+        this.registry.set('hasClaimedHat', true);
+        this.claimHatBottomBtn.setTexture('claimHatC').setScale(0.3); // <-- scale khusus untuk coklat
+
+        // Langsung download topi
+        const link = document.createElement("a");
+        link.href = "./Puzzle-AssetsUI/GM. Cowboy-brown-hat-win.png";
+        link.download = "GM. Cowboy-brown-hat-win.png";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Pesan sukses
+        if (this.claimHatMsg) this.claimHatMsg.destroy();
+        this.claimHatMsg = this.add.text(1820, 1060, "Hat claimed!", {
+          font: "bold 24px Segoe UI",
+          fill: "#00eaff",
+          backgroundColor: "#fff",
+          padding: { left: 20, right: 20, top: 10, bottom: 10 }
+        }).setOrigin(0.5).setDepth(2100);
+        this.time.delayedCall(1500, () => {
+          if (this.claimHatMsg) this.claimHatMsg.destroy();
+        });
+      } else if ((this.level01Score || 0) < 100) {
+        // Pesan gagal
+        if (this.claimHatMsg) this.claimHatMsg.destroy();
+        this.claimHatMsg = this.add.text(1750, 1000, "level01Score must be at least 100!", {
+          font: "bold 24px Segoe UI",
+          fill: "#fff",
+          backgroundColor: "#e00",
+          padding: { left: 20, right: 20, top: 10, bottom: 10 }
+        }).setOrigin(0.5).setDepth(2100);
+        this.time.delayedCall(1500, () => {
+          if (this.claimHatMsg) this.claimHatMsg.destroy();
+        });
+      }
+    });
+//-----------------------------------------------------------------------------------------
+// Donation Area
+// Around line 730, after claim hat button creation:
+
+    // Around line 735, after claim hat button:
+
+// === DONATION BUTTON (DENGAN CAHAYA CYAN PINGGIR) ===
+this.donationBtn = this.add.text(1550, 1220, "💝 SUPPORT LV02", {
+  font: "bold 40px Segoe UI",
+  fill: "#ffd700", // Gold text
+  backgroundColor: "#046064", // Dark teal background
+  padding: { left: 18, right: 18, top: 6, bottom: 6 }
+})
+  .setOrigin(0.5)
+  .setInteractive({ useHandCursor: true })
+  .setDepth(1000);
+
+// ✅ HOVER EFFECTS (Cahaya cyan di pinggir)
+this.donationBtn.on('pointerover', () => {
+  this.donationBtn.setStroke("#00eaff", 4); // Cyan outline thick
+  this.donationBtn.setShadow(0, 0, "#00eaff", 15, true, true); // Cyan glow
+  this.donationBtn.setScale(1.08);
+  this.donationBtn.setFill("#ffffff"); // White text
+  this.donationBtn.setBackgroundColor("#B8860B"); // Darker gold background
+});
+
+this.donationBtn.on('pointerout', () => {
+  this.donationBtn.setStroke("", 0); // Remove outline
+  this.donationBtn.setShadow(0, 0, "", 0, false, false); // Remove glow
+  this.donationBtn.setScale(1);
+  this.donationBtn.setFill("#ffd700"); // Back to gold
+  this.donationBtn.setBackgroundColor("#046064"); // Back to dark teal
+});
+
+// ✅ CLICK EFFECTS (Maju ke depan + cahaya spiral)
+this.donationBtn.on('pointerdown', () => { // ini 1 
+ this.time.delayedCall(2000, () => {
+  this.cleanupBeforeSceneChange();
+  this.scene.start('Level02Scene');
+ }); 
+ // ✅ ADD GAME OVER PROTECTION: tidak perlu lock karena donasi
+  //if (this.isGameOver) {
+    //this.showHoldMessageAboveNotes(); // Show "Please buy favorite menu" message
+    //return; // Block donation button if game over
+  //} 
+  // 1. Button press animation (maju ke depan seperti play button)
+  this.tweens.add({
+    targets: this.donationBtn,
+    y: this.donationBtn.y + 8, // Press down deeper
+    scale: 0.94, // Smaller press effect
+    duration: 150,
+    ease: 'Sine.easeInOut',
+    yoyo: true,
+    onComplete: () => {
+      // 2. Create cyan light border effect
+      this.createDonationBorderEffect();    
+      // 3. Redirect to Level02 with donation flag
+      this.time.delayedCall(1000, () => {
+        this.scene.start('Level02Scene', { showDonation: true });
+      });
+    }
+  });
+});
+
+
+//Batas Donasi
+//-----------------------------------------------------------------------------------------
+  
+    // Mengunci tombol play dari klik 10 puzzle
+    // this.isGameOver = false;
+
+    // Favorit (dummy, bisa diatur ulang)
+    this.add.image(999, 1100, 'apple1').setScale(0.7);
+    this.add.image(999, 1100, 'apple2').setScale(0.7);
+    this.add.image(999, 1100, 'apple3').setScale(0.7);
+    this.add.image(999, 1100, 'apple4').setScale(0.7);
+
+    this.airBtn = this.add.image(579, 1102, 'water3').setScale(0.35).setInteractive({ useHandCursor: true });
+    this.appleBtn = this.add.image(999, 1100, 'apple1').setScale(0.7).setInteractive({ useHandCursor: true });
+
+    // AIR: animasi frame menetes
+    let airFrames = ['water1', 'water2', 'water3'];
+    let airIdx = 0, airTween = null;
+    this.airBtn.on('pointerover', () => {
+      airTween = this.time.addEvent({
+        delay: 200, loop: true, callback: () => {
+          airIdx = (airIdx + 1) % airFrames.length;
+          this.airBtn.setTexture(airFrames[airIdx]);
+        }
+      });
+    });
+    this.airBtn.on('pointerout', () => {
+      if (airTween) { airTween.remove(); airTween = null; }
+      this.airBtn.setTexture('water3');
+    });
+    // === Pembayaran Air (letakkan di bawah animasi) ===
+    this.airBtn.on('pointerdown', () => {
+       if (this.timerText.text !== "00:00") { 
+    this.showHoldMessageAboveNotes(); // Please Hold ... the Game is Running
+    return;
+  }
+      
+      // Hapus Game Over saat klik menu favorit 13/06/25
+      if (this.gameOverImg) {
+        this.gameOverImg.destroy();
+        this.gameOverImg = null;
+      }
+      this.showFavoritPayPanel('Water', 30, 1, this.airBtn);
+    });
+
+    // RUMPUT: goyang
+    // --- RUMPUT MENU FAVORIT: Goyang seperti di SplashScene ---
+    this.grassContainer = this.add.container(713, 1200);
+    const grassImg = this.add.image(0, 0, 'grass').setScale(0.17).setOrigin(0.5, 1)
+      .setInteractive({ useHandCursor: true }); // <-- ini yang penting!
+    this.grassContainer.add(grassImg);
+    this.grassContainer.setSize(grassImg.displayWidth, grassImg.displayHeight);
+    this.grassContainer.setDepth(3001); 
+
+    let grassTween = null;
+    grassImg.on('pointerover', () => {
+      //this.grassContainer.on('pointerover', () => {
+      grassTween = this.tweens.add({
+        targets: this.grassContainer,
+        angle: { from: -7, to: 7 },
+        duration: 400,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut'
+      });
+    });
+    grassImg.on('pointerout', () => {
+      if (grassTween) { grassTween.stop(); grassTween = null; }
+      this.grassContainer.angle = 0;
+    });
+    // === Pembayaran Rumput (letakkan di bawah animasi) ===
+    grassImg.on('pointerdown', () => {
+    if (this.timerText.text !== "00:00") { 
+    this.showHoldMessageAboveNotes(); // Please Hold ... the Game is Running
+    return;
+  }  
+
+      if (this.gameOverImg) { //13/06/25
+        this.gameOverImg.destroy();
+        this.gameOverImg = null;
+      }
+      this.showFavoritPayPanel('Grass', 30, 1, this.grassContainer);
+    });
+
+    // WORTEL: pakai gambar utuh saja
+    this.carrotBtn = this.add.image(863, 1085, 'carrot').setScale(0.3).setInteractive({ useHandCursor: true });
+
+    let carrotTween = null;
+    this.carrotBtn.on('pointerover', () => {
+      carrotTween = this.tweens.add({
+        targets: this.carrotBtn,
+        angle: { from: -20, to: 20 },
+        duration: 400,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut'
+      });
+    });
+    this.carrotBtn.on('pointerout', () => {
+      if (carrotTween) { carrotTween.stop(); carrotTween = null; }
+      this.carrotBtn.angle = 0;
+    });
+    // === Pembayaran Wortel (letakkan di bawah animasi) ===
+    this.carrotBtn.on('pointerdown', () => {
+        if (this.timerText.text !== "00:00") { 
+    this.showHoldMessageAboveNotes(); // Please Hold ... the Game is Running
+    return;
+  }
+
+      if (this.gameOverImg) { // 13/06/25
+        this.gameOverImg.destroy();
+        this.gameOverImg = null;
+      }
+      this.showFavoritPayPanel('Carrot', 60, 2, this.carrotBtn);
+    });
+
+    // APPEL: ganti warna (frame)
+    const appleKeys = ['apple1', 'apple2', 'apple3', 'apple4'];
+    let appleIdx = 0, appleTween = null;
+    this.appleBtn.on('pointerover', () => {
+      appleTween = this.time.addEvent({
+        delay: 180, loop: true, callback: () => {
+          appleIdx = (appleIdx + 1) % appleKeys.length;
+          this.appleBtn.setTexture(appleKeys[appleIdx]);
+        }
+      });
+    });
+    this.appleBtn.on('pointerout', () => {
+      if (appleTween) { appleTween.remove(); appleTween = null; }
+      this.appleBtn.setTexture('apple1');
+    });
+
+    // === Pembayaran Apel (letakkan di bawah animasi) ===
+    this.appleBtn.on('pointerdown', () => { //13/06/25
+     if (this.timerText.text !== "00:00") { 
+    this.showHoldMessageAboveNotes(); // Please Hold ... the Game is Running
+    return;
+  } 
+      if (this.gameOverImg) {
+        this.gameOverImg.destroy();
+        this.gameOverImg = null;
+      }
+      this.showFavoritPayPanel('Appel', 60, 2, this.appleBtn);
+    });
+
+    this.musicNotes = [
+      this.add.image(1100, 1100, 'musicNoteB').setScale(0.4).setDepth(2799).setInteractive({ useHandCursor: true }),
+      this.add.image(1130, 1100, 'musicNoteG').setScale(0.4).setDepth(2799).setInteractive({ useHandCursor: true }),
+      this.add.image(1160, 1100, 'musicNoteR').setScale(0.4).setDepth(2799).setInteractive({ useHandCursor: true }),
+    ];
+  
+    this.musicNotes.forEach(note => {
+      // Animasi menari saat hover
+      note.on('pointerover', () => {
+        // Tween: not musik naik-turun (menari)
+        note.tween = this.tweens.add({
+          targets: note,
+          y: note.y - 20,
+          duration: 180,
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut'
+        });
+        // (Opsional) bisa tambahkan efek scale juga
+        note.tweenScale = this.tweens.add({
+          targets: note,
+          scale: 0.5,
+          duration: 180,
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut'
+        });
+      });
+
+      // Hentikan animasi saat cursor keluar
+      note.on('pointerout', () => {
+        if (note.tween) {
+          note.tween.stop();
+          note.tween = null;
+        }
+        // Kembalikan posisi dan scale ke semula
+        note.y = 1100;
+        note.setScale(0.4);
+      });
+
+      // Handler klik tetap seperti biasa
+      note.on('pointerdown', () => {
+        // perintah menghentikan klik not music saat game berlangsung
+       //if (this.timeElapsed > 0) {// Panggil pesan custom di sini, bukan di create()
+      if (this.timerText.text !== "00:00") { 
+      this.showHoldMessageAboveNotes();
+      return;
+      } 
+        if (this.gameOverImg) {
+          this.gameOverImg.destroy();
+          this.gameOverImg = null;
+        }
+        this.showMusicPanel();
+      });
+    });
+     
+    
+    // FUNGSI CHECK USER STATUS DAN GAME OVER DARI BACKEND
+    this.checkUserStatusAndGameOver(email); 
+    this.checkGameOverStatusFromServer();
+
+    // === Tombol Play dengan animasi spiral ===
+    this.createSheriffPlayButton();
+    // Setelah tombol Play dibuat, langsung buremkan & nonaktifkan
+    if (this.playBtn) {
+    this.playBtn.setAlpha(0.5);
+    this.playBtn.disableInteractive();
+    this.playBtn.setVisible(true);  
+    }
+
+    // === Panel help, musik, dsb ===
+    this.createHelpPanel();
+
+    // === Posisi grid board kiri ===
+    // Urutan index:   0 1 2
+    //                 3 4 5
+    //                 6 7 9
+    //                   8
+    this.puzzlePositions = [
+      { x: 590, y: 358 }, // 1 Rambut 
+      { x: 799, y: 355 }, // 2 Kuping kiri
+      { x: 1006, y: 356 },// 3 Kuping kanan
+      { x: 1110, y: 534 }, //4 Hidung
+      { x: 903, y: 534 }, // 5 Mata
+      { x: 694, y: 535 }, // 6 Leher Tengah
+      { x: 590, y: 716 }, // 7 Leher Bawah
+      { x: 799, y: 712 }, // 8 Leher & Dagu
+      { x: 905, y: 893 }, // 9 Blank
+      { x: 1005, y: 712 } // 10 Mulut/Moncong
+    ];
+
+
+    // Setelah this.puzzlePositions --> Inisialisasi puzzle pieces dan Nomor Puzzle
+    this.puzzlePieces = [];
+    this.puzzlePieceNumbers = [];
+
+    // Sudah benar gambar dan nomor rubah di nomor gambar pada folder Puzzle-Assets/Level01
+    for (let i = 0; i < 10; i++) {
+      let nomorPuzzle = i + 1;
+      let piece = this.add.image(118, 465, `hex${i + 1}`)
+        .setOrigin(0.5)
+        .setScale(0.29)
+        .setAlpha(0.01)
+        .setDepth(2)
+        .setVisible(true)
+        .setInteractive({ useHandCursor: true })
+        .setData('number', nomorPuzzle);
+      this.puzzlePieces.push(piece);
+
+      let numText = this.add.text(piece.x, piece.y, nomorPuzzle, {
+        font: "bold 32px Arial",
+        fill: "#fff",
+        stroke: "#000",
+        strokeThickness: 4
+      }).setOrigin(0.5).setDepth(3).setAlpha(0.01);
+      this.puzzlePieceNumbers.push(numText);
+    }
+
+
+    // === Inisialisasi slot hexa GRID KANAN & Slot Nomor ===
+    this.rightBoardVisuals = [];
+    this.rightBoardNumbers = [];
+
+
+
+    // Posisi slot hexa di grid kanan fix
+    this.rightBoardPositions = [
+      { x: 1400, y: 417 },// Slot 1
+      { x: 1503, y: 358 },// Slot 2
+      { x: 1607, y: 416.7 },// Slot 3
+      { x: 1607, y: 537 },// Slot 4
+      { x: 1503, y: 474 },// Slot 5
+      { x: 1400, y: 539 },// Slot 6
+      { x: 1400, y: 655 },// Slot 7
+      { x: 1503, y: 595 },// Slot 8
+      { x: 1503, y: 715 },// Slot 9
+      { x: 1610, y: 660 },// Slot 10
+    ];
+
+
+
+    // Inisialisasi slot hexa di grid kanan dan nomor
+    for (let i = 0; i < 10; i++) {
+      const pos = this.rightBoardPositions[i];
+      let slot = this.add.image(
+        pos.x,
+        pos.y,
+        `hexSlot0${i + 1}`
+      )
+        .setOrigin(0.5)
+        .setScale(1)
+        .setAlpha(0.2)
+        .setDepth(1);
+      this.rightBoardVisuals.push(slot);
+
+      let slotNum = this.add.text(
+        pos.x,
+        pos.y,
+        i + 1,
+        {
+          font: "bold 32px Arial",
+          fill: "#fff",
+          stroke: "#000",
+          strokeThickness: 4
+        }
+      ).setOrigin(0.5).setDepth(5).setAlpha(0.01);
+      this.rightBoardNumbers.push(slotNum);
+    }
+
+    // BATAS GRID KANAN
+    // ✅ LOAD AUDIO DARI CACHE (SUDAH DI-LOAD DI SPLASHSCENE):
+    this.introMusic = this.sound.add('introMusic');
+    this.mainMusic = this.sound.add('mainMusic', { loop: true });
+    this.winMusic = this.sound.add('winMusic');
+    this.horseNeigh = this.sound.add('horseNeigh');
+    this.horseSnort = this.sound.add('horseSnort');
+    this.horseHoof = this.sound.add('horseHoof');
+    this.horseGallop = this.sound.add('horseGallop');
+    this.herdGallop = this.sound.add('herdGallop');
+
+    // ✅ SET VOLUME (SAMA SEPERTI SEBELUMNYA):
+    this.introMusic.setVolume(0.7);
+    this.mainMusic.setVolume(0.6);
+    this.winMusic.setVolume(0.7);
+    this.horseNeigh.setVolume(0.5);
+    this.horseSnort.setVolume(0.5);
+    this.horseHoof.setVolume(0.5);
+    this.horseGallop.setVolume(0.5);
+    this.herdGallop.setVolume(0.5);
+
+     // ✅ START INTRO SEQUENCE (SAMA SEPERTI SEBELUMNYA):
+    this.introMusic.play();
+    this.showHorseShakeHead();
+    this.showHorseShakeHead();
+    this.sound.play('horseNeigh');
+    this.sound.play('horseSnort');
+    this.showHorseShakeHead();
+    this.introMusic.once('complete', () => {
+    this.showHorseShakeHead();
+    this.sound.play('horseSnort'); 
+    this.mainMusic.play();
+    this.showHorseShakeHead();
+    this.sound.play('horseSnort'); 
+    this.showHorseShakeHead();
+     });
+  
+    // Main music dengan volume rendah
+    if (this.sound.get('mainMusic')) {
+      this.mainMusic = this.sound.add('mainMusic', { 
+        loop: true, 
+        volume: 0.6  // Volume kecil untuk background
+      });
+      this.mainMusic.play();
+    } 
+
+    // Handler Sound Off (pause music favorit & nyalakan soundOffL)
+    this.soundOffBtn.on('pointerdown', () => {
+      if (this.currentFavMusic && this.isFavMusicActive && this.currentFavMusic.isPlaying) {
+        this.currentFavMusic.pause();
+        this.soundOffLightBtn.setVisible(true);
+        this.soundOnLightBtn.setVisible(false);
+
+      }
+    });
+
+    // Handler Sound On (resume music favorit & nyalakan soundOnL)
+    this.soundOnBtn.on('pointerdown', () => {
+      // Jika music favorit ada dan sedang pause, resume 
+      if (this.currentFavMusic && this.isFavMusicActive && this.currentFavMusic.isPaused) {
+        this.currentFavMusic.resume();
+        // Tampilkan hanya soundOnLight, sembunyikan lainnya
+        this.soundOnLightBtn.setVisible(true);
+        this.soundOffLightBtn.setVisible(false);
+
+      }
+    });
+
+    // Handler klik pada Light untuk kembali ke tombol biasa
+    this.soundOnLightBtn.on('pointerdown', () => {
+      this.soundOnLightBtn.setVisible(false);
+      this.soundOnBtn.setVisible(true);
+      this.soundOffBtn.setVisible(true);
+      this.soundOffLightBtn.setVisible(false);
+    });
+    this.soundOffLightBtn.on('pointerdown', () => {
+      this.soundOffLightBtn.setVisible(false);
+      this.soundOnBtn.setVisible(true);
+      this.soundOffBtn.setVisible(true);
+      this.soundOnLightBtn.setVisible(false);
+    });
+
+    // ...existing code di akhir create()...
+    this.startIntroSequence();
+    // BATAS CREATE
+
+  this.isExitPanelShown = false;
+  this.input.keyboard.on('keydown-ESC', () => {
+     if (this.isExitPanelShown) {
+      // Tutup panel jika ESC ditekan lagi
+      if (this.exitPanelGroup) {
+        this.exitPanelGroup.clear(true, true);
+        this.exitPanelGroup = null;
+      }
+      this.isExitPanelShown = false;
+    } else {
+  this.showExitPanelOnly();
+      this.isExitPanelShown = true;
+    }
+});  
+}
+// -----------------------------------------------------------------------------
+startIntroSequence() {
+  // Mainkan intro music
+  if (this.introMusic) this.introMusic.play();
+  // Geleng kepala
+  if (this.showHorseShakeHead) this.showHorseShakeHead();
+  // Ringkik
+  if (this.horseNeigh) this.horseNeigh.play();
+  // Dengus
+  if (this.horseSnort) this.horseSnort.play();
+
+  // Setelah intro selesai, mainkan main music
+  if (this.introMusic) {
+    this.introMusic.once('complete', () => {
+      if (this.mainMusic) this.mainMusic.play();
+    });
+  } else {
+    if (this.mainMusic) this.mainMusic.play();
+  }
+}
+
+//Fungsi di kosongkan dulu dengan TODO ini
+setupBoard(data) {
+  // // ✅ PLAYBTN SELALU BUREM DAN NONAKTIF DI AWAL
+  if (this.playBtn) {
+    this.playBtn.setAlpha(0.5);
+    this.playBtn.disableInteractive();
+    this.playBtn.setVisible(true);
+  }
+
+  // Jika ingin aktifkan playBtn setelah kondisi tertentu (misal: data.unlocked)
+  if (data && data.unlocked) {
+    if (this.playBtn) {
+      this.playBtn.setAlpha(1);
+      this.playBtn.setInteractive({ useHandCursor: true });
+      this.playBtn.setVisible(true);
+    }
+  }
+ // Jika ingin aktifkan playBtn setelah kondisi tertentu, masih perlu klik 10 Puzzle dulu
+  console.log('setupBoard dipanggil - PlayBtn tetap burem, klik 10 Puzzle untuk aktifkan');
+}
+
+async showGameOverReturnMessage() {
+  // Cek apakah panel sudah ada
+  if (this.gameOverReturnPanel) return;
+
+  const email = localStorage.getItem('email');
+  let progress = {};
+  let newUser = false;
+  let winUser = false;
+  let lossUser = false;
+
+  if (email) {
+    try {
+      const level01Score = this.level01Score || 0;
+      
+    // ✅ AMBIL PROGRESS DARI getUserProgress DULU
+    const progressRes = await this.getUserProgress(email);
+    progress = progressRes.progress || {};
+    const totalPlays = progress.totalPlays || 0;
+    const currentScore = progress.level01Score || 0;
+    const highScore = progress.level01HighScore || 0;
+    
+    // ✅ HITUNG USER CLASSIFICATION SETELAH DAPAT DATA
+    newUser = totalPlays === 0;
+    winUser = totalPlays > 0 && (currentScore > 0 || highScore > 0);
+    lossUser = totalPlays >= 3 && currentScore === 0 && highScore === 0;
+
+   console.log('🔒 Game Over state detected - newUser:', newUser, 'winUser:', winUser, 'lossUser:', lossUser);
+
+    // ✅ UPDATE BACKEND DENGAN DATA YANG BENAR
+    const response = await axios.post(
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
+      { email, 
+        level: 'Level01Scene',
+        level01Score,
+        totalPlays: progress.totalPlays || 0, 
+        level01HighScore: progress.level01HighScore || 0,
+        level01Completed: progress.level01Completed || false,
+        newUser,
+        winUser,
+        lossUser
+       },
+      { timeout: 200000 }
+    );
+
+    // ✅ UPDATE progress DENGAN RESPONSE BACKEND
+      if (response.data && response.data.progress) {
+        progress = response.data.progress;
+        // Re-calculate setelah update backend
+        const updatedTotalPlays = progress.totalPlays || 0;
+        const updatedCurrentScore = progress.level01Score || 0;
+        const updatedHighScore = progress.level01HighScore || 0;
+        newUser = updatedTotalPlays === 0;
+        winUser = updatedTotalPlays > 0 && (updatedCurrentScore > 0 || updatedHighScore > 0);
+        lossUser = updatedTotalPlays >= 3 && updatedCurrentScore === 0 && updatedHighScore === 0;
+      }
+     // progress = response.data.progress || {};
+    } catch (err) {
+      console.error('❌ Gagal ambil progress user:', err);
+      // ✅ FALLBACK - GUNAKAN DATA LOKAL
+      const userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+      progress = userData.gameProgress || {};
+      const totalPlays = progress.totalPlays || 0;
+      const currentScore = progress.level01Score || 0;
+      const highScore = progress.level01HighScore || 0;
+      newUser = totalPlays === 0;
+      winUser = totalPlays > 0 && (currentScore > 0 || highScore > 0);
+      lossUser = totalPlays >= 3 && currentScore === 0 && highScore === 0;// Re-calculate user classification dari data lokal
+    }
+  }
+
+  console.log('🔒 Game Over state detected - newUser:', newUser, 'winUser:', winUser, 'lossUser:', lossUser);
+  
+  // ✅ JIKA BUKAN LOSSUSER, JANGAN TAMPILKAN GAME OVER
+  if (newUser || winUser) {
+    this.isGameOver = false;
+    this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+    console.log('✅ User bukan loss user - tidak perlu Game Over message');
+    return;
+  }
+
+  // ✅ JIKA LOSSUSER, TAMPILKAN PANEL GAME OVER
+  if (lossUser) {
+    this.isGameOver = true;
+    this.blur10PuzzleButton && this.blur10PuzzleButton();
+    //return;
+  }
+  console.log('🔒 Game Over state detected - showing message panel');
+  // Background overlay
+  const overlay = this.add.rectangle(960, 640, 1200, 600, 0x000000, 0.01)
+    .setDepth(9998);
+
+  // Main message panel
+  const messagePanel = this.add.rectangle(960, 640, 900, 420, 0x023d3f, 1)
+    .setStrokeStyle(4, 0x00eaff)
+    .setDepth(9999);
+
+  // Title
+  const title = this.add.text(960, 480, "😔 GAME OVER STATE DETECTED 🔒", {
+    font: "bold 40px Segoe UI",
+    fill: "#ff0000",
+    align: "center"
+  }).setOrigin(0.5).setDepth(10000);
+
+  // Main message
+  const message = this.add.text(960, 620, 
+    "Your last position was GAME OVER.\n\n" +
+    "To continue playing, you need to persuade\n" +
+    "Black Horse with his favorite menu.\n\n" +
+    "🍎 Choose from: Water, Grass, Carrot, Apple, or Music\n" +
+    "💰 Prices: $1-2 (+ 11% tax)", {
+    font: "bold 28px Segoe UI",
+    fill: "#ffffff",
+    align: "center",
+    wordWrap: { width: 760 }
+  }).setOrigin(0.5).setDepth(10000);
+
+  // Continue button (disabled until purchase)
+  const continueBtn = this.add.text(960, 785, "🔒LOCKED - BUY FAVORITE MENU FIRST", {
+    font: "bold 28px Segoe UI",
+    fill: "#666666",
+    backgroundColor: "#333333",
+    padding: { left: 20, right: 20, top: 10, bottom: 10 }
+  }).setOrigin(0.5).setDepth(10000);
+
+  // Close button (X)
+  const closeBtn = this.add.text(1350, 480, "✕", {
+    font: "bold 40px Arial",
+    fill: "#fff",
+    backgroundColor: "#e00",
+    padding: { left: 10, right: 10, top: 5, bottom: 5 }
+  }).setOrigin(0.5).setDepth(10000).setInteractive({ useHandCursor: true });
+
+  closeBtn.on('pointerdown', () => {
+    overlay.destroy();
+    messagePanel.destroy();
+    title.destroy();
+    message.destroy();
+    continueBtn.destroy();
+    closeBtn.destroy();
+    this.isGameOverClosed = true;
+    this.isGameOver = false;
+    this.blur10PuzzleButton();
+    console.log('🔓 Game Over message closed - Favorite menu accessible, puzzles locked');
+  });
+
+  this.gameOverReturnPanel = messagePanel;
+  this.gameOverReturnElements = [overlay, messagePanel, title, message, continueBtn];
+  this.isGameOver = true;
+  this.lockAllGameplayButtons();
+}
+
+// ========== level01Score-BASED CONTINUE MESSAGE ==========
+showScoreBasedContinueMessage() {
+   // ✅ ADD CONSOLE LOG HERE (at the very beginning):
+  console.log(`✅ level01Score-based continue shown: level01Score ${this.level01Score}`);
+
+  // Background overlay (lighter)
+  const overlay = this.add.rectangle(960, 640, 1920, 1280, 0x000000, 0.1)
+    .setDepth(9998);
+
+  // Main message panel
+  const messagePanel = this.add.rectangle(960, 640, 1000, 600, 0x181c24, 0.95)
+    .setStrokeStyle(4, 0x00ff00)
+    .setDepth(9999);
+
+  // Title
+  const title = this.add.text(960, 500, "✅  WELCOME BACK!😄🎉", {
+    font: "bold 56px Segoe UI",
+    fill: "#00ff00",
+    align: "center"
+  }).setOrigin(0.5).setDepth(10000);
+
+  // level01Score display
+  const scoreDisplay = this.add.text(960, 570, 
+    `Current level01Score: ${this.level01Score}\n\n` +
+    "Game Over cleared automatically!\n" +
+    "You can continue playing with your balance.\n\n" +
+    "⏰ This message will stay for 3 seconds\n" +
+    "or click CONTINUE/CLOSE to proceed.", { 
+    font: "bold 36px Segoe UI",
+    fill: "#ffffff",
+    align: "center",
+    wordWrap: { width: 800 }
+  }).setOrigin(0.5).setDepth(10000);
+
+  // Continue button (enabled)
+  const continueBtn = this.add.text(960, 750, "✅ CONTINUE PLAYING", {
+    font: "bold 40px Segoe UI",
+    fill: "#ffffff",
+    backgroundColor: "#00aa00",
+    padding: { left: 30, right: 30, top: 15, bottom: 15 }
+  }).setOrigin(0.5).setDepth(10000).setInteractive({ useHandCursor: true });
+
+  // ✅ ADD CLOSE BUTTON (X) - Top right corner
+  const closeBtn = this.add.text(1450, 350, "✕", {
+    font: "bold 50px Arial",
+    fill: "#fff",
+    backgroundColor: "#e00",
+    padding: { left: 12, right: 12, top: 4, bottom: 4 }
+  }).setOrigin(0.5).setDepth(10000).setInteractive({ useHandCursor: true });
+
+  // Continue button handler
+  continueBtn.on('pointerdown', () => {
+    this.cleanupBeforeSceneChange();
+    this.scene.start('Level02Scene');
+    // Remove this message
+    overlay.destroy();
+    messagePanel.destroy();
+    title.destroy();
+    scoreDisplay.destroy();
+    continueBtn.destroy();
+    closeBtn.destroy();
+    
+    // Ensure Game Over state is cleared
+    this.isGameOver = false;
+    this.isGameOverClosed = false;
+    
+    console.log('✅ Player chose to continue with available level01Score');
+  });
+
+  // Close button handler - Same as Continue
+  closeBtn.on('pointerdown', () => {
+    overlay.destroy();
+    messagePanel.destroy();
+    title.destroy();
+    scoreDisplay.destroy();
+    continueBtn.destroy();
+    closeBtn.destroy();
+    
+    this.isGameOver = false;
+    this.isGameOverClosed = false;
+    
+    console.log('✅ level01Score-based continue message closed');
+  });
+
+  // ✅ AUTO-HIDE AFTER 4 SECONDS (faster auto-clear)
+  this.time.delayedCall(4000, () => {
+    if (overlay && overlay.active) {
+      overlay.destroy();
+      messagePanel.destroy();
+      title.destroy();
+      scoreDisplay.destroy();
+      continueBtn.destroy();
+      closeBtn.destroy();
+      this.isGameOver = false;
+      this.isGameOverClosed = false;
+      
+      console.log('✅ Auto-cleared: Player can continue with level01Score');
+    }
+  });
+}
+
+// Around line 1450, ADD this function:
+// Around line 1500, ADD this missing function:
+
+// ========== LOW level01Score WARNING ==========
+showLowScoreWarning() {
+  // Remove existing warning
+  if (this.lowScoreWarning) {
+    this.lowScoreWarning.destroy();
+    this.lowScoreWarningBg.destroy();
+  }
+
+  // Background
+  this.lowScoreWarningBg = this.add.rectangle(960, 350, 1000, 300, 0x000000, 0.9)
+    .setStrokeStyle(4, 0xffaa00)
+    .setDepth(9998);
+
+  // Warning message
+  this.lowScoreWarning = this.add.text(960, 350,
+    `⚠️ 😔 LOW level01Score WARNING!\n\n` +
+    `Current level01Score: ${this.level01Score}\n` +
+    `Game continues, but consider buying\n` +
+    `favorite menu for better performance!`, {
+    font: "bold 32px Segoe UI",
+    fill: "#ffffff",
+    align: "center",
+    wordWrap: { width: 900 }
+  }).setOrigin(0.5).setDepth(9999);
+
+  // Auto-hide after 4 seconds
+  this.time.delayedCall(4000, () => {
+    if (this.lowScoreWarning) {
+      this.lowScoreWarning.destroy();
+      this.lowScoreWarningBg.destroy();
+      this.lowScoreWarning = null;
+      this.lowScoreWarningBg = null;
+    }
+  });
+}
+
+// ========== BLUR 10 PUZZLE BUTTON ==========
+blur10PuzzleButton() {
+  // Find and blur the 10 puzzle button
+  if (this.lv01Puzzle10Btn) {
+    this.lv01Puzzle10Btn.setAlpha(0.5); // Make it very blurred
+    this.lv01Puzzle10Btn.disableInteractive(); // Disable clicks
+  }
+  
+  // Also blur the play button
+  if (this.playBtn) {
+    this.playBtn.setAlpha(0.5);
+    this.playBtn.disableInteractive();
+  }
+  
+  console.log('😔🔒 10 Puzzle and Play buttons blurred - Only favorite menu accessible');
+}
+
+// ========== UNBLUR BUTTONS AFTER PURCHASE ==========
+unblur10PuzzleButton() {
+  // Restore 10 puzzle button
+  if (this.lv01Puzzle10Btn) {
+    this.lv01Puzzle10Btn.setAlpha(1);
+    this.lv01Puzzle10Btn.setInteractive();
+  }
+  
+  if (this.playBtn) {
+    this.playBtn.disableInteractive();
+    this.playBtn.setAlpha(0.5);
+    this.playBtn.setVisible(true);
+  }
+  // Restore play button  
+  //if (this.playBtn) {
+    //this.playBtn.setAlpha(1);
+    //this.playBtn.setInteractive();
+  //}
+  
+  console.log('✅ 10 Puzzle and Play buttons restored');
+}
+
+
+
+// ========== GAME OVER PROTECTION FUNCTIONS ==========
+lockAllGameplayButtons() {
+  // Disable (blur) the play button
+  if (this.playBtn) {
+    this.playBtn.setAlpha(0.5);
+    this.playBtn.disableInteractive();
+  }
+  
+  // Disable 10 puzzle button permanently until favorite menu purchase
+  if (this.lv01Puzzle10Btn) {
+    this.lv01Puzzle10Btn.disableInteractive();
+    this.lv01Puzzle10Btn.setAlpha(0.5); // Visual indication
+  }
+  
+  // Disable 20 puzzle button 
+  //if (this.lv01Puzzle20Btn) {
+    //this.lv01Puzzle20Btn.disableInteractive();
+    //this.lv01Puzzle20Btn.setAlpha(0.5);
+  //}
+  
+  console.log('🔒 All gameplay buttons locked due to Game Over');
+}
+
+unlockGameAfterPurchase() {
+  // Called after successful favorite menu purchase
+  this.isGameOver = false;
+  this.isGameOverClosed = false; // ✅ Clear both states
+
+  // ✅ CLEAR GAME OVER STATE FROM LOCALSTORAGE:
+  const email = localStorage.getItem('email');
+  if (email) {
+    localStorage.removeItem(`gameOver_${email}`);
+    console.log('✅ Game Over state cleared - Player can play again');
+  }
+  
+  // Re-enable buttons
+  if (this.lv01Puzzle10Btn) {
+    this.lv01Puzzle10Btn.setInteractive();
+    this.lv01Puzzle10Btn.setAlpha(1);
+  }
+  
+  //if (this.playBtn) {
+    //this.playBtn.setInteractive();
+    //this.playBtn.setAlpha(1);
+  //}
+
+  //if (this.lv01Puzzle20Btn) {
+  //  this.lv01Puzzle20Btn.setInteractive();
+  //  this.lv01Puzzle20Btn.setAlpha(1);
+  //}
+  
+  // Clear Game Over return message
+  if (this.gameOverReturnElements) {
+    this.gameOverReturnElements.forEach(element => {
+      if (element) element.destroy();
+    });
+    this.gameOverReturnElements = null;
+  }
+
+  // Remove Game Over image
+  if (this.gameOverImg) {
+    this.gameOverImg.destroy();
+    this.gameOverImg = null;
+  }
+  
+
+  console.log('✅ Game unlocked after favorite menu purchase');
+}
+ // ========== GAME OVER PUZZLE MESSAGE ==========
+showGameOverPuzzleMessage() {
+  // Remove existing message
+  if (this.gameOverPuzzleMsg) {
+    this.gameOverPuzzleMsg.destroy();
+    this.gameOverPuzzleMsgBg.destroy();
+  }
+
+  // Background
+  this.gameOverPuzzleMsgBg = this.add.rectangle(960, 350, 1200, 400, 0x023d3f, 1)
+    .setStrokeStyle(4, 0x00eaff)
+    .setDepth(9998);
+
+  // Message
+  this.gameOverPuzzleMsg = this.add.text(960, 350,
+    "😔 GAME OVER - PUZZLES LOCKED!🔒\n\n" +
+    "Your last session ended in Game Over.\n" +
+    "To unlock puzzles, you need to persuade\n" +
+    "Black Horse with his favorite menu.\n\n" +
+    "💰 Buy: Water ($1), Grass ($1), Carrot ($2),\n" +
+    "Apple ($2), or Music ($2)", {
+    font: "bold 36px Segoe UI",
+    fill: "#ffffff",
+    align: "center",
+    wordWrap: { width: 1000 }
+  }).setOrigin(0.5).setDepth(9999);
+
+  // Auto-hide after 4 seconds
+  this.time.delayedCall(2000, () => {
+    if (this.gameOverPuzzleMsg) {
+      this.gameOverPuzzleMsg.destroy();
+      this.gameOverPuzzleMsgBg.destroy();
+      this.gameOverPuzzleMsg = null;
+      this.gameOverPuzzleMsgBg = null;
+    }
+});
+}
+  
+
+// Tambahkan SETELAH create() function, sekitar line 1130: atasi delay 3000 loading musik favorit 
+
+// Around line 811, ADD this complete function AFTER the create() function ends:
+
+// ========== ALL FUNCTIONS OUTSIDE create() ==========
+
+// ✅ CYAN BORDER LIGHT EFFECT (Add this AFTER create() function)
+createDonationBorderEffect() {
+  // Create 12 cyan particles around button
+  for (let i = 0; i < 12; i++) {
+    const angle = (i / 12) * Math.PI * 2;
+    const distance = 80;
+    
+    const light = this.add.circle(
+      this.donationBtn.x + Math.cos(angle) * 50, 
+      this.donationBtn.y + Math.sin(angle) * 20, 
+      5, 
+      0x00eaff
+    )
+      .setDepth(1020)
+      .setAlpha(0.9);
+    
+    // Animate particles outward with fade
+    this.tweens.add({
+      targets: light,
+      x: this.donationBtn.x + Math.cos(angle) * distance,
+      y: this.donationBtn.y + Math.sin(angle) * distance,
+      scale: { from: 0.5, to: 1.5 },
+      alpha: { from: 0.9, to: 0 },
+      duration: 800,
+      ease: 'Cubic.easeOut',
+      onComplete: () => light.destroy()
+    });
+  }
+
+  // Button pulse effect
+  this.tweens.add({
+    targets: this.donationBtn,
+    scale: { from: 1, to: 1.15, to: 1 },
+    duration: 600,
+    ease: 'Sine.easeInOut'
+  });
+}
+
+// ========== BACKGROUND LOADING FAVORITE MUSIC ==========
+backgroundLoadFavoriteMusic() {
+  console.log('🎵 Starting background favorite music loading...');
+  
+  // Check if already loaded
+  if (this.favoriteAssetsReady) {
+    console.log('✅ Favorite music already loaded!');
+    return;
+  }
+  
+  // Load favorite music assets in background
+  const musicAssets = [
+    { key: 'musicfav03', path: './Puzzle-AssetsSfx/music favorites/music-favorite-easy-country-music-intro-outro.mp3' },
+    { key: 'musicfav04', path: './Puzzle-AssetsSfx/music favorites/music-favorite-golden-sunset-piano.mp3' },
+    { key: 'musicfav05', path: './Puzzle-AssetsSfx/music favorites/music-favorite-horsepower.mp3' },
+    { key: 'musicfav06', path: './Puzzle-AssetsSfx/music favorites/music-favorite-musique-west-cowboy.mp3' },
+    { key: 'musicfav07', path: './Puzzle-AssetsSfx/music favorites/music-favorite-old-west.mp3' }
+  ];
+  
+  // Load each music file
+  musicAssets.forEach(asset => {
+    if (!this.sound.get(asset.key)) {
+      this.load.audio(asset.key, asset.path);
+    }
+  });
+  
+  // Start loading
+  if (this.load.list.size > 0) {
+    this.load.once('complete', () => {
+      console.log('✅ Background favorite music loading complete!');
+      this.favoriteAssetsReady = true;
+    });
+    
+    this.load.start();
+  } else {
+    console.log('✅ All favorite music already loaded!');
+    this.favoriteAssetsReady = true;
+  }
+}
+//Batas akhir backgroundLoadFavoriteMusic()
+//--------------------------------------------------------------------
+
+// ========== OPTIMASI DETEKSI NEGARA DAN PREVIEW PAJAK ==========
+   async detectUserCountry() {
+  try {
+    const response = await axios.get('https://ipapi.co/json/');
+    this.userCountry = data.country_code || 'US';
+    console.log(`🌍 User country detected: ${this.userCountry}`);
+    return this.userCountry;
+  } catch (error) {
+    console.error('Country detection failed:', error);
+    return 'US';
+  }
+}
+
+async getTaxPreview(amount, country) {
+  try {
+   const response = await axios.post(`${this.backendUrl}/api/calculate-tax`, { amount, country });
+   return response.data; 
+  } catch (error) {
+    console.error('Tax preview failed:', error);
+    return { 
+      baseAmount: amount, 
+      taxRate: 0, 
+      taxAmount: 0, 
+      totalAmount: amount 
+    };
+  }
+}
+
+// ========== OPTIMASI PREVIEW TAX ==========
+  // Tambah fungsi preview tax sebelum bayar
+async showTaxPreview(musicTitle, country) {
+  // Detect country & get tax info
+  await this.detectUserCountry();
+  const taxInfo = await this.getTaxPreview(2, this.userCountry);
+  
+  // Show tax breakdown
+  if (this.taxPreviewText) this.taxPreviewText.destroy();
+  
+  this.taxPreviewText = this.add.text(850, 600, 
+    `${musicTitle}\n` +
+    `Base Price: $${taxInfo.baseAmount}\n` +
+    `Tax (${taxInfo.taxRate}%): $${taxInfo.taxAmount}\n` +
+    `Total: $${taxInfo.totalAmount}`, {
+    font: "bold 24px Arial", 
+    fill: "#fff", 
+    align: "center"
+  }).setOrigin(0.5).setDepth(402);
+  
+  return taxInfo;
+}
+
+// Tambahkan SETELAH line 1240 (setelah showTaxPreview function ends):
+// 👇 ADD HELPER METHOD HERE 👇
+// ========== BACKGROUND TAX UPDATE (SEPARATE ASYNC METHOD) ==========
+async updateTaxInBackground(musicTitle, x, y) {
+  try {
+    // Use existing detectUserCountry and getTaxPreview functions
+    await this.detectUserCountry();
+    const taxInfo = await this.getTaxPreview(2, this.userCountry);
+    
+    // Update with real calculation if preview still exists
+    if (this.taxPreviewText) {
+      this.taxPreviewText.setText(
+        `${musicTitle}\n` +
+        `Base: $${taxInfo.baseAmount}\n` +
+        `Tax (${taxInfo.taxRate}%): $${taxInfo.taxAmount}\n` +
+        `Total: $${taxInfo.totalAmount}`
+      );
+      
+      // Change color to indicate real calculation
+     // this.taxPreviewText.setFill("#ffd700"); // Gold color for real data
+    }
+  } catch (error) {
+    console.log('Tax API failed, using static calculation');
+    // Keep static calculation if API fails - no error shown to user
+  }
+}
+
+ // ========== OPTIMASI VOLUME MANAGEMENT ==========
+  playFavoriteMusic(index) {
+    // Pause main music saat favorit aktif
+    if (this.mainMusic && this.mainMusic.isPlaying) {
+      this.mainMusic.pause();
+    }
+    
+    // Play musik favorit dengan volume normal
+    const key = this.musicKeys[index - 1];
+    this.currentFavMusic = this.sound.add(key, { 
+      loop: true, 
+      volume: 0.8  // Volume normal untuk favorit
+    });
+    this.currentFavMusic.play();
+    this.isFavMusicActive = true;
+  }
+
+  stopFavoriteMusic() {
+    if (this.currentFavMusic && this.currentFavMusic.isPlaying) {
+      this.currentFavMusic.stop();
+      this.currentFavMusic = null;
+      this.isFavMusicActive = false;
+    }
+    
+    // Resume main music dengan volume kecil
+    if (this.mainMusic && this.mainMusic.isPaused) {
+      this.mainMusic.resume();
+    }
+  }
+
+
+  // Tombol Play Sheriff dengan animasi spiral
+   createSheriffPlayButton() {
+    const playBtn = this.add.image(250, 830, 'playSheriff')
+      .setScale(0.3)
+      .setInteractive({ useHandCursor: true })
+      .setDepth(999);
+
+    this.playBtn = playBtn; // Simpan referensi tombol Play
+
+    // ✅ PASTIKAN DIMULAI DALAM KONDISI BUREM
+    this.playBtn.setAlpha(0.5);
+    this.playBtn.disableInteractive();
+    this.playBtn.setVisible(true);
+    console.log('🎮 PlayBtn dibuat dalam kondisi burem - menunggu klik 10 Puzzle');
+
+    // --- LOGIKA GAME MULAI DI SINI ---
+    playBtn.on('pointerdown', async () => { //(TIDAK MUNCUL PUZZLE)
+      playBtn.setTexture('playSheriffL');
+      playBtn.setScale(0.4);
+      
+
+      if (this.claimHatBtn) {
+        this.claimHatBtn.destroy();
+        this.claimHatBtn = null;
+      }
+      if (this.downloadHat) {
+        this.downloadHat.destroy();
+        this.downloadHat = null;
+      }
+      //----------------------------------------------------------------
+      // Hentikan winMusic, lanjutkan music favorit jika ada
+      if (this.winMusic && this.winMusic.isPlaying) this.winMusic.stop();
+      if (this.currentFavMusic && this.isFavMusicActive && this.currentFavMusic.isPaused) {
+        this.currentFavMusic.resume();
+        this.soundOffBtn.clearTint();
+        }
+
+        
+      // === TIMER FAVORIT: JANGAN RESET ===
+      // Jika sedang mode favorit, lanjutkan timer dari sisa waktu
+      if (this.isFavMusicActive && this.favoritTimeToAdd) {
+        // Jangan reset this.timeElapsed, lanjutkan timer
+        // Timer sudah berjalan, tidak perlu di-reset
+      } else {
+        //----------------------------------------------------------------
+        // Jika bukan mode favorit, reset timer seperti biasa
+        // Reset timer
+        this.timeElapsed = 0;
+        this.timerText.setText("00:00");
+      }
+      // Hapus timer event sebelumnya jika ada
+      if (this.roundTimer) {
+        this.roundTimer.remove(false);
+      }
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+      // Mulai timer baru sesuai ronde (setelah win dari menu favorit)
+      let timeLimit = this.roundTimeLimits[this.round - 1] || 18; // pengaturan play setelah win repeat 18 detik hitung seperti ronde awal (3 ronde)
+      this.roundTimer = this.time.addEvent({
+        delay: 1000,
+        callback: () => {
+          this.timeElapsed++;
+          let min = Math.floor(this.timeElapsed / 60).toString().padStart(2, '0');
+          let sec = (this.timeElapsed % 60).toString().padStart(2, '0');
+          this.timerText.setText(`${min}:${sec}`);
+
+          if (this.timeElapsed >= timeLimit) {
+            this.roundTimer.remove(false);
+            this.onTimeUp();
+          }
+          // music latar dimainkan (14/06/25) TAMBAHAN
+          if (this.mainMusic && !this.mainMusic.isPlaying) {
+           this.mainMusic.play({ loop: true });
+          }
+        },
+        callbackScope: this,
+        loop: true
+      });
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------      
+     
+      // --- Tambahkan animasi tombol Play ditekan ---
+      this.tweens.add({
+        targets: playBtn,
+        y: playBtn.y + 10,
+        duration: 80,
+        yoyo: true,
+        ease: 'Sine.easeInOut'
+      });
+
+      // Hentikan semua tween yang masih berjalan
+      this.tweens.killAll(); // ini di tambahkan untuk menghentikan semua tween yang mungkin masih berjalan
+
+      // Acak urutan puzzle dulu
+      this.order = Phaser.Utils.Array.NumberArray(0, 9); // tgl 02 ini dibawah this.rightBoardSlots atau 
+      Phaser.Utils.Array.Shuffle(this.order); // // === TAMBAHKAN INI DI SINI ===
+
+      // RESET semua puzzle ke posisi awal sebelum spiral
+      for (let i = 0; i < 10; i++) {
+        let piece = this.puzzlePieces[this.order[i]];
+        //let piece = puzzlethis.order[i]; // BENAR: gunakan mapping hasil shuffle
+        piece.x = 118;
+        piece.y = 465;
+        piece.setAlpha(0.01);
+        piece.setVisible(true);
+        piece.setInteractive();
+        //piece.removeAllListeners();
+        this.puzzlePieceNumbers[i].x = 118;
+        this.puzzlePieceNumbers[i].y = 465;
+        this.puzzlePieceNumbers[i].setAlpha(0.01);
+      }
+      this.rightBoardSlots = Array(10).fill(null);
+
+      // -----------------------------------------------  
+      // === TAMBAHKAN INI DI SINI === // BARU DITAMBAH 04/06
+      // Inisialisasi grid kiri baru
+      for (let i = 0; i < 10; i++) {
+        let piece = this.puzzlePieces[this.order[i]];
+        piece.setData('gridIdx', i); // i adalah index slot grid kiri baru untuk piece ini
+        //this.leftBoardSlots[i] = piece.getData('number');
+      }
+      // --------------------------------------------------
+
+
+      this.helpPanel && this.helpPanel.setAlpha(0);
+      this.helpText && this.helpText.setAlpha(0);
+      //playBtn.setVisible(false);
+
+
+
+      // ANIMASI BERHASIL
+      // Fungsi rekursif spiral besar radius 300
+      function spiralLoop(piece, i, count, max, callback) {
+        piece.angle = 0;
+        this.tweens.add({
+          targets: piece,
+          x: 850 + Math.cos((i / 9) * Math.PI * 2) * 300,
+          y: 600 + Math.sin((i / 9) * Math.PI * 2) * 300,
+          angle: 360,
+          duration: 700,
+          ease: 'Sine.easeInOut',
+          onComplete: () => {
+            if (count < max) {
+              // Kembali ke tengah lalu spiral lagi
+              this.tweens.add({
+                targets: piece,
+                x: 850,
+                y: 600,
+                angle: 0,
+                duration: 300,
+                ease: 'Sine.easeInOut',
+                onComplete: () => {
+                  spiralLoop.call(this, piece, i, count + 1, max, callback);
+                }
+              });
+            } else {
+              callback();
+            }
+          }
+        });
+      }
+
+      // ANIMASI SPIRAL DAN KLIK BERHASIL SUDAH SESUAI
+      // Animasi spiral dan entry ke grid kiri 
+      for (let i = 0; i < 10; i++) {
+        let piece = this.puzzlePieces[this.order[i]]; // salah
+        //let piece = puzzlethis.order[i]; // BENAR: gunakan mapping hasil shuffle
+        piece.setVisible(true);
+        piece.setAlpha(1);
+
+        // Mulai dari posisi awal (misal pojok kiri bawah)
+        piece.x = 450;
+        piece.y = 170;
+
+        // 1. Tween turun ke tengah
+        this.tweens.add({
+          targets: piece,
+          x: 850,
+          y: 600,
+          duration: 500,
+          ease: 'Sine.easeInOut',
+          onComplete: () => {
+            // 2. Spiral kecil di tengah
+            this.tweens.add({
+              targets: piece,
+              x: 850 + Math.cos((i / 9) * Math.PI * 2) * 300,
+              y: 600 + Math.sin((i / 9) * Math.PI * 2) * 300,
+              angle: 360,
+              duration: 500,
+              ease: 'Sine.easeInOut',
+              onComplete: () => {
+                // 3. Spiral besar 1x (pakai spiralLoop)
+                spiralLoop.call(this, piece, i, 0, 1, () => {
+
+                  // 4. Tween ke posisi grid kiri
+                  this.tweens.add({
+                    targets: piece,
+                    x: this.puzzlePositions[i].x,
+                    y: this.puzzlePositions[i].y,
+                    angle: 0,
+                    duration: 500,
+                    ease: 'Sine.easeInOut',
+                    onComplete: () => {
+                      // Simpan index posisi grid kiri acak
+                      piece.setData('gridIdx', i);
+
+                      // Sembunyikan tulisan COUNTDOWN jika masih ada (hanya sekali, puzzle terakhir)
+                      // if (i === 9 && this.countdownText) {
+                      //this.countdownText.setVisible(false);
+                      // }
+
+                      // Jika ini puzzle terakhir dan ada waktu favorit yang dibeli, baru mulai timer
+                      if (i === 9 && this.favoritTimeToAdd) {
+                        this.addFavoritTimeToMainTimer(this.favoritTimeToAdd, this.favoritLabelToAdd);
+                        this.favoritTimeToAdd = null;
+                        this.favoritLabelToAdd = null;
+                      }
+
+                      // === INTERAKTIF: KLIK puzzle di grid kiri ke grid kanan ===
+                      piece.removeAllListeners();
+                      piece.setInteractive();
+                      piece.on('pointerdown', () => {
+                        let nomorPuzzle = piece.getData('number');
+                        let slotIdx = nomorPuzzle - 1; // slot kanan sesuai nomor puzzle
+                        let gridIdx = piece.getData('gridIdx'); // index posisi grid kiri acak
+
+                        // Cek apakah ini giliran yang benar
+                        let nextSlot = this.rightBoardSlots.findIndex(slot => slot === null);
+                        if (slotIdx !== nextSlot) {
+ 
+  this.salahBerturut = (this.salahBerturut || 0) + 1;
+  // === LOGIKA 3x SALAH: ANIMASI SPIRAL/GOYANG ===
+    if (this.salahBerturut >= 3) {
+      let lastTween = null;
+
+      // Animasi spiral/goyang semua puzzle grid kiri
+      for (let i = 0; i < 10; i++) {
+        let puzzle = this.puzzlePieces[this.order[i]];
+        // Cek jika puzzle masih di grid kiri (belum masuk rightBoard)
+        let nomor = puzzle.getData('number');
+        if (!this.rightBoardSlots.includes(nomor)) {
+          let startX = puzzle.x;
+          let startY = puzzle.y;
+           // ✅ SAVE TWEEN REFERENCE:
+          lastTween = this.tweens.addCounter({
+            from: 0,
+            to: Math.PI * 4, // untuk putaran
+            duration: 1000, // lamanya makin lama makin geli
+            onUpdate: tween => {
+              const t = tween.getValue();
+              puzzle.x = startX + Math.cos(t) * 30;
+              puzzle.y = startY + Math.sin(t) * 30;
+              puzzle.angle = t * 180 / Math.PI;
+            },
+            onComplete: () => {
+              puzzle.x = startX;
+              puzzle.y = startY;
+              puzzle.angle = 0;
+            }
+          });
+        }
+      }
+      
+  // Setelah semua puzzle selesai goyang, baru dengus & geleng kepala
+  if (lastTween) {
+    lastTween.setCallback('onComplete', () => {
+      this.sound.play('horseSnort');
+      this.showHorseShakeHead();
+      this.tweens.add({
+        targets: this.bhhead,
+        angle: { from: -20, to: 20 },
+        yoyo: true,
+        repeat: 3,
+        duration: 120
+      });
+      this.salahBerturut = 0;
+    });
+  } else {
+    // Jika tidak ada puzzle yang goyang, langsung dengus & geleng kepala
+    this.sound.play('horseSnort');
+    this.showHorseShakeHead();
+    this.tweens.add({
+      targets: this.bhHead,
+      angle: { from: -20, to: 20 },
+      yoyo: true,
+      repeat: 3,
+      duration: 120
+    });
+   // this.salahBerturut = 0;
+  }
+
+      this.salahBerturut = 0;
+      return;
+    }
+
+                          // Jika benar urut terbang ke grid kanan
+                          this.tweens.add({
+                            targets: piece,
+                            x: this.rightBoardPositions[slotIdx].x, // BENAR: TERBANG KE GRID KANAN
+                            y: this.rightBoardPositions[slotIdx].y,
+                            duration: 200,// atur kecepatan sesuai kebutuhan pindah ke grid kanan
+                            ease: 'Sine.easeInOut',
+                            onComplete: () => {
+                              // Setelah terbang ke kanan, kembali ke posisi grid kiri
+                              this.tweens.add({
+                                targets: piece,
+                                x: this.puzzlePositions[gridIdx].x, // KEMBALI KE GRID KIRI
+                                y: this.puzzlePositions[gridIdx].y,
+                                duration: 250,
+                                ease: 'Sine.easeInOut'
+                              });                        
+                          }
+                          });
+                          return;
+                        }
+                        // Benar urutan: masuk ke slot kanan
+                        this.salahBerturut = 0; 
+                        if (this.rightBoardSlots[slotIdx] !== null) return; // slot sudah terisi
+                        this.tweens.add({
+                          targets: piece,
+                          x: this.rightBoardPositions[slotIdx].x,
+                          y: this.rightBoardPositions[slotIdx].y,
+                          duration: 200,
+                          ease: 'Sine.easeInOut',
+                          
+
+                          onUpdate: () => {
+                            this.puzzlePieceNumbers[nomorPuzzle - 1].x = piece.x;
+                            this.puzzlePieceNumbers[nomorPuzzle - 1].y = piece.y;
+                          },
+                          onComplete: () => {
+                            //this.rightBoardSlots[slotIdx] = nomorPuzzle; // Simpan nomor puzzle di slot kanan
+                            this.puzzlePieceNumbers[nomorPuzzle - 1].x = this.rightBoardPositions[slotIdx].x;
+                            this.puzzlePieceNumbers[nomorPuzzle - 1].y = this.rightBoardPositions[slotIdx].y;
+                            //this.puzzlePieceNumbers[nomorPuzzle - 1].x = slotIdx === 9 ? this.rightBoardPositions[slotIdx].x + 1 : this.rightBoardPositions[slotIdx].x;
+                            //this.puzzlePieceNumbers[nomorPuzzle - 1].y = this.rightBoardPositions[slotIdx].y;
+                            this.rightBoardSlots[slotIdx] = nomorPuzzle;
+                            piece.disableInteractive();
+                            if (this.rightBoardSlots.every(slot => slot !== null)) {
+                            this.checkPuzzle();
+                            } 
+                          }
+                        });
+                      });
+                    }
+                  });
+                });
+              
+              }
+            });
+          }
+        });
+      }
+    }); // penutup playBtn.on
+  }
+
+// ==== 7 FUNCTIONS FOR SplashScene CONNECTED TO BACKEND ====
+// 1. GET FUNCTION FOR USER PROGRESS
+// ========== GANTI DENGAN FUNCTION getUserProgress YANG BENAR ==========
+// 1. GET USER PROGRESS
+async getUserProgress(email) {
+  try {
+    const response = await axios.post(
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
+      { email, level: 'Level01Scene' },
+      { timeout: 200000 }
+    );
+    
+    // Ambil progress user
+    const user = response.data.user || {};
+    const progress = user.gameProgress || {};
+    const level01Score = progress.level01Score || 0;
+    const totalPlays = progress.totalPlays || 0;
+    const level01HighScore = progress.level01HighScore || 0;
+    const level01Completed = progress.level01Completed || false;
+
+    // ✅ DEFINISIKAN currentScore & highScore
+    const currentScore = progress.level01Score || 0;  // API -> Frontend
+    const highScore = progress.level01HighScore || 0; // API -> Frontend
+    
+    // ✅ LOGIKA YANG DIPERBAIKI:
+    const userStatus = {
+     newUser: totalPlays === 0, // Belum pernah main sama sekali
+     winUser: totalPlays > 0 && (currentScore > 0 || highScore > 0), // Pernah menang minimal 1x
+     lossUser: totalPlays >= 3 && currentScore === 0 && highScore === 0 // 3x main tapi tidak pernah menang
+    };
+
+    console.log(`👤 User classification FIXED: totalPlays=${totalPlays}, currentScore=${currentScore}, highScore=${highScore}`);
+    console.log(`👤 Classification: newUser=${userStatus.newUser}, lossUser=${userStatus.lossUser}, winUser=${userStatus.winUser}`);
+
+    return {
+    success: response.data.success,
+      progress: progress,
+      user: response.data.user,
+      newUser: userStatus.newUser,
+      winUser: userStatus.winUser,
+      lossUser: userStatus.lossUser,
+      totalPlays,
+      level01Score: currentScore,
+      level01HighScore: highScore
+    };
+  } catch (err) {
+    console.error('❌ Get user progress error:', err);
+    return { 
+      progress: null, 
+      success: false,
+      level01Score: 0,
+      level01HighScore: 0,
+      level01Completed: false,
+      totalPlays: 0,
+      newUser: true, 
+      lossUser: false, 
+      winUser: false, 
+    };
+  }
+}
+
+// 2. UPDATE FUNCTION FOR USER PROGRESS
+async updateUserProgress(email, progress) {
+try {
+// ✅ VALIDASI INPUT
+    if (!email || typeof email !== 'string') {
+      console.error('❌ Invalid email in updateUserProgress');
+      return { success: false, error: 'Invalid email' };
+    }
+
+    // ✅ CURRENT SCORE = Score terakhir yang diperoleh (bisa naik/turun)
+    const level01Score = Math.max(0, progress.level01Score ?? 0);
+    
+    // ✅ AMBIL HIGH SCORE EXISTING DARI BERBAGAI SUMBER
+    const currentLocalHighScore = parseInt(localStorage.getItem(`highScore_${email}`) || '0');
+    const gameData = JSON.parse(localStorage.getItem(`gameData-${email}`) || '{}');
+    const existingHighScore = Math.max(
+      currentLocalHighScore,
+      gameData.gameProgress?.level01HighScore || 0,
+      progress.level01HighScore || 0
+    );
+    
+    // ✅ HIGH SCORE LOGIC YANG BENAR:
+    // - Jika current score LEBIH TINGGI dari existing high score → UPDATE high score
+    // - Jika current score LEBIH RENDAH dari existing high score → TETAP pakai existing high score
+    const level01HighScore = Math.max(level01Score, existingHighScore);
+    const isNewHighScore = level01Score > existingHighScore;
+    
+    const level01Completed = progress.level01Completed ?? (level01Score > 0);
+
+    // ✅ PERBAIKAN: SELALU UPDATE CURRENT SCORE, HIGH SCORE HANYA UPDATE JIKA LEBIH TINGGI
+    if (level01Score === 0 && !progress.forceUpdate && !progress.gameResult) {
+      console.log('🚫 Skipping update - no valid game session');
+      return {
+        success: false,
+        message: 'No valid game session to update',
+        preservedScore: true
+      };
+    }
+
+    console.log('📤 Updating progress:', {
+      email,
+      currentScore: level01Score, // ✅ Score terakhir (bisa naik/turun)
+      existingHighScore: existingHighScore, // ✅ High score yang sudah ada
+      newHighScore: level01HighScore, // ✅ High score yang akan disimpan
+      isNewHighScore: isNewHighScore, // ✅ Apakah ini high score baru?
+      gameResult: progress.gameResult || 'unknown'
+    });
+
+    const res = await axios.post(
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
+      {
+        email,
+        level01Score, // ✅ SELALU kirim current score (terakhir yang diperoleh)
+        level01HighScore, // ✅ High score (hanya naik jika current > existing)
+        level01Completed,
+        totalPlays: Math.max(0, progress.totalPlays ?? 0),
+        completionTime: progress.completionTime || 0,
+        gameResult: progress.gameResult || 'unknown',
+        // ✅ FLAGS UNTUK BACKEND
+        updateCurrentScore: true, // ✅ Selalu update current score
+        updateHighScore: isNewHighScore, // ✅ Hanya update high score jika lebih tinggi
+        preserveHighScore: true, // ✅ Jangan turunkan high score existing
+        allowScoreDecrease: true, // ✅ Izinkan current score turun
+        isNewHighScore: isNewHighScore, // ✅ Flag: apakah ini high score baru
+        source: 'splash_scene',
+        timestamp: new Date().toISOString()
+      },
+      { timeout: 15000 }
+    );
+
+    // ✅ UPDATE LOCAL STORAGE DENGAN LOGIC YANG BENAR
+    if (res.data.success) {
+     // Hitung status user berdasarkan progress SETELAH UPDATE
+     const user = res.data.user || {};
+     const backendProgress = user.gameProgress || {};
+
+     const finalTotalPlays = backendProgress.totalPlays || 0;
+     const finalLevel01Score = backendProgress.level01Score || 0;
+     const finalLevel01HighScore = backendProgress.level01HighScore || 0;
+
+     // ✅ DEFINISIKAN currentScore & highScore
+     const currentScore = finalLevel01Score || 0;  // API -> Frontend
+     const highScore = finalLevel01HighScore || 0; // API -> Frontend
+
+    // ✅ HITUNG USER STATUS BERDASARKAN DATA BACKEND 
+    const userStatus = {
+     newUser: finalTotalPlays === 0,
+     winUser: finalTotalPlays > 0 && (currentScore > 0 || highScore > 0),
+     lossUser: finalTotalPlays >= 3 && currentScore === 0 && highScore === 0
+    }; 
+
+    // ✅ SELALU update current score
+    this.level01Score = level01Score;
+    localStorage.setItem(`score_${email}`, level01Score.toString());
+      
+    // ✅ UPDATE high score HANYA jika lebih tinggi
+    if (isNewHighScore) {
+      this.level01HighScore = level01HighScore;
+      localStorage.setItem(`highScore_${email}`, level01HighScore.toString());
+      console.log(`🏆 NEW HIGH SCORE! ${existingHighScore} → ${level01HighScore}`);
+        
+    // ✅ BISA TAMBAHKAN CELEBRATION EFFECT
+        this.showNewHighScoreEffect && this.showNewHighScoreEffect(level01HighScore);
+      } else {
+        this.level01HighScore = existingHighScore;
+        console.log(`📊 Current: ${level01Score}, High Score unchanged: ${existingHighScore}`);
+      }
+      
+    // ✅ Update gameData dengan kedua score
+    const updatedGameData = {
+      ...gameData,
+      gameProgress: {
+          ...gameData.gameProgress,
+          level01Score: level01Score, // ✅ Current score (terakhir)
+          level01HighScore: this.level01HighScore, // ✅ High score (tertinggi)
+          level01Completed,
+          lastUpdated: new Date().toISOString(),
+          lastGameResult: progress.gameResult || 'unknown',
+          isNewHighScore: isNewHighScore // ✅ Flag untuk UI
+        },
+        newUser: res.data.newUser || false,
+        winUser: res.data.winUser || false,
+        lossUser: res.data.lossUser || false
+      };
+      localStorage.setItem(`gameData-${email}`, JSON.stringify(updatedGameData));
+
+      // ✅ UPDATE history dengan KEDUA score
+      const history = JSON.parse(localStorage.getItem(`gameHistory_${email}`) || '{}');
+      const updatedHistory = {
+        ...history,
+        currentScore: level01Score, // ✅ Score terakhir
+        highestScore: this.level01HighScore, // ✅ Score tertinggi sepanjang masa
+        lastGameDate: new Date().toISOString(),
+        lastGameResult: progress.gameResult || 'unknown',
+        isNewHighScore: isNewHighScore,
+        previousHighScore: existingHighScore // ✅ Simpan high score sebelumnya untuk perbandingan
+      };
+      localStorage.setItem(`gameHistory_${email}`, JSON.stringify(updatedHistory));
+      
+      console.log('✅ Progress updated - Current:', level01Score, 'High:', this.level01HighScore);
+    }
+
+    return {
+      success: res.data.success,
+      user: res.data.user,
+      newUser: res.data.newUser || false,
+      winUser: res.data.winUser || false,
+      lossUser: res.data.lossUser || false,
+      message: res.data.message,
+      currentScore: level01Score,
+      highScore: this.level01HighScore,
+      isNewHighScore: isNewHighScore, // ✅ Return info apakah high score baru
+      previousHighScore: existingHighScore // ✅ Return high score sebelumnya
+    };
+
+    } catch (err) {
+    console.error('❌ Update progress error:', err);
+    
+    // ✅ FALLBACK: Update local dengan logic yang sama
+    if (email && progress.level01Score >= 0) {
+      const currentLocal = JSON.parse(localStorage.getItem(`gameData-${email}`) || '{}');
+      const localHighScore = currentLocal.gameProgress?.level01HighScore || 0;
+      const newHighScore = Math.max(progress.level01Score || 0, localHighScore);
+      const isNewHighScore = (progress.level01Score || 0) > localHighScore;
+      
+      const fallbackData = {
+        ...currentLocal,
+        gameProgress: {
+          ...currentLocal.gameProgress,
+          level01Score: progress.level01Score, // ✅ Current score
+          level01HighScore: newHighScore, // ✅ High score (hanya naik jika lebih tinggi)
+          lastUpdated: new Date().toISOString(),
+          offlineUpdate: true,
+          lastGameResult: progress.gameResult || 'unknown',
+          isNewHighScore: isNewHighScore
+        }
+      };
+      localStorage.setItem(`gameData-${email}`, JSON.stringify(fallbackData));
+      localStorage.setItem(`score_${email}`, (progress.level01Score || 0).toString());
+      
+      // Update high score di localStorage jika lebih tinggi
+      if (isNewHighScore) {
+        localStorage.setItem(`highScore_${email}`, newHighScore.toString());
+        console.log('💾 Fallback: NEW HIGH SCORE saved locally:', newHighScore);
+      }
+
+      console.log('💾 Fallback: Progress saved locally');
+    }
+    
+    return {
+      success: false,
+      error: err.message,
+      fallbackSaved: true
+    };
+  }
+}
+
+// ✅ TAMBAHAN: FUNCTION UNTUK SHOW NEW HIGH SCORE EFFECT
+showNewHighScoreEffect(newHighScore) {
+  console.log('🎉 NEW HIGH SCORE ACHIEVED:', newHighScore);
+  
+  // ✅ BISA TAMBAHKAN VISUAL EFFECT DI SINI
+  // Contoh: 
+  // - Flash screen
+  // - Show congratulations text
+  // - Play special sound
+  // - Particle effects
+  
+  // Contoh simple text effect:
+  if (this.add && typeof this.add.text === 'function') {
+    const congratsText = this.add.text(960, 300, `NEW HIGH SCORE!\n${newHighScore}`, {
+      fontSize: '48px',
+      fill: '#FFD700',
+      stroke: '#000000',
+      strokeThickness: 3,
+      align: 'center'
+    }).setOrigin(0.5).setDepth(1000);
+    
+    // Fade out after 3 seconds
+    this.time.delayedCall(3000, () => {
+      this.tweens.add({
+        targets: congratsText,
+        alpha: 0,
+        duration: 1000,
+        onComplete: () => congratsText.destroy()
+      });
+    });
+  }
+}
+
+
+// 3. GET USER STATUS DARI BACKEND (POST)
+async getUserStatus(email, level = 'Level01Scene') {
+  try {
+    const response = await axios.post(
+      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/status',
+      { email, level : 'Level01Scene' },
+      { timeout: 200000 }
+    );
+    return response.data;
+  } catch (err) {
+    console.error('❌ Error checkUserStatusAndGameOver:', err);
+    return null;
+  }
+}
+
+    // PERBAIKAN FUNGSI checkUserStatusAndGameOver
+async checkUserStatusAndGameOver(email) {
+  const status = await this.getUserStatus(email, 'Level01Scene');
+  if (!status) {
+    console.error('Gagal ambil status user');
+    return null; 
+}
+
+// Ambil progress user dengan variable yang benar
+//const user = response.data.user || {};
+const progress = status.progress || {};
+const unlocked = progress?.level01Completed || false; // Perbaiki nama property
+const level01Score = progress.level01Score || 0;
+const level01HighScore = progress.level01HighScore || 0;
+const totalPlays = progress.totalPlays || 0;
+
+// ✅ DEFINISIKAN currentScore & highScore
+const currentScore = progress.level01Score || 0;  // API -> Frontend
+const highScore = progress.level01HighScore || 0; // API -> Frontend
+
+// Hitung status user berdasarkan progress
+const userStatus = {
+ newUser: totalPlays === 0,
+ winUser: totalPlays > 0 && (currentScore > 0 || highScore > 0),
+ lossUser: totalPlays >= 3 && currentScore === 0 && highScore === 0
+};
+
+console.log(`🔍 User status check: plays=${totalPlays}, score=${currentScore}, high=${highScore}`);
+console.log(`🎯 User type: new=${userStatus.newUser}, win=${userStatus.winUser}, loss=${userStatus.lossUser}`);
+
+// ✅ UNTUK NEW USER: Aktifkan game
+  if (userStatus.newUser) {
+    this.isGameOver = false;
+    this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+    console.log('✅ User baru - game diaktifkan');
+    return { ...status, newUser: true, winUser: false, lossUser: false };
+  }
+
+// ✅ UNTUK WIN USER: Selalu aktifkan game (sudah pernah menang)
+  if (userStatus.winUser) {
+    this.isGameOver = false;
+    this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+    if (this.playBtn) {
+      this.playBtn.setInteractive({ useHandCursor: true });
+      this.playBtn.setAlpha(1);
+      this.playBtn.setVisible(true);
+    }
+    console.log('✅ Win user - game tetap aktif');
+    return { ...status, newUser: false, winUser: true, lossUser: false };
+  }
+
+  // ✅ UNTUK LOSS USER: Cek payment status
+   if (userStatus.lossUser) {
+  // Cek payment status
+  const paymentData = await window.checkPaymentStatusFromBackend(email);
+  const isPaid = paymentData && paymentData.isPaid === true;
+
+  if (!isPaid) {
+    this.isGameOver = true;
+    status.isGameOver = true;
+    status.showPaymentPanel = true;       
+    status.showFavoritPayPanel = true;
+    localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
+    this.lockAllGameplayButtons();
+    console.log('❌ Loss user belum bayar - game dikunci');
+    return { ...status, newUser: false, winUser: false, lossUser: true };
+  } else {
+    // ✅ SUDAH BAYAR - PANGGIL UNLOCK FUNCTION
+    console.log('💳 Loss user sudah bayar - proceeding to unlock...');
+    
+    const unlockResult = await this.unlockedLevels(email, 'Level01Scene');
+    if (unlockResult) {
+      console.log('✅ Auto-unlock successful after payment detection');
+      this.isGameOver = false;
+      
+      // ✅ GET UPDATED STATUS DARI LOCALSTORAGE SETELAH UNLOCK
+      const updatedData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+      return { 
+        ...status, 
+        newUser: updatedData.newUser || false, 
+        winUser: updatedData.winUser || true, // Biasanya jadi winUser setelah unlock
+        lossUser: false, 
+        isPaid: true,
+        isGameOver: false
+      };
+    } else {
+      console.error('❌ Auto-unlock failed despite payment');
+      return { ...status, newUser: false, winUser: false, lossUser: true };
+    }
+  }
+}
+  // Default case
+  this.isGameOver = false;
+  this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+  return status;
+}
+
+// 4. Fungsi SET GAME OVER (async)
+async setGameOver(email, isGameOver = true, userStatus = { newUser: false, winUser: false, lossUser: true }) {
+  try {
+  // Ambil progress dan status user dengan variable yang benar
+  const progressRes = await this.getUserProgress(email);
+  const progress = progressRes.progress || {};
+  const unlocked = progress?.level01Completed || false; 
+  const level01Score = progress.level01Score || 0;
+  const level01HighScore = progress.level01HighScore || 0;
+  const totalPlays = progress.totalPlays || 0;
+
+  // ✅ DEFINISIKAN currentScore & highScore
+  const currentScore = progress.level01Score || 0;
+  const highScore = progress.level01HighScore || 0;
+
+  // Hitung status user berdasarkan progress
+  const userStatus = {
+   newUser: totalPlays === 0,
+   winUser: totalPlays > 0 && (currentScore > 0 || highScore > 0),
+   lossUser: totalPlays >= 3 && currentScore === 0 && highScore === 0
+  }; 
+   console.log('🎯 Setting game over with calculated user status:', {
+      email,
+      isGameOver,
+      totalPlays,
+      currentScore,
+      highScore,
+      userStatus: userStatus
+    });
+
+    // ✅ LANGKAH 5: KIRIM KE BACKEND DENGAN STATUS YANG BENAR
+    const response = await axios.post(
+    'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/set-gameover',
+      { email, isGameOver, userStatus: userStatus},
+      { timeout: 200000 }
+    );
+
+    // ✅ LANGKAH 6: UPDATE LOCALSTORAGE DENGAN STATUS YANG BENAR
+    if (response.data.success) {
+      const userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+      userData.gameProgress = {
+        ...userData.gameProgress,
+        ...progress // ✅ UPDATE DENGAN PROGRESS TERBARU
+      };
+      userData.newUser = userStatus.newUser;
+      userData.winUser = userStatus.winUser;
+      userData.lossUser = userStatus.lossUser;
+      userData.isGameOver = isGameOver;
+      userData.lastGameOverSet = new Date().toISOString();
+      localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+
+      console.log('✅ Game over status set successfully with calculated user status');
+    }
+    return response.data.success || true;
+  } catch (err) {
+    console.error('Set game over error:', err);
+
+    // ✅ FALLBACK: TETAP UPDATE LOCALSTORAGE MESKI BACKEND GAGAL
+    try {
+      const userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+      const localProgress = userData.gameProgress || {};
+      const localTotalPlays = localProgress.totalPlays || 0;
+      const localCurrentScore = localProgress.level01Score || 0;
+      const localHighScore = localProgress.level01HighScore || 0;
+
+      // Hitung status user dari data lokal
+      const fallbackUserStatus = {
+        newUser: localTotalPlays === 0,
+        winUser: localTotalPlays > 0 && (localCurrentScore > 0 || localHighScore > 0),
+        lossUser: localTotalPlays >= 3 && localCurrentScore === 0 && localHighScore === 0
+      };
+
+      userData.newUser = fallbackUserStatus.newUser;
+      userData.winUser = fallbackUserStatus.winUser;
+      userData.lossUser = fallbackUserStatus.lossUser;
+      userData.isGameOver = isGameOver;
+      userData.fallbackUpdate = true;
+      localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+
+      console.log('💾 Fallback: Game over status saved locally with calculated user status');
+    } catch (fallbackErr) {
+      console.error('❌ Fallback also failed:', fallbackErr);
+    }
+    return false;
+  }
+}
+
+// 5. CHECK GAME OVER STATUS DARI SERVER
+async checkGameOverStatusFromServer() {
+  const email = localStorage.getItem('email');
+  if (!email) return;
+
+  try {
+    const response = await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/gameover', 
+      { email },
+      { timeout: 200000 }  
+    );
+
+  // Ambil progress dan status user dengan variable yang benar
+  const progress = response.data.progress || {};
+  const unlocked = progress.level01Completed || false;
+  const level01Score = progress.level01Score || 0;
+  const level01HighScore = progress.level01HighScore || 0;
+  const totalPlays = progress.totalPlays || 0;
+
+  // ✅ DEFINISIKAN currentScore & highScore
+  const currentScore = progress.level01Score || 0;  // API -> Frontend
+  const highScore = progress.level01HighScore || 0; // API -> Frontend
+
+  // Hitung status user berdasarkan progress
+  const userStatus = {
+   newUser: totalPlays === 0,
+   winUser: totalPlays > 0 && (currentScore > 0 || highScore > 0),
+   lossUser: totalPlays >= 3 && currentScore === 0 && highScore === 0
+  };
+
+    const data = response.data;
+    if (data.isGameOver) {
+      this.isGameOver = true;
+       // Tampilkan pesan sesuai tipe user
+      if (data.userStatus.lossUser) {
+        this.showGameOverReturnMessage && this.showGameOverReturnMessage();
+        this.lockAllGameplayButtons && this.lockAllGameplayButtons();
+      } else if (data.userStatus.winUser) {
+        // WIN USER: Sudah main >= 1x, score > 0
+        this.isGameOver = false;
+        this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+        // Bisa tambahkan pesan kemenangan jika perlu
+      } else if (data.userStatus.newUser) {
+        // NEW USER: Belum pernah main
+        this.isGameOver = false;
+        this.unblur10PuzzleButton && this.unblur10PuzzleButton();
+        // Bisa tambahkan pesan selamat datang jika perlu  
+      } 
+      return;
+    } else {
+      // Jika tidak game over, pastikan tombol aktif
+      this.isGameOver = false;
+      this.unblur10PuzzleButton && this.unblur10PuzzleButton();  
+    }
+    } catch (err) {
+    // Fallback ke localStorage jika backend gagal
+    const isLocked = localStorage.getItem(`gameOver_${email}`) === 'true';
+    if (isLocked) {
+      this.showGameOverReturnMessage();
+      //this.lockAllGameplayButtons();
+      //await this.lockLevel(email, 'Level01');
+      return;
+    }
+    console.error('Error checking game over status:', err);
+    }
+}
+
+// 6. LOCK LEVEL (mengunci akses level untuk user)
+async lockLevel(email, level, userStatus = { newUser: false, winUser: false, lossUser: true }) {
+  try {
+    const progressRes = await this.getUserProgress(email);
+    const progress = progressRes.progress || {};
+    const unlocked = progress?.[`${level.toLowerCase()}Completed`] || false;
+    const level01Score = progress.level01Score || 0;
+    const level01HighScore = progress.level01HighScore || 0;
+    const totalPlays = progress.totalPlays || 0;
+
+    // ✅ DEFINISIKAN currentScore & highScore
+    const currentScore = progress.level01Score || 0;  // API -> Frontend
+    const highScore = progress.level01HighScore || 0; // API -> Frontend
+
+    // Hitung status user berdasarkan progress
+    const userStatus = {
+    newUser: totalPlays === 0,
+    winUser: totalPlays > 0 && (currentScore > 0 || highScore > 0),
+    lossUser: totalPlays >= 3 && currentScore === 0 && highScore === 0
+    };
+
+    const res = await axios.post(
+      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/lock',
+      { email, level, userStatus },
+      { timeout: 200000 }
+    );
+    if (res.data.success) {
+      this.isGameOver = true;
+      this.blur10PuzzleButton && this.blur10PuzzleButton();
+      this.lockAllGameplayButtons && this.lockAllGameplayButtons();
+      this.showGameOverReturnMessage && this.showGameOverReturnMessage();
+      return true;
+    }
+    return false;
+  } catch (err) {
+    // Fallback ke localStorage jika backend gagal
+    const isLocked = localStorage.getItem(`gameOver_${email}`) === 'true';
+    if (isLocked) {
+      this.isGameOver = true;
+      this.blur10PuzzleButton && this.blur10PuzzleButton();
+      this.lockAllGameplayButtons && this.lockAllGameplayButtons();
+      this.showGameOverReturnMessage && this.showGameOverReturnMessage();
+      return true;
+    }
+    // Jika tidak game over, tidak perlu lock
+    console.error('Error checking game over status:', err);
+    return false;
+  }
+}
+
+// 7. UNLOCK LEVEL - DENGAN PERHITUNGAN USER STATUS
+async unlockedLevels(email, level) {
+  try {
+    console.log('🔍 Checking unlock status for:', email);
+
+    // ✅ USE EXISTING checkPaymentStatusFromBackend FUNCTION:
+    const paymentData = await checkPaymentStatusFromBackend(email);
+    
+    if (!paymentData || paymentData.isPaid !== true) {
+      console.warn('❌ User belum melakukan pembayaran atau payment status tidak valid.');
+      console.log('Payment data:', paymentData);
+      return false;
+    }
+
+    console.log('✅ Payment verified! Proceeding to unlock level...');
+   
+    // ✅ KIRIM isPaid KE BACKEND (SESUAI PERBAIKAN userRoutes.js)
+    const unlockRes = await axios.post(
+      'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/unlock',
+      { 
+        email, 
+        level,
+        isPaid: true // ✅ TAMBAHKAN PARAMETER isPaid
+      },
+      { timeout: 200000 }
+    );
+
+    console.log('🔓 Unlock level response:', unlockRes.data);
+
+    // ✅ AMBIL RESPONSE LENGKAP DARI BACKEND (SESUAI PERBAIKAN userRoutes.js)
+    if (unlockRes.data.success || unlockRes.data.unlocked === true) {
+      
+      // ✅ UPDATE USER STATUS DARI RESPONSE BACKEND
+      const responseData = unlockRes.data;
+      const { 
+        newUser, 
+        winUser, 
+        lossUser, 
+        progress, 
+        level01Score, 
+        isGameOver, 
+      } = responseData;
+
+      console.log('👤 User status from unlock response:', { newUser, winUser, lossUser });
+      console.log('📊 Progress from unlock response:', progress);
+
+      // ✅ UPDATE LOCALSTORAGE DENGAN DATA DARI BACKEND
+      if (progress) {
+        let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+        userData.gameProgress = progress;
+        userData.newUser = newUser;
+        userData.winUser = winUser;
+        userData.lossUser = lossUser;
+        userData.isGameOver = false; // Always false after successful unlock
+        userData.lastUnlocked = new Date().toISOString();
+        localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+
+        // Update individual score items
+        localStorage.setItem(`score_${email}`, (level01Score || 100).toString());
+        localStorage.setItem(`highScore_${email}`, (progress.level01HighScore || level01Score || 100).toString());
+        
+        console.log('💾 LocalStorage updated with unlock data');
+      }
+
+      // ✅ UPDATE SCENE PROPERTIES
+      this.isGameOver = false;
+      this.userType = newUser ? 'newUser' : (winUser ? 'winUser' : 'default');
+
+      // ✅ UNLOCK UI ELEMENTS
+      this.unblur10PuzzleButton(); // Hapus blur tombol 10 puzzle
+      this.unlockGameAfterPurchase(); // Aktifkan tombol Play & Puzzle
+
+      // ✅ UPDATE GLOBAL VARIABLES
+      if (typeof window !== 'undefined') {
+        window.level01Score = level01Score || 100;
+        window.playerScore = level01Score || 100;
+      }
+
+      console.log('✅ Game unlocked successfully! User can now play.');
+      console.log(`🎮 New user status: ${this.userType}`);
+      console.log(`📊 New score: ${level01Score || 100}`);
+      
+      return true;
+    } else {
+      console.warn('❌ Unlock request failed:', unlockRes.data);
+      return false;
+    }
+   
+  } catch (err) {
+    console.error('Unlock level error:', err);
+
+    // ✅ NO ALERT - JUST LOG:
+    console.log('❌ Unlock process failed - user should refresh page');
+    return false;
+  }
+}
+//========================================= BATAS 7 FUNGSI =========================================
+// ✅ Tambahkan function ini di dalam class Level01Scene:
+cleanupBeforeSceneChange() {
+  // Stop semua timer
+  if (this.gameTimer) {
+    this.gameTimer.destroy();
+    this.gameTimer = null;
+  }
+  if (this.roundTimer) {
+    this.roundTimer.remove(false);
+    this.roundTimer = null;
+  }
+  if (this.autoSaveInterval) {
+    clearInterval(this.autoSaveInterval);
+    this.autoSaveInterval = null;
+  }
+  if (this.paymentCheckInterval) {
+    clearInterval(this.paymentCheckInterval);
+    this.paymentCheckInterval = null;
+  }
+  // Stop semua musik
+  if (this.sound && this.sound.stopAll) this.sound.stopAll();
+  // Clear semua tweens
+  if (this.tweens && this.tweens.killAll) this.tweens.killAll();
+  // Clear semua timers
+  if (this.time && this.time.removeAllEvents) this.time.removeAllEvents();
+  console.log('✅ Scene cleanup completed');
+}
+async  syncProgressFromBackend(email) {
+  try {
+    console.log('🔄 Syncing progress from backend for:', email);
+    
+    // ✅ STEP 1: Ambil data dari localStorage sebagai fallback
+    const localData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+    const localProgress = localData.gameProgress || {};
+    
+    console.log('📱 Local data:', localProgress);
+    
+    // ✅ STEP 2: Kirim request ke backend dengan data lokal sebagai konteks
+    const response = await axios.post(
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
+      { 
+        email, 
+        level: 'Level01Scene',
+        // Kirim data lokal untuk perbandingan
+        localProgress: localProgress
+      },
+      { timeout: 200000 }
+    );
+    
+    // ✅ STEP 3: Ambil data dari backend (PRIORITAS UTAMA)
+    const backendData = response.data;
+    const progress = backendData.progress || {};
+    
+    console.log('🌐 Backend data:', progress);
+
+    // ✅ STEP 4: SELALU GUNAKAN DATA BACKEND sebagai sumber truth
+    const finalData = {
+      level01Score: progress.level01Score || 0,
+      level01HighScore: progress.level01HighScore || 0,
+      totalPlays: progress.totalPlays || 0,
+      level01Completed: progress.level01Completed || false,
+      bestTime: progress.bestTime || 0,
+      averageTime: progress.averageTime || 0,
+      completionRate: progress.completionRate || 0,
+      perfectGames: progress.perfectGames || 0,
+      totalAttempts: progress.totalAttempts || 0,
+      gameOvers: progress.gameOvers || 0,
+      favoriteGiven: progress.favoriteGiven || false,
+      lastPlayedDate: progress.lastPlayedDate || new Date().toISOString()
+    };
+    
+    // ✅ STEP 5: Hitung user classification berdasarkan data backend
+    const newUser = finalData.totalPlays === 0;
+    const winUser = finalData.totalPlays > 0 && (finalData.level01Score > 0 || finalData.level01HighScore > 0);
+    const lossUser = finalData.totalPlays >= 3 && finalData.level01Score === 0 && finalData.level01HighScore === 0;
+
+    console.log(`👤 Backend user classification: newUser=${newUser}, winUser=${winUser}, lossUser=${lossUser}`);
+    
+    // ✅ STEP 6: UPDATE localStorage dengan data backend (FORCE UPDATE)
+    const updatedUserData = {
+      gameProgress: finalData,
+      newUser,
+      winUser,
+      lossUser,
+      lastSyncTime: new Date().toISOString(),
+      syncedFromBackend: true
+    };
+
+    // Update gameData
+    localStorage.setItem(`gameData-${email}`, JSON.stringify(updatedUserData));
+    
+    // Update score
+    localStorage.setItem(`score_${email}`, (finalData.level01Score || 0).toString());
+    
+    // Update game history
+    localStorage.setItem(`gameHistory_${email}`, JSON.stringify({
+      hasPlayedBefore: (finalData.totalPlays || 0) > 0,
+      totalGamesPlayed: finalData.totalPlays || 0,
+      highestScore: finalData.level01HighScore || 0,
+      gameOvers: finalData.gameOvers || 0,
+      lastPlayedDate: finalData.lastPlayedDate,
+      favoriteGiven: finalData.favoriteGiven || false,
+      newUser,
+      winUser,
+      lossUser
+    }));
+    
+    // ✅ STEP 7: UPDATE global variables
+    window.level01Score = finalData.level01Score || 0;
+    window.playerScore = finalData.level01Score || 0;
+    
+    // ✅ STEP 8: UPDATE UI jika scene sudah aktif
+    if (window.Phaser && window.game && window.game.scene) {
+      const level01 = window.game.scene.getScene('Level01Scene');
+      if (level01 && level01.scene && level01.scene.isActive()) {
+        // Update score di scene
+        if (level01.level01Score !== undefined) {
+          level01.level01Score = finalData.level01Score || 0;
+        }
+        // Update scoreText
+        if (level01.scoreText && typeof level01.scoreText.setText === 'function') {
+          level01.scoreText.setText((finalData.level01Score || 0).toString().padStart(5, '0'));
+        }
+        console.log('🎮 Scene updated with backend data');
+      }
+    }
+
+    console.log('✅ Synced progress from backend - Final data:', finalData);
+    console.log('✅ User status:', { newUser, winUser, lossUser });
+    
+    return {
+      progress: finalData,
+      newUser,
+      winUser,
+      lossUser,
+      success: true
+    };
+    
+  } catch (err) {
+    console.error('❌ Failed to sync progress from backend:', err);
+    
+    // ✅ FALLBACK: Jika backend gagal, gunakan data lokal
+    const localData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+    const localProgress = localData.gameProgress || {};
+    
+    console.log('🔄 Using local fallback data:', localProgress);
+    
+    return {
+      progress: localProgress,
+      newUser: localData.newUser || false,
+      winUser: localData.winUser || false,  
+      lossUser: localData.lossUser || false,
+      success: false,
+      error: err.message
+    };
+  }
+}
+
+// ✅ PERBAIKAN: HANDLE VISIBILITY CHANGE KHUSUS UNTUK LEVEL01
+  setupVisibilityHandler() {
+    // ✅ LEVEL01 SPECIFIC VISIBILITY HANDLER
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        const email = localStorage.getItem('email');
+        if (!email || !this.hasUserInput) return;
+
+        console.log('👁️ Level01 page hidden - saving current state');
+        
+        // ✅ PAUSE TIMER SAAT TAB HIDDEN
+        if (this.gameTimer && !this.gameCompleted) {
+          this.gameTimer.paused = true;
+          console.log('⏸️ Game timer paused');
+        }
+        
+        // ✅ QUICK SAVE CURRENT STATE
+        if (this.level01Score > 0 || this.hasUserInput) {
+          window.manualSaveProgress && window.manualSaveProgress(email, {
+            score: this.level01Score,
+            highScore: this.level01HighScore,
+            time: this.timeElapsed,
+            completed: this.gameCompleted,
+            result: this.gameWon ? 'won' : (this.gameCompleted ? 'lost' : 'paused')
+          });
+        }
+      } else if (document.visibilityState === 'visible') {
+        console.log('👁️ Level01 page visible - resuming');
+        
+        // ✅ RESUME TIMER JIKA GAME BELUM SELESAI
+        if (this.gameTimer && !this.gameCompleted && this.hasUserInput) {
+          this.gameTimer.paused = false;
+          console.log('▶️ Game timer resumed');
+        }
+      }
+    });
+  } 
+
+// Definisikan di luar create()
+initUserData(email, userData) {
+  // Jika belum ada data progress, ambil dari backend
+  if (!userData || !userData.gameProgress) {
+    this.getUserProgress(email).then(progressRes => {
+      if (progressRes && progressRes.progress) {
+        userData = { gameProgress: progressRes.progress };
+        localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+      } else {
+        // Jika backend juga kosong, inisialisasi default
+        userData = {
+          gameProgress: {
+            level01Completed: false,
+            level01Score: 0,
+            level01HighScore: 0,
+            totalPlays: 0,
+            bestTime: 0,
+            averageTime: 0,
+            completionRate: 0,
+            perfectGames: 0,
+            totalAttempts: 0,
+            completionTime: 0,
+            isPerfectGame: 0
+          }
+        };
+        localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+      }
+      // Update score di scene
+      this.level01Score = userData.gameProgress.level01Score || 0;
+    });
+  } else {
+    // Jika sudah ada, langsung pakai
+    this.level01Score = userData.gameProgress.level01Score || 0;
+  }
+}
+
+  // === Panel help, musik, dsb === ini tidak bisa dihapus pengaruh ke sound on off
+  createHelpPanel() {
+    this.helpPanel = this.add.rectangle(1050, 320, 340, 340, 0x181c24, 0.82)
+      .setStrokeStyle(3, 0x00eaff)
+      .setAlpha(0)
+      .setDepth(100);
+    this.helpText = this.add.text(900, 180,
+      { font: "20px Segoe UI", fill: "#fff", wordWrap: { width: 320 } }
+    )
+      .setAlpha(0).setDepth(101);
+  }
+
+   // ====== CEK PUZZLE ======
+ // Fungsi untuk mulai ronde berikutnya
+startNextRound() {
+  let timeLimit = this.roundTimeLimits[this.currentRound - 1] || 18;
+  this.timeElapsed = 0;
+  if (this.roundTimer) this.roundTimer.remove(false);
+  this.roundTimer = this.time.addEvent({
+    delay: 1000,
+    callback: () => {
+      this.timeElapsed++;
+      let min = Math.floor(this.timeElapsed / 60).toString().padStart(2, '0');
+      let sec = (this.timeElapsed % 60).toString().padStart(2, '0');
+      this.timerText.setText(`${min}:${sec}`);
+      if (this.timeElapsed >= timeLimit) {
+        this.roundTimer.remove(false);
+        this.onTimeUp();
+      }
+    },
+    callbackScope: this,
+    loop: true
+  });
+  this.showRoundMessage(`ROUND ${this.currentRound} - ${timeLimit}s`);
+}
+
+// ====== CEK PUZZLE ======
+async checkPuzzle() {
+  console.log('rightBoardSlots:', this.rightBoardSlots);
+  let isCorrect = true;
+  for (let i = 0; i < 10; i++) {
+    if (this.rightBoardSlots[i] !== i + 1) {
+      isCorrect = false;
+      break;
+    }
+  }
+
+  // Tambahkan deklarasi progress di sini:
+  const email = localStorage.getItem('email');
+  const userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+  const progress = userData.gameProgress || {};
+
+  if (isCorrect) {
+    // Stop timer
+    if (this.roundTimer) {
+      this.roundTimer.remove(false);
+      this.roundTimer = null;
+    }
+   
+      // ✅ SCORE BONUS BERDASARKAN RONDE
+    let scoreBonus = 100; // Default score R1 & R2
+    let showBonusMessage = false;
+
+    // ✅ CEK RONDE SAAT MENANG UNTUK BONUS
+  const currentRoundWhenWin = this.round; // Simpan ronde saat menang
+  
+  // ✅ HANYA BERIKAN BONUS 300 JIKA MENANG DI RONDE 3
+  if (currentRoundWhenWin === 3) {
+    scoreBonus = 300; // ⭐ BONUS SCORE RONDE 3
+    showBonusMessage = true;
+    console.log('🔥 MENANG DI RONDE 3! +300 score bonus');
+  } else {
+    console.log(`✅ Menang di Round ${currentRoundWhenWin}: +100 score (normal win)`);
+  }
+
+   // ✅ TAMBAH SCORE
+    //this.level01Score = (this.level01Score || 0) + 100;
+    this.level01Score = (this.level01Score || 0) + scoreBonus;
+    this.scoreText.setText(this.level01Score.toString().padStart(5, '0'));
+    this.registry.set('level01Score', this.level01Score);
+
+    // ✅ TAMPILKAN PESAN BONUS RONDE 3
+    if (showBonusMessage) {
+      this.showRonde3BonusMessage();
+    }
+
+    // Reset ke R1 setelah menang di ronde manapun
+    this.round = 1;
+    this.currentRound = 1;
+   //this.timeElapsed = 0;
+   //this.startNextRound();
+
+     // ✅ STOP TIME ELAPSED agar tidak bertambah lagi
+    //this.timeElapsed = this.timeElapsed; // Freeze time
+
+    //console.log('🏆 PUZZLE COMPLETE! Timer stopped at:', this.timeElapsed);
+    //console.log('🎯 Current round when winning:', this.round);
+
+    // ✅ RESET TIMER KE 00:00 SETELAH MENANG JUGA
+    this.timeElapsed = 0;
+    if (this.timerText) {
+      this.timerText.setText("00:00");
+      console.log('🏆 Win: Timer reset to 00:00 - Menu favorit unlocked');
+    //this.startNextRound(); // akan start timer lagi
+    }
+
+    // ✅ TAMPILKAN PUZZLE TERSUSUN DULU SELAMA 2 DETIK
+    console.log('🎯 Puzzle completed! Showing final result for 2 seconds...');
+
+    // ✅ TAMPILKAN PESAN CONGRATULATIONS
+    const congratsText = this.add.text(960, 300, 'PUZZLE COMPLETED!😄', {
+      fontSize: '36px',
+      fill: '#FFD700',
+      stroke: '#000000',
+      strokeThickness: 3,
+      backgroundColor: 'rgba(0,0,0,0.7)',
+      padding: { left: 20, right: 20, top: 10, bottom: 10 }
+    }).setOrigin(0.5).setDepth(1000);
+    
+    // ✅ ANIMASI BERKEDIP
+    this.tweens.add({
+      targets: congratsText,
+      alpha: { from: 1, to: 0.5 },
+      duration: 1000,
+      yoyo: true,
+      repeat: 1,
+      onComplete: () => congratsText.destroy()
+    });
+
+    // ✅ DELAY 3 DETIK SEBELUM HIDE PUZZLE
+    this.time.delayedCall(3000, () => {
+      console.log('⏰ 3 seconds passed - now hiding puzzle pieces...');
+
+    // ✅ SEMBUNYIKAN SEMUA PUZZLE SETELAH MENANG
+    for (let i = 0; i < 10; i++) {
+      let piece = this.puzzlePieces[i];
+      let numText = this.puzzlePieceNumbers[i];
+      
+      piece.setAlpha(0.01);
+      piece.setVisible(false);
+      piece.disableInteractive();
+      
+      numText.setAlpha(0.01);
+      numText.setVisible(false);
+      
+      piece.x = 118;
+      piece.y = 465;
+      numText.x = 118;
+      numText.y = 465;
+    }  
+
+    // ✅ RESET RIGHT BOARD SLOTS
+    this.rightBoardSlots = Array(10).fill(null);
+    console.log('✅ Win: Arena cleaned - all puzzles hidden');
+  });  
+
+     // ✅ SIMPAN PROGRESS KE LOCALSTORAGE
+    //let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+    userData.gameProgress = userData.gameProgress || {};
+
+    // Pastikan level01HighScore selalu angka // sonnet tidak ada koreksi ini
+    if (typeof userData.gameProgress.level01HighScore !== 'number' || isNaN(userData.gameProgress.level01HighScore)) {
+    userData.gameProgress.level01HighScore = 0;
+    }
+     
+    // Update localStorage dengan semua progress terbaru
+    userData.gameProgress.level01Score = this.level01Score;
+    userData.gameProgress.level01HighScore = Math.max(userData.gameProgress.level01HighScore || 0, this.level01Score);
+    userData.gameProgress.totalPlays = (userData.gameProgress.totalPlays || 0) + 1;
+    userData.gameProgress.level01Completed = true; // ✅ MARK AS COMPLETED
+    userData.gameProgress.bestTime = this.timeElapsed;
+    //userData.gameProgress.averageTime = typeof this.timeElapsed === 'number' ? this.timeElapsed : 0;
+    userData.gameProgress.averageTime = this.timeElapsed;
+    userData.gameProgress.completionRate = 100; // Atur sesuai logic kamu
+    userData.gameProgress.perfectGames = true; // Atur sesuai logic kamu
+    userData.gameProgress.totalAttempts = (userData.gameProgress.totalAttempts || 0) + 1;
+
+    localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+  
+    // Setelah update localStorage
+    //const newAverageTime = typeof this.timeElapsed === 'number' ? this.timeElapsed : 0;
+    //const newCompletionRate = 100; // Atau hitung sesuai logic kamu
+    //const isPerfectGame = true; // Atur sesuai logic kamu
+
+
+    // Update ke backend juga
+    //const progress = await this.getUserProgress(email);   
+
+    // ✅ UPDATE BACKEND TANPA TRIGGER GAME OVER
+    try {
+    await this.updateUserProgress(email, {
+    level01Completed: true,
+        level01Score: this.level01Score,
+        level01HighScore: Math.max(this.level01Score, progress.level01HighScore || 0),
+        totalPlays: userData.gameProgress.totalPlays,
+        bestTime: this.timeElapsed,
+        averageTime: this.timeElapsed,
+        completionRate: 100,
+        perfectGames: true,
+        totalAttempts: userData.gameProgress.totalAttempts  
+    });
+   } catch (err) {
+      console.error('Error updating progress:', err);
+   } 
+
+    // ✅ PLAY WIN MUSIC & HORSE ANIMATION
+    this.sound.play('horseNeigh');
+    this.showHorseNodHead();
+
+   if (this.winMusic) {
+      this.winMusic.play();
+    }
+
+    this.showClaimHat(() => {
+      if (this.playBtn) {
+        this.playBtn.setInteractive();
+        this.playBtn.setAlpha(1);
+        this.playBtn.setVisible(true);
+      }
+    });
+  
+
+      // ✅ DESTROY AIR saat menang:
+    if (this.currentAboveHorse) {
+      this.currentAboveHorse.destroy();
+      this.currentAboveHorse = null;
+      console.log('💧 Air destroyed - Player won');
+    }
+    } else {
+      // ✅ FAILED case - ADD air check:
+    if (this.level01Score > 0 && this.currentAboveHorse) {
+      this.currentAboveHorse.destroy();
+      this.currentAboveHorse = null;
+      console.log('💧 Air destroyed - Player has level01Score but failed puzzle');
+    }
+      this.onTimeUp();
+    }
+  }
+    
+// ✅ INFO TENTANG SYSTEM RONDE YANG BENAR:
+/*
+SYSTEM RONDE YANG BENAR:
+1. R1 (18 detik) - Menang: +100 score, Reset ke R1
+2. R2 (10 detik) - Menang: +100 score, Reset ke R1  
+3. R3 (8 detik)  - Menang: +300 score, Reset ke R1 ⭐ BONUS!
+
+KAPAN PLAYBTN AKTIF:
+1. ✅ Pertama kali: Harus klik 10 Puzzle
+2. ✅ Setelah beli menu favorit: Harus klik 10 Puzzle
+3. ✅ Saat game aktif (R1→R2→R3): PlayBtn otomatis aktif tanpa perlu klik 10 Puzzle
+4. ✅ Setelah menang/kalah: Kembali ke kondisi awal, harus klik 10 Puzzle lagi
+
+TIMELINE WAKTU PER RONDE:
+- this.roundTimeLimits = [18, 10, 8]; // ✅ SUDAH BENAR
+*/
+
+
+
+  // ✅ TAMBAHKAN FUNCTION BARU SETELAH checkPuzzle():
+showRonde3BonusMessage() {
+  // Hapus pesan bonus lama jika ada
+  if (this.bonusMsg) this.bonusMsg.destroy();
+  if (this.bonusMsgBg) this.bonusMsgBg.destroy();
+
+  // Background panel
+  this.bonusMsgBg = this.add.rectangle(960, 400, 1100, 300, 0x023d3f, 1)
+    .setStrokeStyle(6, 0xffd700) // Gold border
+    .setDepth(9998);
+
+  // Pesan bonus dengan animasi berkilau
+  this.bonusMsg = this.add.text(960, 400,
+    "🏆RONDE 3 WIN BONUS!🏆🤣 \n\n⭐ +300 SCORE!⭐😆", {
+    font: "bold 60px Segoe UI",
+    fill: "#ffd700", // Gold color
+    align: "center",
+    stroke: "#fff",
+    strokeThickness: 4,
+    shadow: {
+      offsetX: 0,
+      offsetY: 0,
+      color: "#ffd700",
+      blur: 20,
+      fill: true
+    }
+  }).setOrigin(0.5).setDepth(9999);
+
+  // Animasi masuk dengan scale dan glow
+  this.bonusMsg.setScale(0.1);
+  this.tweens.add({
+    targets: this.bonusMsg,
+    scale: 1.2,
+    duration: 600,
+    ease: 'Back.easeOut',
+    onComplete: () => {
+      // Efek berkilau berulang
+      this.tweens.add({
+        targets: this.bonusMsg,
+        scale: { from: 1.2, to: 1.3, to: 1.2 },
+        duration: 800,
+        repeat: 2,
+        ease: 'Sine.easeInOut'
+      });
+    }
+  });
+  
+  // Animasi background panel
+  this.bonusMsgBg.setAlpha(0);
+  this.tweens.add({
+    targets: this.bonusMsgBg,
+    alpha: 1,
+    duration: 400,
+    ease: 'Sine.easeInOut'
+  });
+
+  // Auto-hide setelah 4 detik
+  this.time.delayedCall(4000, () => {
+    if (this.bonusMsg) {
+      // Animasi keluar
+      this.tweens.add({
+        targets: [this.bonusMsg, this.bonusMsgBg],
+        alpha: 0,
+        scale: 0.8,
+        duration: 500,
+        ease: 'Sine.easeInOut',
+        onComplete: () => {
+          if (this.bonusMsg) this.bonusMsg.destroy();
+          if (this.bonusMsgBg) this.bonusMsgBg.destroy();
+          this.bonusMsg = null;
+          this.bonusMsgBg = null;
+        }
+      });
+    }
+  });
+
+  // Efek partikel emas (opsional)
+  this.createGoldParticles();
+}
+
+// ✅ EFEK PARTIKEL EMAS (OPSIONAL):
+createGoldParticles() {
+  // Buat 8 partikel emas di sekitar pesan
+  for (let i = 0; i < 8; i++) {
+    const angle = (i / 8) * Math.PI * 2;
+    const distance = 150;
+    
+    const particle = this.add.circle(
+      960 + Math.cos(angle) * 80, 
+      400 + Math.sin(angle) * 60, 
+      8, 
+      0xffd700
+    )
+      .setDepth(9999)
+      .setAlpha(0.8);
+    
+    // Animasi partikel keluar dengan fade
+    this.tweens.add({
+      targets: particle,
+      x: 960 + Math.cos(angle) * distance,
+      y: 400 + Math.sin(angle) * distance,
+      scale: { from: 1, to: 2 },
+      alpha: { from: 0.8, to: 0 },
+      duration: 1500,
+      ease: 'Cubic.easeOut',
+      onComplete: () => particle.destroy()
+    });
+  }
+}
+
+  // ========== CLAIM HAT AFTER WIN ==========
+  showClaimHat(callback) {
+    console.log('🎉😄 Player won! Time to celebrate! 🤣🏆');
+    // Hapus claimHatBtn dan downloadHat jika ada
+    if (this.claimHatBtn) {
+      this.claimHatBtn.destroy();
+      this.claimHatBtn = null;
+    }
+    if (this.downloadHat) {
+      this.downloadHat.destroy();
+      this.downloadHat = null;
+    }
+
+    // Selalu mainkan win music dan ringkikan kuda setiap menang
+    if (this.winMusic) this.winMusic.play();
+    if (this.horseNeigh) this.horseNeigh.play();
+
+    // Pause main music/fav music saat win
+    if (this.mainMusic && this.mainMusic.isPlaying) this.mainMusic.pause();
+    if (this.currentFavMusic && this.currentFavMusic.isPlaying) this.currentFavMusic.pause();
+
+    // Setelah win music selesai, resume music favorit/main
+    this.winMusic.once('complete', () => {
+      if (this.currentFavMusic && this.isFavMusicActive) {
+        this.currentFavMusic.resume();
+      } else if (this.mainMusic) {
+        this.mainMusic.resume();
+      }
+    });
+    if (callback) callback();
+    }
+  
+  // filepath: [Level01Scene.js](https://_vscodecontentref_/2)
+async onTimeUp() {
+  console.log('⏰ Time is up for round:', this.round);
+  
+  // ✅ LANGSUNG STOP DAN DESTROY TIMER
+  if (this.roundTimer) {
+    this.roundTimer.remove(false);
+    this.roundTimer = null;
+    console.log('⏹️ Round timer stopped and destroyed');
+  }
+  
+  // ✅ RESET TIMER KE 00:00 LANGSUNG AGAR MENU FAVORIT TIDAK TERKUNCI
+  this.timeElapsed = 0;
+  if (this.timerText) {
+    this.timerText.setText("00:00");
+    console.log('🕐 Timer reset to 00:00 - Menu favorit unlocked');
+  }
+
+  this.sound.play('horseSnort');
+
+  // ✅ BENAR: Progresif turun ronde
+//  if (this.round === 1) {
+//    this.round = 2; // R1 kalah → ke R2
+//  } else if (this.round === 2) {
+//    this.round = 3; // R2 kalah → ke R3
+//  } else if (this.round >= 3) {
+//    this.round = 3; // R3 kalah → tetap R3
+//  }
+
+  // Kurangi score jika gagal, minimal 0
+  this.level01Score = Math.max(0, (this.level01Score || 0) - 100);
+  this.scoreText.setText(this.level01Score.toString().padStart(5, '0'));
+  this.registry.set('level01Score', this.level01Score);
+
+  // ✅ SEMBUNYIKAN SEMUA PUZZLE PIECES DARI ARENA BOARD KIRI
+  console.log('🧩 Hiding all puzzle pieces from arena...');
+  for (let i = 0; i < 10; i++) {
+    let piece = this.puzzlePieces[i];
+    let numText = this.puzzlePieceNumbers[i];
+    
+    // Sembunyikan puzzle pieces
+    piece.setAlpha(0.01);
+    piece.setVisible(false);
+    piece.disableInteractive();
+    
+    // Sembunyikan nomor puzzle
+    numText.setAlpha(0.01);
+    numText.setVisible(false);
+    
+    // Reset posisi ke posisi awal (opsional, untuk cleanup)
+    piece.x = 118;
+    piece.y = 465;
+    numText.x = 118;
+    numText.y = 465;
+  }
+  
+  // ✅ RESET RIGHT BOARD SLOTS
+  this.rightBoardSlots = Array(10).fill(null);
+  console.log('✅ Arena cleaned - all puzzles hidden');
+
+  // ✅ PERBAIKAN UTAMA: CEK GAME OVER DULU SEBELUM LANJUT
+  if ((this.level01Score || 0) <= 0) {
+    // Only apply Game Over if level01Score is 0 or negative
+    this.isGameOver = true;
+    this.blur10PuzzleButton();
+    this.lockAllGameplayButtons();
+    this.showGameOverReturnMessage();
+    console.log('🔒 GAME OVER - All buttons locked, message shown ');
+   // return; // ✅ STOP EKSEKUSI DI SINI
+  //}
+
+    // ✅ GUNAKAN FUNCTION YANG SUDAH ADA UNTUK GAME OVER
+    //this.blur10PuzzleButton(); // Blur tombol 10 puzzle dan play button
+    //this.lockAllGameplayButtons(); // Lock semua tombol gameplay
+  
+    console.log('🔒 Play & Puzzle buttons locked - Game Over triggered');
+  
+   // ✅ SAVE GAME OVER STATE TO LOCALSTORAGE:
+    const email = localStorage.getItem('email');
+    if (email) {
+    localStorage.setItem(`gameOver_${email}`, 'true');
+    console.log('💾 Game Over state saved - level01Score is 0');
+    }
+    } else {
+    // Player still has level01Score - don't apply full Game Over
+    console.log(`✅ Round > 3 but player has level01Score ${this.level01Score} - no Game Over saved`);
+    this.isGameOver = false;
+    // Just show low level01Score warning but allow playing
+    this.showLowScoreWarning();
+    }
+    this.timeElapsed = 0; //untuk mulai menu favorit saat timer over 00:00 19/06/25
+    if (this.timerText) this.timerText.setText("00:00"); 
+    // 1. Reset semua puzzle ke grid kiri, sembunyikan puzzle
+    for (let i = 0; i < 10; i++) {
+      let piece = this.puzzlePieces[i];
+      piece.setVisible(false);
+      this.puzzlePieceNumbers[i].setVisible(false);
+    }
+
+// ✅ GANTI DENGAN INI (setelah line email = localStorage.getItem('email')): 
+if (email) {
+  // Ambil progress terbaru dari backend
+  const progressRes = await this.getUserProgress(email);
+  const progress = progressRes.progress || {};
+  const totalPlays = progress.totalPlays || 0;
+  const currentScore = progress.level01Score || 0;
+  const highScore = progress.level01HighScore || 0;
+  
+  // Definisikan user classification
+  const newUser = totalPlays === 0;
+  const winUser = totalPlays > 0 && (currentScore > 0 || highScore > 0);
+  const lossUser = totalPlays >= 3 && currentScore === 0 && highScore === 0;
+
+
+  // ✅ SYNC KE BACKEND DAN LOCALSTORAGE
+  const email = localStorage.getItem('email');
+  if (email) {
+  let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+  userData.gameProgress = userData.gameProgress || {};
+  userData.gameProgress.level01Score = this.level01Score;
+  userData.gameProgress.level01HighScore = Math.max(userData.gameProgress.level01HighScore || 0, this.level01Score);
+  userData.gameProgress.totalPlays = (userData.gameProgress.totalPlays || 0) + 1;
+  userData.gameProgress.isGameOver = true; // ✅ FLAG GAME OVER
+  userData.gameProgress.bestTime = this.timeElapsed;
+  userData.gameProgress.averageTime = typeof this.timeElapsed === 'number' ? this.timeElapsed : 0;
+  userData.gameProgress.completionRate = 100;
+  userData.gameProgress.perfectGames = false;
+  userData.gameProgress.totalAttempts = (userData.gameProgress.totalAttempts || 0) + 1;
+  localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+
+  
+
+  // Update ke backend
+  await this.updateUserProgress(email, {
+    level01Completed: true,
+    level01Score: this.level01Score,
+    level01HighScore: Math.max(this.level01Score, userData.gameProgress.level01HighScore || 0),
+    totalPlays: userData.gameProgress.totalPlays,
+    bestTime: this.timeElapsed,
+    averageTime: userData.gameProgress.averageTime,
+    completionRate: userData.gameProgress.completionRate,
+    perfectGames: false,
+    totalAttempts: userData.gameProgress.totalAttempts,
+    gameResult: 'game_over' // ✅ FLAG GAME OVER
+  });
+  }
+
+  // ✅ TAMPILKAN GAME OVER MESSAGE DAN RETURN
+  //  this.showGameOverReturnMessage();
+    
+  //  console.log('🔒 GAME OVER - All buttons locked, message shown');
+  // return; // ✅ STOP EKSEKUSI DI SINI, JANGAN LANJUT KE LOGIC RONDE
+  //}
+
+  // ✅ LOGIC FLOW YANG BENAR:
+  // Destroy air jika masih ada dan score > 0
+  if (this.level01Score > 0 && this.currentAboveHorse) {
+    this.currentAboveHorse.destroy();
+    this.currentAboveHorse = null;
+  }
+
+  // Hentikan musik favorit jika waktu habis
+  if (this.currentFavMusic && this.currentFavMusic.isPlaying) {
+    this.currentFavMusic.stop();
+    this.isFavMusicActive = false;
+    this.isFavoritActive = false;
+  }
+
+  // ✅ PERBAIKAN UTAMA: LOGIKA RONDE YANG BENAR
+  // R1 (18s) gagal → R2 (10s)
+  // R2 (10s) gagal → R3 (8s)  
+  // R3 (8s) gagal → tetap R3 (8s)
+  
+  // ✅ ATUR RONDE SESUAI ALUR (HANYA JIKA SCORE > 0)
+  // R1 -> R2 -> R3 -> R3 (loop) sampai menang atau score habis
+  if (!this.round || this.round < 1) this.round = 1;
+  if (this.round === 1) {
+    this.round = 2; // Kalah di R1 → ke R2
+    console.log('😔 Failed R1 (18s) → Moving to R2 (10s)');
+  } else if (this.round === 2) {
+    this.round = 3; // Kalah di R2 → ke R3
+    console.log('😔 Failed R2 (10s) → Moving to R3 (8s)');
+  } else if (this.round >= 3) {
+    this.round = 3; // Kalah di R3 → tetap di R3
+    console.log('😔 Failed R3 (8s) → Staying in R3 (8s)');
+  }
+
+  // ✅ BENAR: Sesuai ronde R1=18s, R2=10s, R3=8s  
+  let timeLimit;
+    if (this.round === 1) {
+    timeLimit = 18; // R1 = 18 detik
+  } else if (this.round === 2) {
+    timeLimit = 10; // R2 = 10 detik
+  } else if (this.round >= 3) {
+    timeLimit = 8; // R3 = 8 detik
+  }
+} 
+ 
+// ✅ PERBAIKAN dengan proteksi variable:
+// Pastikan semua variable terdefinisi dengan benar
+const currentRound = this.round || 1;
+//const currentTimeLimit = timeLimit || 18;
+
+// Panggil showRoundMessage dengan parameter yang aman
+if (this.showRoundMessage && typeof this.showRoundMessage === 'function') {
+  const currentRound = this.round || 1;
+  const timeLimit = this.roundTimeLimits[currentRound - 1] || 18;
+  this.showRoundMessage(`ROUND ${currentRound} - ${timeLimit}s - CLICK PLAY!`);
+} else {
+  console.error('showRoundMessage function not found');
+}
+
+// Panggil showHorseShakeHead juga dengan proteksi
+if (this.showHorseShakeHead && typeof this.showHorseShakeHead === 'function') {
+  this.showHorseShakeHead();
+} else {
+  console.error('showHorseShakeHead function not found');
+}
+  
+// ✅ PLAYBTN KEMBALI KE KONDISI AWAL (BLUR, HARUS KLIK 10 PUZZLE)
+//  if (this.playBtn) {
+//    this.playBtn.setTexture('playSheriff');
+//    this.playBtn.setScale(0.3);
+//    this.playBtn.setAlpha(1); // ✅ BLUR
+//    this.playBtn.setInteractive({ useHandCursor: true }); // ✅ TETAP AKTIF
+//    this.playBtn.setVisible(true);
+//    console.log('🎮 PlayBtn dikembalikan ke kondisi awal - User harus klik 10 Puzzle untuk main lagi');
+// }
+
+  console.log('🍎 Menu favorit sekarang bisa diakses karena timer = 00:00');
+
+  console.log(`✅ Round ${this.round} ended cleanly - Arena cleared, timer reset to 00:00`);
+
+  // Reset posisi puzzle pieces dan nomor puzzle
+  this.order = Phaser.Utils.Array.NumberArray(0, 9);
+  Phaser.Utils.Array.Shuffle(this.order);
+
+  for (let i = 0; i < 10; i++) {
+    let piece = this.puzzlePieces[this.order[i]];
+    let gridIdx = this.order[i];
+    piece.x = this.puzzlePositions[gridIdx].x;
+    piece.y = this.puzzlePositions[gridIdx].y;
+    piece.setAlpha(0.01);
+    piece.setVisible(true);
+    piece.setInteractive();
+    piece.setData('gridIdx', gridIdx);
+
+    this.puzzlePieceNumbers[i].x = this.puzzlePositions[gridIdx].x;
+    this.puzzlePieceNumbers[i].y = this.puzzlePositions[gridIdx].y;
+    this.puzzlePieceNumbers[i].setAlpha(0.01);
+    this.puzzlePieceNumbers[i].setVisible(true);
+  }
+}
+// Note : let timeLimit = this.roundTimeLimits[this.round - 1] || 18; ini tidak pakai akan membuat ronde 18 detik terus
+
+//================================= FUNGSI-FUNGSI LAIN ====================================
+
+  // ...fungsi-fungsi lain...
+  // Mengeleng kepala
+  showHorseShakeHead() {
+    const frames = [ 'bhGeleng2', 'bhGeleng3', 'bhGeleng1', 'bhGeleng2', 'bhGeleng3', 'bhGeleng1', 'bhGeleng2'];
+    let idx = 2;
+    this.time.addEvent({
+      repeat: frames.length - 1,
+      delay: 90,
+      callback: () => {
+        this.bhHead.setTexture(frames[idx]);
+        idx++;
+      }
+    });
+  }
+
+  // Mengangguk kepala
+  showHorseNodHead() {
+    // Sembunyikan bhHead (geleng) saat angguk
+    if (this.bhHead) this.bhHead.setVisible(false);
+    if (this.bhAngguk2) this.bhAngguk2.setVisible(true);
+
+    const frames = ['bhAngguk1', 'bhAngguk2', 'bhAngguk3', 'bhAngguk2', 'bhAngguk1'];
+    let idx = 0;
+    let nodAnim = this.time.addEvent({
+      repeat: frames.length - 2,
+      delay: 120,
+      callback: () => {
+        this.bhAngguk2.setTexture(frames[idx]);
+        //this.bhHead.setTexture(frames[idx]);
+        idx++;
+        // Setelah selesai, kembalikan ke geleng
+        if (idx === frames.length) {
+          if (this.bhHead) this.bhHead.setVisible(true);
+          if (this.bhAngguk2) this.bhAngguk2.setVisible(false);
+        }
+      }
+    });
+  }
+
+
+  showRoundMessage(msg) {
+    if (this.roundMsgText) this.roundMsgText.destroy();
+    this.roundMsgText = this.add.text(960, 200, msg, {
+      font: "bold 120px Orbitron, Arial, sans-serif", // ukuran besar dan font benar
+      fill: "#00eaff",
+      stroke: "#fff",
+      strokeThickness: 8,
+      align: "center",
+      shadow: {
+        offsetX: 0,
+        offsetY: 0,
+        color: "#00eaff",
+        blur: 32,
+        fill: true
+      }
+    })
+      .setOrigin(0.5)
+      .setDepth(200)
+      .setAlpha(0.95)
+      .setScale(0.1);
+
+    this.tweens.add({
+      targets: this.roundMsgText,
+      scale: 1,
+      duration: 900,
+      ease: 'Back.Out'
+    });
+
+    this.time.delayedCall(4000, () => {
+      if (this.roundMsgText) this.roundMsgText.destroy();
+    });
+  }
+
+// Fungsi pesan kecil di atas not music
+showHoldMessageAboveNotes() {
+  // Misal, not music pertama di posisi (1100, 1100)
+  const x = 855; // rata tengah 3 not
+  const y = 1000; // di atas not music
+
+  // Hapus pesan lama jika ada
+  if (this.holdMsgText) this.holdMsgText.destroy();
+
+  // Tampilkan pesan kecil
+  this.holdMsgText = this.add.text(x, y, "Please Hold... The Game is running", {
+    font: "bold 32px Arial",
+    fill: "#fff",
+   backgroundColor: "#e00",
+    padding: { left: 16, right: 16, top: 4, bottom: 4 }
+  }).setOrigin(0.5).setDepth(5001);
+
+  // Hilang otomatis setelah 1.2 detik
+  this.time.delayedCall(1200, () => {
+    if (this.holdMsgText) this.holdMsgText.destroy();
+  });
+}
+
+  showFavoritPanel() {
+
+    if (this.currentAboveHorse) {
+      this.currentAboveHorse.destroy();
+      this.currentAboveHorse = null;
+    }
+
+
+    //--------------------------------------------------------
+    // Tampilkan gambar air besar di atas kepala Black Horse
+    this.currentAboveHorse = this.add.image(150, 100, 'water2')
+      .setScale(0.8)
+      .setDepth(102)
+      .setInteractive();
+    //--------------------------------------------------------
+
+    // --- Animasi Favorit ---
+    // Jika air diklik, tampilkan dialog pembayaran
+    this.currentAboveHorse.on('pointerdown', () => {
+      // Tampilkan dialog pembayaran
+      if (this.payPanel) this.payPanel.destroy();
+      this.payPanel = this.add.rectangle(640, 360, 400, 200, 0x23283a, 0.96)
+        .setStrokeStyle(3, 0x00eaff).setDepth(200);
+      this.payText = this.add.text(640, 320, "Buy Water for Black Horse?\nClick PAY to continue!", {
+        font: "bold 32px Segoe UI",
+        fill: "#fff",
+        align: "center"
+      }).setOrigin(0.5).setDepth(201);
+
+      this.showFavoritMenuBar(); // <-- panggil method di sini 
+
+      // Not musik menari
+      this.animateMusicNotes();
+
+      payBtn.on('pointerdown', () => {
+        // Destroysemua elemen panel favorit
+        if (this.payPanel) this.payPanel.destroy();
+        if (this.payText) this.payText.destroy();
+        if (this.favoritPanelGroup) this.favoritPanelGroup.clear(true, true); // jika pakai group
+        payBtn.destroy();
+        if (this.currentAboveHorse) {
+          this.currentAboveHorse.destroy();
+          this.currentAboveHorse = null;
+        }
+        this.isFavoritActive = false;
+        this.round = 1;
+        if (this.horseGallop) this.horseGallop.stop();
+        // Aktifkan kembali puzzle
+        this.puzzlePieces.forEach(piece => piece.setInteractive());
+        // Aktifkan kembali not musik
+        if (this.musicNotes) {
+          this.musicNotes.forEach(note => note.setInteractive({ useHandCursor: true }));
+        }
+
+        // Aktifkan kembali tombol Play setelah beli favorit
+        if (this.playBtn) {
+          this.playBtn.setInteractive({ useHandCursor: true });
+          this.playBtn.setAlpha(1);
+        }
+
+
+        // Animasi angguk kepala
+        this.showHorseNodHead();
+
+        // === Tambahkan ini jika ingin langsung buka panel musik setelah favorit ===
+        this.showMusicPanel();
+      });
+    });
+  }
+
+
+  musicTitles = [
+    //"Beautiful Sunset",
+   // "Drippy Cowboy Country Rnbsuno",
+    "Easy Country Music Intro Outro",
+    "Golden Sunset Piano",
+    "Horsepower",
+    "Musique West Cowboy",
+    "Old West",
+   // "Relaxing Green Nature",
+   // "Starlit Serenade",
+   // "Sunset Dreams"
+  ];
+
+  // Tambahkan ini di bawahnya:
+  musicKeys = [
+  'musicfav03',
+  'musicfav04',
+  'musicfav05',
+  'musicfav06',
+  'musicfav07'
+  ];
+
+  showMusicPanel() {
+    // Pastikan status favorit tidak aktif agar tombol bisa di klik
+    this.isFavoritActive = false;
+
+    // --- Tambahkan ini untuk menutup panel pembayaran favorit ---
+    if (this.payPanel) this.payPanel.destroy();
+    if (this.payText) this.payText.destroy();
+    if (this.payQR) this.payQR.destroy();
+    //Jika ada tombol PAY/CANCEL global, tambahkan destroy juga:
+     if (this.payBtn) { this.payBtn.destroy(); this.payBtn = null; }
+     if (this.cancelBtn) { this.cancelBtn.destroy(); this.cancelBtn = null; } 
+
+    // Hapus panel lama jika ada
+    if (this.musicPanelGroup) {
+      this.musicPanelGroup.clear(true, true);
+      this.musicPanelGroup = null;
+    }
+    this.musicPanelGroup = this.add.group();
+
+    // Panel background
+    const panelBg = this.add.rectangle(1202, 430, 1399, 600, 0x23283a, 0.8)
+      .setStrokeStyle(3, 0x00eaff)
+      .setDepth(1000);
+    this.musicPanelGroup.add(panelBg);
+
+    // Judul
+    const panelTitle = this.add.text(1140, 250, "Choose Your Favorite Music", {
+      font: "bold 90px Imprint MT Shadow, serif",
+      align: "center",
+      fill: "#fff"
+    }).setOrigin(0.5).setDepth(1001);
+    this.musicPanelGroup.add(panelTitle);
+
+    // Daftar tombol music (5 baris)
+    for (let i = 1; i <= 5; i++) {
+      //let y = 420 + i * 35;
+      let y = 360 + (i - 1) * 65; // spacing antar baris
+      //let btn = this.add.text(800, y, `Music ${i}`, {
+      let musicTitle = this.musicTitles[i - 1] || `Music ${i}`;
+      let btn = this.add.text(568, y, musicTitle, {
+        fontFamily: '"Imprint MT Shadow", serif',
+        font: "bold 52px Imprint MT Shadow, serif",
+        fill: "#fff",
+        backgroundColor: "rgba(0,0,0,0)",// transparan
+        padding: { left: 18, right: 18, top: 8, bottom: 8 }
+      })
+        .setOrigin(0, 0.5)
+        .setDepth(1001)
+        .setInteractive({ useHandCursor: true });
+      this.musicPanelGroup.add(btn);
+
+      // Tombol Buy $2
+      let buyBtn = this.add.text(1650, y, "BUY $2", {
+        fontFamily: '"Imprint MT Shadow", serif',
+        font: "bold 48px Imprint MT Shadow, serif",
+        fill: "#fff",
+        backgroundColor: "rgba(0,0,0,0)", // transparan
+        padding: { left: 10, right: 10, top: 8, bottom: 8 }
+      })
+        .setOrigin(0, 0.5)
+        .setDepth(1001)
+        .setInteractive({ useHandCursor: true });
+      this.musicPanelGroup.add(buyBtn);
+
+      // ========== TAX PREVIEW ON HOVER (NO ASYNC CONFLICT) ==========
+       buyBtn.on('pointerover', () => {
+       // Call tax preview WITHOUT making this function async
+       //this.showTaxPreviewForMusic(musicTitle, 1650, y - 50);
+       if (this.taxPreviewText) {
+       this.taxPreviewText.destroy();
+        this.taxPreviewText = null;
+     }
+      // Show instant static tax calculation
+           const baseAmount = 2.00;
+           const taxRate = 11.0; // FIXED 11% Indonesia
+           const taxAmount = (baseAmount * taxRate / 100);
+           const totalAmount = baseAmount + taxAmount;
+        //const country = this.userCountry || 'ID';
+        // const taxRate = taxRates[country] || taxRates['default'];
+
+        // Tax rates by country
+        //const taxRates = {
+          //'US': 8.5,   'CA': 12.0,  'GB': 20.0,  'DE': 19.0,  
+          //'FR': 20.0,  'AU': 10.0,  'ID': 11.0,  'IT': 22.0,  
+          //'ES': 21.0,  'NL': 21.0,  'default': 0
+        //};
+        
+        // Show instant preview
+        // Show sticky tax preview (cyan color only, no yellow update)
+        // Show clean tax preview (CYAN ONLY - no color changes)
+        this.taxPreviewText = this.add.text(1650, y - 50, 
+          `${musicTitle}\n` +
+          `Base: $${baseAmount.toFixed(2)}\n` +
+          `Tax ID (${taxRate}%): $${taxAmount.toFixed(2)}\n` +
+          `Total: $${totalAmount.toFixed(2)}`, {
+          font: "bold 30px Imprint MT Shadow, serif", 
+          fill: "#00eaff", // cyan color
+          backgroundColor: "rgba(0,0,0,0.8)",
+          padding: { left: 10, right: 10, top: 5, bottom: 5 },
+          align: "center"
+        }).setOrigin(0.5).setDepth(1002);
+        
+
+        // Store tax info for confirmation panel
+        this.currentTaxInfo = {
+          musicTitle: musicTitle,
+          baseAmount: baseAmount.toFixed(2),
+          taxRate: taxRate,
+          taxAmount: taxAmount,//toFixed(2),
+          totalAmount: totalAmount, //toFixed(2)
+          country: 'ID'
+        };
+
+        // Update with real calculation in background (no blocking)
+       // this.updateTaxInBackground(musicTitle, 1650, y - 50);
+     });
+
+          // Add mouse out handler to hide preview
+      //buyBtn.on('pointerout', () => {
+        //if (this.taxPreviewText) {
+          //this.taxPreviewText.destroy();
+          //this.taxPreviewText = null;
+        //}
+        //});
+      //});
+
+     
+    
+//-------------------------------------------------------------------------------------------------------------
+      //btn.on('pointerdown', () => { // BAGIAN INI DI TAMBAH BIASANYA TIDAK BISA KLIK NOT MUSIC 05/06 10:10 AM
+      // Handler konfirmasi (YES/NO & pembayaran)
+      const showConfirm = () => {
+        // Remove previous confirmation panel if any
+        if (this.confirmPanel) this.confirmPanel.destroy();
+        if (this.confirmText) this.confirmText.destroy();
+        if (this.confirmYes) this.confirmYes.destroy();
+        if (this.confirmNo) this.confirmNo.destroy();
+
+        // Hide tax preview when confirmation shows
+        if (this.taxPreviewText) {
+        this.taxPreviewText.destroy();
+        this.taxPreviewText = null;
+     }
+
+        // Use stored tax info for consistency (from hover)
+        //let baseAmount, taxRate, taxAmount, totalAmount;
+
+        // ✅ ALWAYS use Indonesia tax (consistent with hover)
+        let baseAmount = 2.00;
+        let taxRate = 11.0; // FIXED Indonesia 11%
+        let taxAmount = (baseAmount * taxRate / 100);
+        let totalAmount = baseAmount + taxAmount;
+        
+        if (this.currentTaxInfo) {
+            // Use consistent tax info from hover
+          baseAmount = parseFloat(this.currentTaxInfo.baseAmount);
+          taxRate = this.currentTaxInfo.taxRate;
+          taxAmount = this.currentTaxInfo.taxAmount;
+          totalAmount = this.currentTaxInfo.totalAmount;
+        } 
+
+         // Get current tax info (from hover or calculate fresh)
+         // Fallback calculation if no stored info
+        //baseAmount = 2.00;
+        //taxRate = 11.0; // FIXED Indonesia 11%
+        //taxAmount = (baseAmount * taxRate / 100);
+        //totalAmount = baseAmount + taxAmount;
+        //const country = this.userCountry || 'ID';
+        //const taxRates = {
+          //'US': 8.5, 'CA': 12.0, 'GB': 20.0, 'DE': 19.0,
+          //'FR': 20.0, 'AU': 10.0, 'ID': 11.0, 'IT': 22.0,
+          //'ES': 21.0, 'NL': 21.0, 'default': 0
+        //};
+        //taxRate = taxRates[country] || taxRates['default'];
+        //}
+
+        // Show confirmation panel
+        this.confirmPanel = this.add.rectangle(1200, 700, 900, 600, 0x0adcf5, 1)
+          .setDepth(2001);
+        //this.confirmText = this.add.text(1200, 660, `Are you sure you want to choose "${musicTitle}" for Black Horse?`, {
+          //font: "bold 40px Segoe UI",
+          //fill: "#00000",
+          //align: "center",
+          //wordWrap: { width: 700 }
+        //}).setOrigin(0.5).setDepth(2002);
+
+         
+         // SINGLE confirmation text (no doubles) 
+        this.confirmText = this.add.text(1200, 650, 
+          //`Are you sure you want to choose "${musicTitle}" for Black Horse?\n\n` +
+          `💰 Payment Details:\n` +
+          `Music: ${musicTitle}\n` +
+          `Base Price: $${baseAmount.toFixed(2)}\n` +
+          `Tax (${taxRate}%): $${taxAmount.toFixed(2)}\n` +
+          `Total Amount: $${totalAmount.toFixed(2)}`, {
+          font: "bold 52px Imprint MT Shadow, serif",
+          fill: "#00000",
+          align: "center",
+          wordWrap: { width: 700 }
+        }).setOrigin(0.5).setDepth(2002);
+
+        // YES button (positioned lower due to larger panel)
+        this.confirmYes = this.add.text(1350, 920, "YES", {
+          font: "bold 60px Imprint MT Shadow, serif",
+          fill: "#00000",
+          //backgroundColor: "#181c24",
+          padding: { left: 30, right: 30, top: 10, bottom: 10 }
+        }).setOrigin(0.5).setDepth(2002).setInteractive();
+
+        // NO button
+        this.confirmNo = this.add.text(1050, 920, "NO", {
+          font: "bold 60px Imprint MT Shadow, serif",
+          fill: "#00000",
+          //backgroundColor: "#181c24",
+          padding: { left: 30, right: 30, top: 10, bottom: 10 }
+        }).setOrigin(0.5).setDepth(2002).setInteractive();
+
+        // Hide tax preview when confirmation shows
+        if (this.taxPreviewText) {
+          this.taxPreviewText.destroy();
+          this.taxPreviewText = null;
+        }
+
+        
+        // Handler YES
+        this.confirmYes.on('pointerdown', () => {
+          // Remove confirmation panel
+          this.confirmPanel.destroy(); 
+          this.confirmText.destroy();
+          this.confirmYes.destroy(); 
+          this.confirmNo.destroy();
+
+           // Continue to payment with consistent tax info
+          this.showPaymentPanel(musicTitle, baseAmount, taxRate, taxAmount, totalAmount, i);
+          });
+
+           // Handler NO
+           this.confirmNo.on('pointerdown', () => { // Tamabah 08/06/25 ---> INI ADA
+          // Hapus panel konfirmasi saja, biarkan panel musik tetap terbuka
+          this.confirmPanel.destroy(); 
+          this.confirmText.destroy();
+          this.confirmYes.destroy(); 
+          this.confirmNo.destroy();
+        });
+      }
+        
+        btn.on('pointerdown', showConfirm); // Panggil fungsi konfirmasi saat tombol diklik
+        buyBtn.on('pointerdown', showConfirm); // Panggil fungsi konfirmasi saat tombol Buy diklik
+      }
+        
+      // Tombol close panel
+      let closeBtn = this.add.text(1770, 250, "X", {
+      font: "bold 100px Arial",
+      fill: "#fff",
+      backgroundColor: "#e00",
+      padding: { left: 10, right: 10, top: 2, bottom: 2 }
+      }).setOrigin(0.5).setDepth(1001).setInteractive({ useHandCursor: true });
+      this.musicPanelGroup.add(closeBtn);
+
+      closeBtn.on('pointerdown', () => {
+      if (this.musicPanelGroup) {
+      this.musicPanelGroup.clear(true, true);
+      this.musicPanelGroup = null;
+      }
+      // Hapus tax preview jika ada
+      if (this.taxPreviewText) {
+        this.taxPreviewText.destroy();
+        this.taxPreviewText = null;
+      }
+      // Hapus panel konfirmasi jika ada
+      if (this.confirmPanel) {
+        this.confirmPanel.destroy();
+        this.confirmPanel = null;
+      }
+      if (this.confirmText) {
+        this.confirmText.destroy();
+        this.confirmText = null;
+      } 
+      if (this.confirmYes) {
+        this.confirmYes.destroy();
+        this.confirmYes = null;
+      }
+      if (this.confirmNo) {
+        this.confirmNo.destroy();
+        this.confirmNo = null;
+      }  
+      // Hapus panel pembayaran jika ada
+      if (this.payPanel) {
+        this.payPanel.destroy();
+        this.payPanel = null;
+      }
+      if (this.payText) {
+        this.payText.destroy();
+        this.payText = null;
+      }
+      if (this.payQR) {
+        this.payQR.destroy();
+        this.payQR = null;
+      }
+       if (this.payBtn) {
+        this.payBtn.destroy();
+        this.payBtn = null;
+      }
+      if (this.cancelBtn) { 
+        this.cancelBtn.destroy();
+        this.cancelBtn = null;
+      }
+    });
+  }
+
+
+  // Definisikan ShowPaymentPanel (Tutup panel daftar music sebelum tampilkan panel pembayaran)
+  // const showPaymentPanel = () => { //menyebabkan penel bayar tidak muncul
+  // Tutup panel musik sebelum tampilkan panel pembayaran
+  showPaymentPanel(musicTitle, baseAmount, taxRate, taxAmount, totalAmount, musicIndex) {
+   
+  // ✅ CONTINUE WITH ORIGINAL PAYMENT PANEL CODE:
+  console.log('💰 Showing music payment panel...');    
+            
+                  // Close music panel
+            if (this.musicPanelGroup) {
+              this.musicPanelGroup.clear(true, true);
+              this.musicPanelGroup = null;
+            }
+            
+
+            // Panel pembayaran
+            if (this.payPanel) this.payPanel.destroy();
+            // QR code dihapus setelah pembayaran (diletakan di buyBtn dan payBtn)
+            if (this.payQR) this.payQR.destroy(); // Hapus QR code jika ada
+            if (this.payText) this.payText.destroy();// tambah 08/06/25
+            if (this.payBtn) { this.payBtn.destroy(); this.payBtn = null; } // tambahan
+            if (this.cancelBtn) { this.cancelBtn.destroy(); this.cancelBtn = null; } //tambahan
+
+
+            // Panel Background
+            this.payPanel = this.add.rectangle(1050, 400, 1300, 400, 0x23283a, 0.8)
+              .setStrokeStyle(3, 0x00eaff).setDepth(400);
+
+            // Bagian Konfirmasi In YES handler, update payment panel text:
+            this.payText = this.add.text(1050, 350, // "Confirm payment for this music?\nClick PAY to continue!", {
+             `Confirm payment for ${musicTitle}?\n` +
+             `Total: $${totalAmount.toFixed(2)} (incl. ${taxRate}% tax)\n` +
+             `Click PAY to continue!`, { 
+              font: "bold 48px Imprint MT Shadow, serif",
+              fill: "#fff",
+              align: "center"
+            }).setOrigin(0.5).setDepth(401);
+
+            // === Tampilkan QR code di panel pembayaran === //---> INI ADA
+            this.payQR = this.add.image(1050, 770, 'paypalQR')
+              .setScale(1.2)
+              .setDepth(402);
+           
+              // PAY button
+            this.payBtn = this.add.text(1280, 500, "PAY", { // ---> INI ADA
+              font: "bold 60px Imprint MT Shadow, serif",
+              fill: "#00eaff",
+              //backgroundColor: "#181c24",
+              padding: { left: 30, right: 30, top: 10, bottom: 10 }
+            }).setOrigin(0.5).setDepth(401).setInteractive();
+
+            // Tombol CANCEL
+            this.cancelBtn = this.add.text(850, 500, "CANCEL", {
+              font: "bold 54px Imprint MT Shadow, serif",
+              fill: "#fff",
+              //backgroundColor: "#e00",
+              padding: { left: 18, right: 18, top: 8, bottom: 8 }
+            }).setOrigin(0.5).setDepth(2004).setInteractive();
+
+            // Action Cancel (Cancel Handler)
+            this.cancelBtn.on('pointerdown', () => {
+              if (this.payPanel) { this.payPanel.destroy(); this.payPanel = null; }
+              if (this.payText) { this.payText.destroy(); this.payText = null; }
+              if (this.payQR) { this.payQR.destroy(); this.payQR = null; }
+              if (this.payBtn) { this.payBtn.destroy(); this.payBtn = null; }
+              if (this.cancelBtn) { this.cancelBtn.destroy(); this.cancelBtn = null; }
+              });
+
+            
+this.payBtn.on('pointerdown', () => { // ---> INI ADA
+// ✅ INISIALISASI EMAIL DI SINI:
+const email = localStorage.getItem('email');
+    
+if (!email) {
+alert('Email not found. Please login again.');
+return;
+} 
+
+// account ini untuk donasi
+// window.open('https://www.paypal.com/ncp/payment/7MARDZW8BDWVG', '_blank'); //ini tanpa harga dan tanpa variant 
+// PAY handler with dynamic PayPal amount
+const paypalWindow = window.open('https://www.paypal.com/ncp/payment/67JBKE7YCLQDU');
+//window.open('https://your-xsolla-link', '_blank');  // belum selesai paystationnya
+this.showWaitingForPaymentMessage();
+
+// Cek setiap 1 detik apakah window PayPal sudah ditutup
+const checkPayPalClosed = setInterval(() => {
+if (paypalWindow.closed) {
+    clearInterval(checkPayPalClosed);
+
+// Polling ke backend setiap beberapa detik
+this.paymentCheckInterval = setInterval(async () => {
+  showPleaseWaitMessage('Please wait, unlocking in progress...');
+  const waitStart = Date.now();
+
+  console.log('🔍 Polling payment status...');
+  const paymentData = await checkPaymentStatusFromBackend(email);
+  
+  if (paymentData && paymentData.isPaid === true) {
+    clearInterval(this.paymentCheckInterval);
+
+  // Pastikan pesan "Please wait" tampil minimal 3 detik
+    const elapsed = Date.now() - waitStart;
+    const minWait = 4000;
+    if (elapsed < minWait) {
+      setTimeout(() => {
+        hidePleaseWaitMessage();
+      }, minWait - elapsed);
+    } else {
+      hidePleaseWaitMessage();
+    } 
+
+   // 1. Update status payment ke window/UI
+   if (window.updateGamePaymentStatus) {  
+    window.updateGamePaymentStatus(paymentData.isPaid, paymentData.method);
+    } else {
+      console.error('window.updateGamePaymentStatus is not defined!');
+    }
+
+    // 2. ✅ CLEAR GAME OVER STATE di backend & localStorage
+    await this.setGameOver(email, false); // clear game over di backend
+    localStorage.removeItem(`gameOver_${email}`); // clear di localStorage
+
+    console.log('✅ Payment confirmed! Processing unlock...');
+    
+    // 3. Unlock UI dan tampilkan pesan sukses
+    const unlocked = await this.unlockedLevels(email, 'Level01Scene');
+    if (unlocked) {
+      // Unlock UI
+      //this.unblur10PuzzleButton(); // tidak pakai karena playBtn di disable
+      this.unlockGameAfterPurchase();
+      alert('🎉 Level successfully unlocked!');
+      //location.reload();
+    } else {
+      // Jangan unlock UI jika gagal
+      alert('Payment confirmed but unlock failed. Please refresh the page.');
+      // Pastikan tombol tetap lock
+      if (this.playBtn) {
+        this.playBtn.disableInteractive();
+        this.playBtn.setAlpha(0.5);
+      }
+      if (this.lv01Puzzle10Btn) {
+        this.lv01Puzzle10Btn.disableInteractive();
+        this.lv01Puzzle10Btn.setAlpha(0.5);
+      }
+     }
+    } else {
+    console.log('⏳ Payment not confirmed yet...');
+   }
+  }, 5000); // Check every 5 seconds
+ }
+}, 1000);
+
+            
+              // Setelah pembayaran sukses:
+              // ✅ Rest of payment handling code continues...
+              if (this.payPanel) this.payPanel.destroy();
+              if (this.payText) this.payText.destroy();
+              // QR code dihapus setelah pembayaran
+              if (this.payQR) this.payQR.destroy(); // <--- LETAKKAN DI SINI JIKA ADA QR
+              this.payBtn.destroy();
+              this.cancelBtn.destroy();
+
+             // Stop all music before playing new favorite music // === LETAKKAN KODE INI DI SINI ===
+               if (this.currentFavMusic && this.currentFavMusic.isPlaying) this.currentFavMusic.stop();
+               if (this.mainMusic && this.mainMusic.isPlaying) this.mainMusic.stop();
+               if (this.winMusic && this.winMusic.isPlaying) this.winMusic.stop();
+              
+              //------------------------------------------------------------
+              // untuk mengembalikan timer ke no saat balik ke scene setelah beli favorit
+              // Reset timer ke 00:00
+              this.timeElapsed = 0;
+              this.timerText.setText("00:00");
+
+              // Simpan waktu favorit yang dibeli
+              this.favoritTimeToAdd = 61; // contoh: 60 detik
+              this.favoritLabelToAdd = musicTitle;
+              //-------------------------------------------------------------
+
+
+              // === Aktif Play kembali ===
+              if (this.playBtn) {
+                this.playBtn.setInteractive({ useHandCursor: true });
+                this.playBtn.setAlpha(1);
+              }
+              // tamabahan ini 290625
+              // Play selected favorite music
+              const key = this.musicKeys[musicIndex - 1];
+              this.currentFavMusic = this.sound.add(key, { loop: true });
+              this.currentFavMusic.play();
+              this.isFavMusicActive = true;
+
+
+              // Efek animasi angguk kepala
+              this.time.delayedCall(5000, () => {
+                this.showHorseNodHead();
+                this.sound.play('horseNeigh');
+              });
+
+              // === Tambahkan kode ini agar gambar air di kepala hilang setelah beli musik ===
+              if (this.currentAboveHorse) {
+                this.currentAboveHorse.destroy();
+                this.currentAboveHorse = null;
+              }
+            });
+          }
+
+   // mengatur waktu favorit yang dibeli dan muncul text countdown
+   addFavoritTimeToMainTimer(seconds, label) {
+    // Hentikan timer ronde sebelumnya jika ada
+    if (this.roundTimer) {
+      this.roundTimer.remove(false);
+      this.roundTimer = null;
+    }
+
+    // Set timer ke waktu favorit
+    this.timeElapsed = 0;
+    this.timerText.setText("00:00");
+
+    // Mulai timer baru dengan waktu favorit
+    let timeLimit = seconds;
+    this.roundTimer = this.time.addEvent({
+      delay: 1000,
+      callback: () => {
+        this.timeElapsed++;
+        let min = Math.floor(this.timeElapsed / 60).toString().padStart(2, '0');
+        let sec = (this.timeElapsed % 60).toString().padStart(2, '0');
+        this.timerText.setText(`${min}:${sec}`);
+
+        if (this.timeElapsed >= timeLimit) {
+          this.roundTimer.remove(false);
+          this.onTimeUp();
+        }
+      },
+      callbackScope: this,
+      loop: true
+    });
+ }
+  //-------------------------------------------------------------
+  // showFavoritPayPanel untuk 4 macam menu slain music favorit
+showFavoritPayPanel(label, seconds, price, btnRef) {
+    // Pastikan status favorit tidak aktif agar tombol bisa di klik
+    this.isFavoritActive = false;
+
+  // Tutup panel musik jika masih terbuka
+  if (this.musicPanelGroup) {
+  this.musicPanelGroup.clear(true, true);
+  this.musicPanelGroup = null;
+  }
+  // Tutup konfirmasi YES/NO pada music panel jika masih ada
+  if (this.confirmPanel) this.confirmPanel.destroy();
+  if (this.confirmText) this.confirmText.destroy();
+  if (this.confirmYes) this.confirmYes.destroy();
+  if (this.confirmNo) this.confirmNo.destroy();
+
+      // Buka panel/menu lain
+   //this.showFavoritPayPanel();
+
+    // Hapus panel pembayaran lama jika ada
+    if (this.payPanel) { this.payPanel.destroy(); this.payPanel = null; }
+    if (this.payText) { this.payText.destroy(); this.payText = null; }
+    if (this.payQR) { this.payQR.destroy(); this.payQR = null; }
+    if (this.payBtn) { this.payBtn.destroy(); this.payBtn = null; }
+    if (this.cancelBtn) { this.cancelBtn.destroy(); this.cancelBtn = null; }
+
+    // Hapus gambar Game Over jika ada
+    if (this.gameOverImg) {
+      this.gameOverImg.destroy();
+      this.gameOverImg = null;
+    }
+
+    // === KALKULASI TAX UNTUK MENU FAVORIT ===
+    const baseAmount = price; // Gunakan price sebagai base amount
+    const taxRate = 11.0; // Indonesia tax rate 11%
+    const taxAmount = (baseAmount * taxRate / 100);
+    const totalAmount = baseAmount + taxAmount;
+ 
+
+    // Panel background
+    this.payPanel = this.add.rectangle(850, 350, 800, 450, 0x23283a, 0.8)
+      .setStrokeStyle(3, 0x00eaff).setDepth(2001);
+
+    // Teks pembayaran
+    this.payText = this.add.text(850, 310, 
+    `Buy ${label}?\n` +
+    `+${seconds-1}s gaming time\n` +
+    `Base: $${baseAmount.toFixed(2)} | Tax (${taxRate}%): $${taxAmount.toFixed(2)}\n` +
+    `Total: $${totalAmount.toFixed(2)}\n` +
+    `Click PAY to continue!`, {
+      font: "bold 48px Imprint MT Shadow, serif",
+      fill: "#fff",
+      align: "center"
+    }).setOrigin(0.5).setDepth(2002);
+
+    // QR code/paypal
+    this.payQR = this.add.image(850, 750, 'paypalQR').setScale(1).setDepth(2003);
+
+    // Tombol PAY
+      this.payBtn = this.add.text(1050, 510, `PAY $${totalAmount.toFixed(2)}`, {
+      font: "bold 48px Imprint MT Shadow, serif",
+      fill: "#00eaff",
+      //backgroundColor: "#181c24",
+      padding: { left: 30, right: 30, top: 10, bottom: 10 }
+    }).setOrigin(0.5).setDepth(2004).setInteractive();
+
+    // Tombol CANCEL
+    this.cancelBtn = this.add.text(650, 510, "CANCEL", {
+      font: "bold 48px Imprint MT Shadow, serif",
+      fill: "#fff",
+      //backgroundColor: "#e00",
+      padding: { left: 18, right: 18, top: 8, bottom: 8 }
+    }).setOrigin(0.5).setDepth(2004).setInteractive();
+
+    // Action Cancel
+   this.cancelBtn.on('pointerdown', () => {
+      if (this.payPanel) { this.payPanel.destroy(); this.payPanel = null; }
+      if (this.payText) { this.payText.destroy(); this.payText = null; }
+      if (this.payQR) { this.payQR.destroy(); this.payQR = null; }
+      if (this.payBtn) { this.payBtn.destroy(); this.payBtn = null; }
+      if (this.cancelBtn) { this.cancelBtn.destroy(); this.cancelBtn = null; }
+      // Tidak ada perubahan timer, tidak lanjut proses
+    });
+
+
+// Handler pembayaran
+this.payBtn.on('pointerdown', () => { // ---> INI ADA
+// ✅ INISIALISASI EMAIL DI SINI:
+const email = localStorage.getItem('email');
+
+if (!email) {
+alert('Email not found. Please login again.');
+return;
+}
+  // account ini untuk donasi
+  // window.open('https://www.paypal.com/ncp/payment/7MARDZW8BDWVG', '_blank'); //ini tanpa harga dan tanpa variant 
+  // PAY handler with dynamic PayPal amount
+  const paypalWindow = window.open('https://www.paypal.com/ncp/payment/67JBKE7YCLQDU');
+  //window.open('https://your-xsolla-link', '_blank');  // belum selesai paystationnya
+  this.showWaitingForPaymentMessage();
+
+  // Cek setiap 1 detik apakah window PayPal sudah ditutup
+  const checkPayPalClosed = setInterval(() => {
+  if (paypalWindow.closed) {
+      clearInterval(checkPayPalClosed);
+             
+          // Polling ke backend setiap beberapa detik
+  this.paymentCheckInterval = setInterval(async () => {
+     showPleaseWaitMessage('Please wait, unlocking in progress...');
+     const waitStart = Date.now();
+
+     console.log('🔍 Polling payment status...');
+     const paymentData = await checkPaymentStatusFromBackend(email);
+  
+  if (paymentData && paymentData.isPaid === true) {
+        clearInterval(this.paymentCheckInterval);
+
+   // Pastikan pesan "Please wait" tampil minimal 3 detik
+    const elapsed = Date.now() - waitStart;
+    const minWait = 3000;
+    if (elapsed < minWait) {
+      setTimeout(() => {
+        hidePleaseWaitMessage();
+      }, minWait - elapsed);
+    } else {
+      hidePleaseWaitMessage();
+    }    
+
+  // 1. Update status payment ke window/UI
+   if (window.updateGamePaymentStatus) { 
+    window.updateGamePaymentStatus(paymentData.isPaid, paymentData.method);
+    } else {
+      console.error('window.updateGamePaymentStatus is not defined!');
+    }
+
+    // 2. ✅ CLEAR GAME OVER STATE di backend & localStorage
+    await this.setGameOver(email, false); // clear game over di backend
+    localStorage.removeItem(`gameOver_${email}`); // clear di localStorage
+    
+    console.log('✅ Payment confirmed! Processing unlock...');
+    
+    // 3. Unlock UI dan tampilkan pesan sukses
+    const unlocked = await this.unlockedLevels(email, 'Level01Scene');
+    if (unlocked) {
+      // Unlock UI
+      //this.unblur10PuzzleButton(); // karena playBtn di disable
+      this.unlockGameAfterPurchase();
+      alert('🎉 Level successfully unlocked!');
+      //location.reload();
+    } else {
+      // Jangan unlock UI jika gagal
+      alert('Payment confirmed but unlock failed. Please refresh the page.');
+      // Pastikan tombol tetap lock
+      if (this.playBtn) {
+        this.playBtn.disableInteractive();
+        this.playBtn.setAlpha(0.5);
+      }
+      if (this.lv01Puzzle10Btn) {
+        this.lv01Puzzle10Btn.disableInteractive();
+        this.lv01Puzzle10Btn.setAlpha(0.5);
+      }
+     }
+    } else {
+    console.log('⏳ Payment not confirmed yet...');
+   }
+  }, 5000); // Check every 5 seconds     
+ }
+}, 1000); // Cek setiap 1 detik
+                    
+      // Setelah pembayaran sukses:
+      if (this.payPanel) this.payPanel.destroy();
+      if (this.payText) this.payText.destroy();
+      if (this.payQR) this.payQR.destroy();
+      this.payBtn.destroy();
+      this.cancelBtn.destroy();
+      
+      this.favoritTimeToAdd = seconds; // 13/06/25
+      this.favoritLabelToAdd = label; // 13/06/25
+
+      // Tambah waktu ke timer utama
+      //this.addFavoritTimeToMainTimer(seconds, label);
+
+      // Reset timer di UI (jika perlu)
+      this.timeElapsed = 0;
+      if (this.timerText) this.timerText.setText("00:00");
+
+      
+      // Aktifkan tombol Play
+      if (this.playBtn) {
+        this.playBtn.setInteractive({ useHandCursor: true });
+        this.playBtn.setAlpha(1);
+      }
+
+
+      // Jika menu favorit yang dibeli BUKAN music, mainkan musik latar Sunset Dreams
+      if (label !== "Music" && label !== "music" && this.mainMusic) {
+        if (this.currentFavMusic && this.currentFavMusic.isPlaying) this.currentFavMusic.stop();
+        if (this.mainMusic && !this.mainMusic.isPlaying) {
+          this.mainMusic.play({ loop: true });
+        }
+      }
+
+    });
+
+    // Efek animasi angguk kepala
+    this.time.delayedCall(5000, () => {
+      this.showHorseNodHead();
+      this.sound.play('horseNeigh');
+    });
+
+    // === Tambahkan ini agar gambar air di kepala hilang setelah beli favorit ===
+    if (this.currentAboveHorse) {
+      this.currentAboveHorse.destroy();
+      this.currentAboveHorse = null;
+    }
+
+    // (Opsional) Efek visual pada tombol yang dibeli
+    if (btnRef) {
+      this.tweens.add({
+        targets: btnRef,
+        scale: btnRef.scale * 1.2,
+        duration: 150,
+        yoyo: true
+      });
+    }
+  }
+  //-------------------------------------------------------------
+ // showWaitingForPaymentMessage untuk menampilkan pesan "Please wait confirmation your payment..." jika pembayaran sedang diproses
+ async showWaitingForPaymentMessage() {
+  // Ambil email dan history
+  const email = localStorage.getItem('email');
+  // Ambil progress dari backend
+ 
+    // ✅ CALCULATE USER TYPES DENGAN VARIABLE YANG BENAR:
+    const progressRes = await this.getUserProgress(email);
+    const progress = progressRes.progress || {};
+    const totalPlays = progress.totalPlays || 0;
+    const currentScore = progress.level01Score || 0;
+    const highScore = progress.level01HighScore || 0;
+    const isPaid = progressRes.isPaid === true;
+    const level01Score = currentScore;
+
+    const newUser = totalPlays === 0;
+    const winUser = totalPlays > 0 && (currentScore > 0 || highScore > 0);
+    const lossUser = totalPlays >= 3 && currentScore === 0 && highScore === 0;
+
+  // Hanya lock tombol jika lossUser dan belum bayar
+  if (lossUser) {
+    // Kunci tombol Play & 10 Puzzle
+    if (this.playBtn) {
+      this.playBtn.disableInteractive();
+      this.playBtn.setAlpha(0.5);
+    }
+    if (this.lv01Puzzle10Btn) {
+      this.lv01Puzzle10Btn.disableInteractive();
+      this.lv01Puzzle10Btn.setAlpha(0.5);
+    }
+    // Tampilkan pesan "Game Lock - Unlock with Black Horse's favorite menu"
+    if (this.waitingMsg) this.waitingMsg.destroy();
+    this.waitingMsg = this.add.text(960, 700, "Game Lock - Unlock with Black Horse's favorite menu", {
+      font: "bold 36px Segoe UI",
+      fill: "#fff",
+      backgroundColor: "#023d3f",
+      padding: { left: 30, right: 30, top: 10, bottom: 10 }
+    }).setOrigin(0.5).setDepth(5001);
+    // Hilang otomatis setelah 3000 ms (3 detik)
+    this.time.delayedCall(3000, () => {
+      if (this.waitingMsg) this.waitingMsg.destroy();
+      this.waitingMsg = null;
+    });
+  } else {
+    // Jika bukan lossUser, pastikan tombol aktif
+    if (this.playBtn) {
+      this.playBtn.setInteractive({ useHandCursor: true });
+      this.playBtn.setAlpha(1);
+    }
+    if (this.lv01Puzzle10Btn) {
+      this.lv01Puzzle10Btn.setInteractive({ useHandCursor: true });
+      this.lv01Puzzle10Btn.setAlpha(1);
+    }
+    if (this.waitingMsg) {
+      this.waitingMsg.destroy();
+      this.waitingMsg = null;
+    }
+  }
+}
+//-----------------------------------------------------------------
+async checkUnlockStatus(email) {
+  try {
+    // Ganti URL ke backend utama
+    const res = await axios.post(
+      "https://backend-paypalblackhorsepuzzle.onrender.com/api/users/unlock",
+      { email, isGameOver: false }
+    );
+    const data = res.data;
+    if (data.unlocked) {
+      this.unlockGameAfterPurchase();
+    } else {
+      this.showGameOverReturnMessage();
+    }
+  } catch (err) {
+    console.error("Error unlock:", err);
+    this.showGameOverReturnMessage();
+  }
+}
+//----------------------------------------------------------------------
+  showFavoritMenuBar() {
+    // Hapus menu lama jika ada
+    if (this.favoritMenuGroup) this.favoritMenuGroup.clear(true, true);
+    this.favoritMenuGroup = this.add.group();
+
+    // --- AIR ---
+    let airFrames = ['water1', 'water2', 'water3'];
+    let airIdx = 0, airTween = null;
+    let airBtn = this.add.image(600, 1150, airFrames[0]).setScale(0.3).setInteractive({ useHandCursor: true });
+    this.favoritMenuGroup.add(airBtn);
+
+    airBtn.on('pointerover', () => {
+      airTween = this.time.addEvent({
+        delay: 200, loop: true, callback: () => {
+          airIdx = (airIdx + 1) % airFrames.length;
+          airBtn.setTexture(airFrames[airIdx]);
+        }
+      });
+    });
+    airBtn.on('pointerout', () => { if (airTween) { airTween.remove(); airTween = null; } airBtn.setTexture('water1'); });
+    airBtn.on('pointerdown', () => this.showFavoritPayPanel('Air', 30, 1, airBtn));
+
+    // --- RUMPUT ---
+    let grassBtn = this.add.image(713, 1109, 'grass').setScale(0.2).setInteractive({ useHandCursor: true });
+    this.favoritMenuGroup.add(grassBtn);
+    let grassTween = null;
+    grassBtn.on('pointerover', () => {
+      grassTween = this.tweens.add({
+        targets: grassBtn,
+        angle: { from: -10, to: 10 },
+        duration: 400,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut'
+      });
+    });
+    grassBtn.on('pointerout', () => { if (grassTween) { grassTween.stop(); grassTween = null; } grassBtn.angle = 0; });
+    grassBtn.on('pointerdown', () => this.showFavoritPayPanel('Grass', 30, 1, grassBtn));
+
+    // --- WORTEL ---
+    let carrotBtn = this.add.image(840, 1150, 'carrot').setScale(0.5).setInteractive({ useHandCursor: true });
+    let carrotLeaf = this.add.image(877, 1115, 'carrotL').setScale(0.3).setAlpha(0.7);
+    this.favoritMenuGroup.add(carrotBtn);
+    this.favoritMenuGroup.add(carrotLeaf);
+    let carrotTween = null;
+    carrotBtn.on('pointerover', () => {
+      carrotTween = this.tweens.add({
+        targets: carrotLeaf,
+        angle: { from: -20, to: 20 },
+        duration: 400,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut'
+      });
+    });
+    carrotBtn.on('pointerout', () => { if (carrotTween) { carrotTween.stop(); carrotTween = null; } carrotLeaf.angle = 0; });
+    carrotBtn.on('pointerdown', () => this.showFavoritPayPanel('Carrot', 60, 2, carrotBtn));
+
+    // --- APPEL ---
+    const appleKeys = ['apple1', 'apple2', 'apple3', 'apple4'];
+    let appleIdx = 0, appleTween = null;
+    let appleBtn = this.add.image(999, 1150, appleKeys[0]).setScale(0.7).setInteractive({ useHandCursor: true });
+    this.favoritMenuGroup.add(appleBtn);
+    appleBtn.on('pointerover', () => {
+      appleTween = this.time.addEvent({
+        delay: 180, loop: true, callback: () => {
+          appleIdx = (appleIdx + 1) % appleKeys.length;
+          appleBtn.setTexture(appleKeys[appleIdx]);
+        }
+      });
+    });
+    appleBtn.on('pointerout', () => { if (appleTween) { appleTween.remove(); appleTween = null; } appleBtn.setTexture('apple1'); });
+    appleBtn.on('pointerdown', () => this.showFavoritPayPanel('Appel', 60, 2, appleBtn));
+  }
+
+//--------------------------------------------------------------------------------------------------------
+// Fungsi ESC --> EXIT
+showExitPanelOnly() {
+  // Hapus panel lama jika ada
+  if (this.exitPanelGroup) {
+    this.exitPanelGroup.clear(true, true);
+    this.exitPanelGroup = null;
+  }
+  this.exitPanelGroup = this.add.group();
+
+  // Panel background
+  const panel = this.add.rectangle(960, 640, 400, 170, 0x023d3f, 0.98)
+    .setStrokeStyle(4, 0xffffff)
+    .setDepth(6000);
+  this.exitPanelGroup.add(panel);
+
+  // Judul
+  const title = this.add.text(960, 600, "Exit Game?", {
+    font: "bold 40px Segoe UI",
+    fill: "#fff",
+    align: "center"
+  }).setOrigin(0.5).setDepth(6001);
+  this.exitPanelGroup.add(title);
+
+  // Tombol EXIT
+  const exitBtn = this.add.text(960, 690, "EXIT", {
+    font: "bold 36px Segoe UI",
+    fill: "#fff",
+    //backgroundColor: "#e00",
+    padding: { left: 32, right: 32, top: 12, bottom: 12 }
+  }).setOrigin(0.5).setDepth(6001).setInteractive({ useHandCursor: true });
+  this.exitPanelGroup.add(exitBtn);
+
+  exitBtn.on('pointerdown', async() => {
+  // Tambahkan update level01Score ke backend sebelum keluar
+    const email = localStorage.getItem('email');
+  if (email) {
+    await this.updateUserProgress(email, {
+      level01Completed: true,
+      level01Score: this.level01Score,
+      // Tambahkan field lain jika perlu
+      completionTime: this.timeElapsed,
+      isPerfectGame: false
+    });
+  } 
+    // ✅ CLEANUP SEBELUM TRANSITION
+    this.cleanupBeforeSceneChange();
+    this.scene.start('SplashScene');
+
+    // Hentikan autoSaveInterval jika aktif (autoSaveInterval ada di Level01Scene line 156)
+    if (this.autoSaveInterval) clearInterval(this.autoSaveInterval);
+
+    // Hapus semua panel dan kembali ke SplashScene  
+    this.exitPanelGroup.clear(true, true);
+    this.exitPanelGroup = null;
+    this.isExitPanelShown = false;
+    this.scene.stop('Level01Scene');
+    this.scene.start('SplashScene');
+  });
+}
+
+//======================================================================================================
+// Add this function after showFavoritPayPanel (around line 2900): Donation Popup
+showDonationPopup() {
+  // Close any existing panels first
+  if (this.musicPanelGroup) {
+    this.musicPanelGroup.clear(true, true);
+    this.musicPanelGroup = null;
+  }
+  if (this.payPanel) this.payPanel.destroy();
+  if (this.payText) this.payText.destroy();
+  if (this.payQR) this.payQR.destroy();
+  if (this.payBtn) { this.payBtn.destroy(); this.payBtn = null; }
+  if (this.cancelBtn) { this.cancelBtn.destroy(); this.cancelBtn = null; }
+
+  // Create donation popup group
+  this.donationPopupGroup = this.add.group();
+
+  // Dark overlay background
+  const overlay = this.add.rectangle(960, 640, 1920, 1280, 0x000000, 0.8)
+    .setDepth(5000)
+    .setInteractive(); // Block clicks behind
+  this.donationPopupGroup.add(overlay);
+
+  // Show your donation image (centered)
+  const donationImage = this.add.image(960, 640, 'donationPanel')
+    .setScale(0.8) // Adjust scale as needed
+    .setDepth(5001);
+  this.donationPopupGroup.add(donationImage);
+
+  // Scan QR Code message
+  const scanMessage = this.add.text(960, 200, 
+    "🔥 SUPPORT BLACK HORSE PUZZLE PROJECT LEVEL 02! 🔥", {
+    font: "bold 48px Segoe UI",
+    fill: "#ffd700",
+    align: "center",
+    stroke: "#000",
+    strokeThickness: 3
+  }).setOrigin(0.5).setDepth(5002);
+  this.donationPopupGroup.add(scanMessage);
+
+  // Instructions
+  const instructions = this.add.text(960, 1050, 
+    "📱 Scan QR Code above or click PayPal.me button below\n" +
+    "💰 Donations start from $1 - safely secured via PayPal!", {
+    font: "bold 32px Segoe UI",
+    fill: "#ffffff",
+    align: "center",
+    backgroundColor: "rgba(0,0,0,0.7)",
+    padding: { left: 20, right: 20, top: 10, bottom: 10 }
+  }).setOrigin(0.5).setDepth(5002);
+  this.donationPopupGroup.add(instructions);
+  
+  // ✅ ADD DONATION AMOUNT BUTTONS (positioned below donation image)
+  const donationAmounts = [
+    { amount: 1, label: "$1", color: "#28a745" },    // Green
+    { amount: 5, label: "$5", color: "#007bff" },    // Blue  
+    { amount: 10, label: "$10", color: "#dc3545" }   // Red
+  ];
+
+  // Create donation buttons horizontally (below the donation image)
+  donationAmounts.forEach((option, index) => {
+    const xPos = 820 + (index * 140); // Horizontal spacing: 820, 960, 1100
+    const yPos = 1150; // Below donation image panel
+    
+    const donationBtn = this.add.text(xPos, yPos, option.label, {
+      font: "bold 36px Segoe UI",
+      fill: "#ffffff",
+      backgroundColor: option.color,
+      padding: { left: 25, right: 25, top: 12, bottom: 12 }
+    })
+      .setOrigin(0.5)
+      .setDepth(5002)
+      .setInteractive({ useHandCursor: true });
+    this.donationPopupGroup.add(donationBtn);
+
+    // Hover effects
+    donationBtn.on('pointerover', () => {
+      donationBtn.setScale(1.1);
+      donationBtn.setShadow(0, 0, option.color, 12, true, true);
+    });
+
+    donationBtn.on('pointerout', () => {
+      donationBtn.setScale(1);
+      donationBtn.setShadow(0, 0, "", 0, false, false);
+    });
+
+    // Click handler - opens PayPal with specific amount
+    donationBtn.on('pointerdown', () => {
+      // PayPal payment link dengan amount parameter yang tepat
+      const paypalDonationURL = `https://www.paypal.com/ncp/payment/LAPGGSZ6ET6NS?amount=${option.amount}&currency_code=USD`;
+      window.open(paypalDonationURL, '_blank');
+      
+      // Show thank you message
+      this.showDonationThankYou(option.amount);
+      
+      // Redirect to Level 02 after delay
+      this.time.delayedCall(3000, () => {
+        this.cleanupBeforeSceneChange();
+        this.scene.start('Level02Scene');
+      });
+    });
+  });
+
+    // ✅ ADD CUSTOM AMOUNT BUTTON (below the 3 main buttons)
+  const customBtn = this.add.text(960, 1200, "💰 CUSTOM AMOUNT", {
+    font: "bold 28px Segoe UI", 
+    fill: "#ffd700",
+    backgroundColor: "#6c757d", // Gray
+    padding: { left: 20, right: 20, top: 8, bottom: 8 }
+  })
+    .setOrigin(0.5)
+    .setDepth(5002)
+    .setInteractive({ useHandCursor: true });
+  this.donationPopupGroup.add(customBtn);
+
+  customBtn.on('pointerover', () => {
+    customBtn.setScale(1.05);
+    customBtn.setBackgroundColor("#5a6268");
+  });
+
+  customBtn.on('pointerout', () => {
+    customBtn.setScale(1);
+    customBtn.setBackgroundColor("#6c757d");
+  });
+
+  customBtn.on('pointerdown', () => {
+    // This will redirect to Level02 where PayPal.me is available
+    this.showCustomAmountMessage();
+  });
+
+  // Continue to Level 02 button
+  const continueBtn = this.add.text(1200, 1270, "⏭️ CONTINUE TO LEVEL 02", {
+    font: "bold 32px Segoe UI",
+    fill: "#00eaff",
+    backgroundColor: "#181c24",
+    padding: { left: 20, right: 20, top: 8, bottom: 8 }
+  })
+    .setOrigin(0.5)
+    .setDepth(5002)
+    .setInteractive({ useHandCursor: true });
+  this.donationPopupGroup.add(continueBtn);
+
+  continueBtn.on('pointerdown', () => {
+    this.cleanupBeforeSceneChange();
+    this.scene.start('Level02Scene');
+  });
+
+  // Close button
+  const closeBtn = this.add.text(1600, 150, "✕", {
+    font: "bold 60px Arial",
+    fill: "#fff",
+    backgroundColor: "#e00",
+    padding: { left: 15, right: 15, top: 5, bottom: 5 }
+  }).setOrigin(0.5).setDepth(5002).setInteractive({ useHandCursor: true });
+  this.donationPopupGroup.add(closeBtn);
+
+  closeBtn.on('pointerdown', () => {
+    this.closeDonationPopup();
+  });
+
+  // Optional: Close on overlay click
+  overlay.on('pointerdown', () => {
+    this.closeDonationPopup();
+  });
+}
+
+// ✅ ADD UPDATED showDonationThankYou function to handle different amounts:
+showDonationThankYou(amount) {
+  // Remove existing thank you message
+  if (this.thankYouText) this.thankYouText.destroy();
+
+  const amountText = amount === "custom" ? "your generous contribution" : `$${amount}`;
+  
+  this.thankYouText = this.add.text(960, 500, 
+    `🙏 THANK YOU FOR YOUR ${amountText.toUpperCase()} DONATION!\n` +
+    "🚀 Your support helps us create LEVEL 02!\n" +
+    "⏭️ Redirecting to Level 02...", {
+    font: "bold 42px Segoe UI",
+    fill: "#ffd700",
+    align: "center",
+    backgroundColor: "rgba(0,0,0,0.9)",
+    padding: { left: 30, right: 30, top: 20, bottom: 20 },
+    stroke: "#fff",
+    strokeThickness: 2
+  }).setOrigin(0.5).setDepth(5010);
+
+  // Animate thank you message
+  this.tweens.add({
+    targets: this.thankYouText,
+    scale: { from: 0.1, to: 1 },
+    alpha: { from: 0, to: 1 },
+    duration: 800,
+    ease: 'Back.easeOut'
+  });
+}
+
+// ✅ ADD NEW function to show custom amount message:
+showCustomAmountMessage() {
+  // Remove existing message
+  if (this.customAmountMsg) this.customAmountMsg.destroy();
+  if (this.customAmountMsgBg) this.customAmountMsgBg.destroy();
+
+  // Background
+  this.customAmountMsgBg = this.add.rectangle(960, 400, 1000, 300, 0x023d3f, 1)
+    .setStrokeStyle(4, 0x00eaff)
+    .setDepth(5998);
+
+  // Message
+  this.customAmountMsg = this.add.text(960, 400,
+    "💰 CUSTOM AMOUNT DONATION\n\n" +
+    "For custom donation amounts, please proceed to\n" +
+    "LEVEL 02 where PayPal.me is available.\n\n" +
+    "Click CONTINUE TO LEVEL 02 below!", {
+    font: "bold 32px Segoe UI",
+    fill: "#ffffff",
+    align: "center",
+    wordWrap: { width: 900 }
+  }).setOrigin(0.5).setDepth(5999);
+
+  // Auto-hide after 4 seconds
+  this.time.delayedCall(4000, () => {
+    if (this.customAmountMsg) {
+      this.customAmountMsg.destroy();
+      this.customAmountMsgBg.destroy();
+      this.customAmountMsg = null;
+      this.customAmountMsgBg = null;
+    }
+  });
+}
+
+// Keep the existing closeDonationPopup function as is
+closeDonationPopup() {
+  if (this.donationPopupGroup) {
+    this.donationPopupGroup.clear(true, true);
+    this.donationPopupGroup = null;
+  }
+  if (this.thankYouText) {
+    this.thankYouText.destroy();
+    this.thankYouText = null;
+  }
+  if (this.customAmountMsg) {
+    this.customAmountMsg.destroy();
+    this.customAmountMsg = null;
+  }
+  if (this.customAmountMsgBg) {
+    this.customAmountMsgBg.destroy();
+    this.customAmountMsgBg = null;
+  }
+}
+}
+  
+
+window.Level01Scene = Level01Scene;
