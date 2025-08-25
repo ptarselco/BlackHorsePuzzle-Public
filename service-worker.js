@@ -1,49 +1,48 @@
+// Import cache assets
+importScripts('cache-assets.js');
+
 const CACHE_NAME = 'blackhorse-seri1-v1';
 //const urlsToCache = [
 // 🎯 ASSETS UNTUK SERI 1 SAJA (10 PUZZLES)
 const CORE_ASSETS = [
-  '/',
-  '/index.html',
-  '/phaser.min.js',
-  '/site.webmanifest',
-  
+  './',
+  './index.html',
+  './phaser.min.js',
+  './site.webmanifest',
   // Favicon files yang sudah ada
-  '/android-chrome-192x192.png',
-  '/android-chrome-512x512.png',
-  '/apple-touch-icon.png',
-  '/favicon-32x32.png',
-  '/favicon-16x16.png',
-  '/favicon.ico'
+  './android-chrome-192x192.png',
+  './android-chrome-512x512.png',
+  './apple-touch-icon.png',
+  './favicon-32x32.png',
+  './favicon-16x16.png',
+  './favicon.ico'
 ];
 
 // 🧩 SERI 1 GAME ASSETS (10 PUZZLE PIECES)
 const SERI1_ASSETS = [
   // Core game files
-  //'/assets/images/black-horse-base.png',
-  //'/assets/images/background.png',
-  //'/assets/images/grid-background.png',
-  
+  //'./assets/images/black-horse-base.png',
+  //'./assets/images/background.png',
+  //'./assets/images/grid-background.png',
   // 10 puzzle pieces untuk Seri 1
-  '/assets/images/puzzle-pieces/piece-01.png',
-  '/assets/images/puzzle-pieces/piece-02.png',
-  '/assets/images/puzzle-pieces/piece-03.png',
-  '/assets/images/puzzle-pieces/piece-04.png',
-  '/assets/images/puzzle-pieces/piece-05.png',
-  '/assets/images/puzzle-pieces/piece-06.png',
-  '/assets/images/puzzle-pieces/piece-07.png',
-  '/assets/images/puzzle-pieces/piece-08.png',
-  '/assets/images/puzzle-pieces/piece-09.png',
-  '/assets/images/puzzle-pieces/piece-10.png',
-  
+  './assets/images/puzzle-pieces/piece-01.png',
+  './assets/images/puzzle-pieces/piece-02.png',
+  './assets/images/puzzle-pieces/piece-03.png',
+  './assets/images/puzzle-pieces/piece-04.png',
+  './assets/images/puzzle-pieces/piece-05.png',
+  './assets/images/puzzle-pieces/piece-06.png',
+  './assets/images/puzzle-pieces/piece-07.png',
+  './assets/images/puzzle-pieces/piece-08.png',
+  './assets/images/puzzle-pieces/piece-09.png',
+  './assets/images/puzzle-pieces/piece-10.png',
   // UI elements
-  '/assets/images/ui/play-button.png',
-  '/assets/images/ui/timer-bg.png',
-  '/assets/images/ui/level01Score-bg.png',
-  
+  './assets/images/ui/play-button.png',
+  './assets/images/ui/timer-bg.png',
+  './assets/images/ui/level01Score-bg.png',
   // Audio (optional - hanya jika file ada)
-  '/assets/audio/background-music.mp3',
-  '/assets/audio/piece-drop.mp3',
-  '/assets/audio/success.mp3'
+  './assets/audio/background-music.mp3',
+  './assets/audio/piece-drop.mp3',
+  './assets/audio/success.mp3'
 ];
 
 // 🎯 GABUNG SEMUA ASSETS - SERI 1 ONLY
@@ -243,8 +242,8 @@ async function clearAllCaches() {
     
     // Clear localStorage related to cache
     try {
-        localStorage.removeItem('cacheVersion');
-        localStorage.removeItem('lastCacheUpdate');
+        //localStorage.removeItem('cacheVersion');
+        //localStorage.removeItem('lastCacheUpdate');
         console.log('✅ Cache-related localStorage cleared');
     } catch (error) {
         console.log('❌ localStorage clear error:', error);

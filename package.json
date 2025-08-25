@@ -1,0 +1,12 @@
+{
+  "name": "blackhorsepuzzle",
+  "version": "1.0.0",
+  "description": "Black Horse Puzzle Game",
+  "main": "index.html",
+  "scripts": {
+    "start": "echo 'Static site - no build needed'"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

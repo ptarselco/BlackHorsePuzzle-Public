@@ -1,49 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-
-   <!-- ADD ini di <head> section index.html: -->
-<link rel="manifest" href="/site.webmanifest">
-<meta name="theme-color" content="#046064">
-<meta name="background-color" content="#0891b2">
-
-<!-- PWA meta tags -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Black Horse Puzzle">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="application-name" content="BlackHorse">
-
-<!-- Existing favicon links tetap ada -->
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-<link rel="manifest" href="/site.webmanifest"> 
-   
-<!-- ✅ FAVICONS: yang lama -->
+<!-- ✅ HANYA META TAGS, FAVICONS, DAN CSS DI HEAD -->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes">
     <title>Black Horse Puzzle</title>
+
+       <!-- ADD ini di <head> section index.html: -->
+    <!-- PWA meta tags -->    
+    <meta name="theme-color" content="#046064">
+    <meta name="background-color" content="#0891b2">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Black Horse Puzzle">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="BlackHorse">
+
+     <!-- ✅ FAVICONS: yang lama -->
+    <link rel="manifest" href="site.webmanifest">    
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
     <link rel="icon" type="image/webp" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/webp" sizes="16x16" href="favicon-16x16.png">
     <link rel="icon" type="image/webp" sizes="192x192" href="android-chrome-192x192.png">
     <link rel="icon" type="image/webp" sizes="512x512" href="android-chrome-512x512.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-    <link rel="manifest" href="site.webmanifest">
     <link rel="shortcut icon" href="favicon.ico">
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script>
-    if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('service-worker.js')
-        .then(reg => console.log('Service Worker registered ✅', reg))
-        .catch(err => console.log('Service Worker failed ⛔', err));
-      });
-    }
-   </script>
-  
-    <style>
+
+
+  <style>
      html,body {
         margin: 0;
         padding: 0;
@@ -226,177 +209,7 @@
     </style>
   </head>
 
-
-<script>
-// 🔧 Service Worker Registration - Seri 1
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
-      .then((registration) => {
-        console.log('✅ Service Worker registered successfully:', registration.scope);
-        
-        // Handle updates
-        registration.addEventListener('updatefound', () => {
-          const newWorker = registration.installing;
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              console.log('🔄 New Service Worker available - ready to update');
-              // Optionally show update notification to user
-            }
-          });
-        });
-      })
-      .catch((error) => {
-        console.warn('⚠️ Service Worker registration failed:', error);
-        // Game will work without Service Worker, just no offline support
-      });
-      
-    // Handle Service Worker messages
-    navigator.serviceWorker.addEventListener('message', (event) => {
-      if (event.data && event.data.type === 'CACHE_UPDATED') {
-        console.log('✅ Game assets cached - ready for offline play!');
-      }
-    });
-  });
-} else {
-  console.log('⚠️ Service Worker not supported in this browser');
-}
-// Fungsi cek status pembayaran dari backend (lengkap)
-window.checkPaymentStatusFromBackend = async function(email) {
-  try {
-    console.log('🔍 Checking payment status for:', email);
-    //const encodedEmail = encodeURIComponent(email);
-    const res = await axios.post(
-      `https://backend-paypalblackhorsepuzzle.onrender.com/api/${encodeURIComponent(email)}/payment-status`,
-      { }, // Send email in POST body
-      {timeout: 30000}
-    );
-    const data = res.data;
-    console.log('💳 Payment status response:', data);
-
-    if (data && data.success) {
-      // Kembalikan seluruh data status pembayaran, bukan hanya boolean
-      return {
-        isPaid: data.isPaid === true,
-        supportAmount: data.supportAmount || 0,
-        paymentMethods: data.paymentMethods || [],
-        gameStats: data.gameStats || {},
-        user: data.user || null
-      };
-    } else {
-      console.log('⚠️ Payment check: no success flag in response');
-      // Jika respons tidak sesuai harapan
-      return {
-        isPaid: false,
-        supportAmount: 0,
-        paymentMethods: [],
-        gameStats: {},
-        user: null
-      };
-    }
-  } catch (err) {
-    console.error('Failed to check payment status:', err);
-    // Jika error, kembalikan default unpaid status
-    return {
-      isPaid: false,
-      supportAmount: 0,
-      paymentMethods: [],
-      gameStats: {},
-      user: null
-    };
-  }
-};
-//<!-- FIND function checkPaymentStatus around line 350 dan REPLACE dengan: -->
-window.checkPaymentStatus = async function(email) {
-  let result = { paid: false, method: null };
-
-  try {
-    console.log('💳 Checking payment status for:', email);
-    
-    const urlParams = new URLSearchParams(window.location.search);
-
-    //const paymentResult = await checkPaymentStatus(email); // (inputEmail) ganti ke Email
-      //  startPaymentMonitoring(email); // (inputEmail) ganti ke Email
-      
-    // Check Xsolla payment
-    if (urlParams.get('paid') === '1') {
-      console.log('✅ Payment detected from Xsolla URL parameter');
-      if (window.safeUpdatePaymentStatus) {
-        safeUpdatePaymentStatus(true, 'xsolla');
-      }
-      result = { paid: true, method: 'xsolla' };
-    } 
-    // Check PayPal payment
-    else if (urlParams.get('paypal_paid') === '1' || urlParams.get('paypal_success') === 'true') {
-      console.log('✅ Payment detected from PayPal URL parameter');
-      if (window.safeUpdatePaymentStatus) {
-        safeUpdatePaymentStatus(true, 'paypal');
-      }
-      result = { paid: true, method: 'paypal' };
-    }
-    // Check PayPal Order ID
-    //else if (urlParams.get('paypal_order_id')) {
-     // console.log('✅ PayPal Order ID detected');
-    else if (urlParams.get('paypal_paid') === '1' || urlParams.get('paypal_success') === 'true') {
-      console.log('✅ Payment detected from PayPal URL parameter');
-      if (window.safeUpdatePaymentStatus) {
-        safeUpdatePaymentStatus(true, 'paypal');
-      }
-      result = { paid: true, method: 'paypal' };
-    }
-    // Check PayPal Token 
-    else if (urlParams.get('token') && urlParams.get('PayerID')) {
-      console.log('✅ PayPal token and PayerID detected');
-      if (window.safeUpdatePaymentStatus) {
-        safeUpdatePaymentStatus(true, 'paypal');
-      }
-      result = { paid: true, method: 'paypal' };
-    }
-  } catch (error) {
-    console.error('❌ Payment check failed:', error);
-    if (window.safeUpdatePaymentStatus) {
-      safeUpdatePaymentStatus(false);
-    }
-    result = { paid: false, method: 'error' };
-  }
-  
-  console.log('💳 Payment check result:', result);
-  return result;
-};
-// This function updates the game payment status and UI based on the payment state
-// ✅ ENHANCED GAME PAYMENT STATUS UPDATE:
-
-window.updateGamePaymentStatus = function(isPaid, method = null) {
-  const email = localStorage.getItem("email");
-  if (!email) {
-    console.error('❌ email not defined in updateGamePaymentStatus');
-    return;
-  }
-  let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
-  userData.isPaid = isPaid;
-  localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
-  window.isPaid = isPaid;
-  // Unlock tombol jika sudah bayar
-  if (isPaid) {
-    if (window.unblur10PuzzleButton) window.unblur10PuzzleButton();
-    if (window.unlockGameAfterPurchase) window.unlockGameAfterPurchase();
-    console.log('✅ Payment status updated, game unlocked');
-  } else {
-    if (window.lockAllGameplayButtons) window.lockAllGameplayButtons();
-    console.log('🔒 Payment not confirmed, game locked');
-  }
-}
-
- // Client-side handling of payment status
-//if (payment === "cancelled") {
-  //console.warn("❌ Payment cancelled by user.");
-  // (optional) localStorage.setItem('paymentCancelled', 'true');
-//}
-
-</script>
-
-
-  <body>
+<body>
     <!-- Game Container -->
   <div id="game-container"></div>
 
@@ -456,23 +269,290 @@ window.updateGamePaymentStatus = function(isPaid, method = null) {
   </div>
   <div class="login-row">
     <button id="resendVerificationBtn">Resend Code</button>
+    <button id="logoutBtn" style="display:none;">Logout</button>
   </div>
 </div>
 
+  <!-- Load Phaser and Axios from CDN, then game scenes and main.js, all TANPA defer agar urut -->
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3/build/phaser.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/build/axios.min.js"></script>
+  <script src="Scenes/SplashScene.js"></script>
+  <script src="Scenes/Level01Scene.js"></script>
+  <script src="Scenes/Level02Scene.js"></script>
+  <script src="main.js"></script>
 
 
-<!--
-<button id="logoutBtn" style="display:none;">Logout</button>-->
-    <!-- === End form login === style="margin-left:10px;" dikeluarkan dari Resend Code === -->
+<script>
+ // Wait for Phaser to be ready before executing any game-related code
+        if (typeof Phaser !== 'undefined') {
+            console.log('✅ Phaser is ready - initializing game systems...');
+            // 🔧 Service Worker Registration - Seri 1
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/service-worker.js')
+                        .then((registration) => {
+        console.log('✅ Service Worker registered successfully:', registration.scope);
+      })
+      .catch((error) => {
+        console.warn('⚠️ Service Worker registration failed:', error);
+        // Game will work without Service Worker, just no offline support
+      });
+  });
+} else {
+  console.log('⚠️ Service Worker not supported in this browser');
+}
+}
 
-     <!-- Load main.js -->
-    <script src="./main.js"></script>
-    <script src="./Scenes/SplashScene.js"></script>
-    <script src="./Scenes/Level01Scene.js"></script>
-    <script src="./Scenes/Level02Scene.js"></script>
+// Fallback function for checking payment status
+window.checkPaymentStatusFromBackend = async function(email) {
+  try {
+    console.log('🔍 Checking payment status for:', email);
+    const res = await axios.post(
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/${encodeURIComponent(email)}/payment-status`,
+      {},
+      { timeout: 200000 }
+    );
+    const data = res.data;
+    console.log('💳 Payment status response:', data);
+
+    // Cek semua metode pembayaran
+    const paypalAmount = (data && typeof data.paypalAmount === 'number') ? data.paypalAmount : 0;
+    const xsollaAmount = (data && typeof data.xsollaAmount === 'number') ? data.xsollaAmount : 0;
+    const kofiAmount = (data && typeof data.kofiAmount === 'number') ? data.kofiAmount : 0;
+    const isPaid = paypalAmount > 0 || xsollaAmount > 0 || kofiAmount > 0;
+
+    return {
+      isPaid,
+      amount: paypalAmount + xsollaAmount,
+      provider: isPaid ? (paypalAmount > 0 ? 'paypal' : 'xsolla') : null,
+      supportAmount: data.supportAmount || 0,
+      paymentMethods: data.paymentMethods || [],
+      gameStats: data.gameStats || {},
+      user: data.user || null
+    };
+  } catch (err) {
+    console.error('Failed to check payment status:', err);
+    return {
+      isPaid: false,
+      amount: 0,
+      provider: null,
+      supportAmount: 0,
+      paymentMethods: [],
+      gameStats: {},
+      user: null
+    };
+  }
+};
+
+async function syncProgressFromBackend(email) {
+  try {
+      console.log('🔄 Syncing progress from backend for:', email);
+
+      // ✅ STEP 1: Ambil data dari localStorage sebagai fallback
+      const localData = JSON.parse(localStorage.getItem(`gameData-${email}`))?.gameProgress || {};
+      const localProgress = localData.gameProgress || {};
+
+      console.log('📱 Local data:', localProgress);
+
+      // ✅ STEP 2: Kirim request ke backend dengan data lokal sebagai konteks
+    const response = await axios.post(
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
+      { 
+        email, 
+        level: 'Level01Scene',
+        // Kirim data lokal untuk perbandingan
+        localProgress: localProgress
+      },
+      { timeout: 200000 }
+    );
+
+     // ✅ STEP 3: Ambil data dari backend (PRIORITAS UTAMA)
+    const backendData = response.data;
+    const progress = backendData.progress || {};
     
-    
+    console.log('🌐 Backend data:', progress);
 
+     // ✅ STEP 4: SELALU GUNAKAN DATA BACKEND sebagai sumber truth
+    const finalData = {
+      level01Score: progress.level01Score || 0,
+      level01HighScore: progress.level01HighScore || 0,
+      totalPlays: progress.totalPlays || 0,
+      level01Completed: progress.level01Completed || false,
+      bestTime: progress.bestTime || 0,
+      averageTime: progress.averageTime || 0,
+      completionRate: progress.completionRate || 0,
+      perfectGames: progress.perfectGames || 0,
+      totalAttempts: progress.totalAttempts || 0,
+      gameOvers: progress.gameOvers || 0,
+      favoriteGiven: progress.favoriteGiven || false,
+      lastPlayedDate: progress.lastPlayedDate || new Date().toISOString()
+    }; 
+
+    // ✅ STEP 5: Hitung user classification berdasarkan data backend
+    const newUser = totalPlays === 0;
+    const winUser = totalPlays > 0 && (currentScore > 0 || highScore > 0);
+    const lossUser = totalPlays >= 3 && currentScore === 0 && highScore === 0;
+
+    console.log(`👤 Backend user classification: newUser=${newUser}, winUser=${winUser}, lossUser=${lossUser}`);
+    
+    // ✅ STEP 6: UPDATE localStorage dengan data backend (FORCE UPDATE)
+    const updatedUserData = {
+      gameProgress: finalData,
+      newUser,
+      winUser,
+      lossUser,
+      lastSyncTime: new Date().toISOString(),
+      syncedFromBackend: true
+    };
+
+    // Update gameData - Simpan data pengguna yang diperbarui ke localStorage
+    localStorage.setItem(`gameData-${email}`, JSON.stringify(updatedUserData));
+
+    // Update score
+    localStorage.setItem(`score_${email}`, (finalData.level01Score || 0).toString());
+   
+    // Update game history
+    localStorage.setItem(`gameHistory_${email}`, JSON.stringify({
+      hasPlayedBefore: (finalData.totalPlays || 0) > 0,
+      totalGamesPlayed: finalData.totalPlays || 0,
+      highestScore: finalData.level01HighScore || 0,
+      gameOvers: finalData.gameOvers || 0,
+      lastPlayedDate: finalData.lastPlayedDate,
+      favoriteGiven: finalData.favoriteGiven || false,
+      newUser,
+      winUser,
+      lossUser
+    }));
+    
+     // ✅ STEP 7: UPDATE global variables
+    window.level01Score = finalData.level01Score || 0;
+    window.playerScore = finalData.level01Score || 0;
+    
+    // ✅ STEP 8: UPDATE UI jika scene sudah aktif
+    if (window.Phaser && window.game && window.game.scene) {
+      const level01 = window.game.scene.getScene('Level01Scene');
+      if (level01 && level01.scene && level01.scene.isActive()) {
+        // Update score di scene
+        if (level01.level01Score !== undefined) {
+          level01.level01Score = finalData.level01Score || 0;
+        }
+        // Update scoreText
+        if (level01.scoreText && typeof level01.scoreText.setText === 'function') {
+          level01.scoreText.setText((finalData.level01Score || 0).toString().padStart(5, '0'));
+        }
+        console.log('🎮 Scene updated with backend data');
+      }
+    }
+
+    console.log('✅ Synced progress from backend - Final data:', finalData);
+    console.log('✅ User status:', { newUser, winUser, lossUser });
+    
+    return {
+      progress: finalData,
+      newUser,
+      winUser,
+      lossUser,
+      success: true
+    };
+    
+  } catch (err) {
+    console.error('❌ Failed to sync progress from backend:', err);
+    
+    // ✅ FALLBACK: Jika backend gagal, gunakan data lokal
+    const localData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+    const localProgress = localData.gameProgress || {};
+    
+    console.log('🔄 Using local fallback data:', localProgress);
+    
+    return {
+      progress: localProgress,
+      newUser: localData.newUser || false,
+      winUser: localData.winUser || false,  
+      lossUser: localData.lossUser || false,
+      success: false,
+      error: err.message
+    };
+  }
+}
+
+//======================================================================================
+const email = localStorage.getItem("email");
+if (email) {
+  syncProgressFromBackend(email);
+}
+
+// Deklarasi variabel utama
+let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+
+
+// Pastikan gameProgress selalu ada
+if (!userData.gameProgress) {
+  userData.gameProgress = {
+    level01Score: 0,
+    // tambahkan field lain jika perlu
+  };
+}
+//======================================================================================
+//<!-- FIND function checkPaymentStatus around line 350 dan REPLACE dengan: -->
+window.checkPaymentStatus = async function(email) {
+  let result = { paid: false, method: null };
+
+  try {
+    console.log('💳 Checking payment status for:', email);
+    
+    const urlParams = new URLSearchParams(window.location.search);
+
+    //const paymentResult = await checkPaymentStatus(email); // (inputEmail) ganti ke Email
+      //  startPaymentMonitoring(email); // (inputEmail) ganti ke Email
+      
+    // Check Xsolla payment
+    if (urlParams.get('paid') === '1') {
+      console.log('✅ Payment detected from Xsolla URL parameter');
+      if (window.safeUpdatePaymentStatus) {
+        safeUpdatePaymentStatus(true, 'xsolla');
+      }
+      result = { paid: true, method: 'xsolla' };
+    } 
+    // Check PayPal payment
+    else if (urlParams.get('paypal_paid') === '1' || urlParams.get('paypal_success') === 'true') {
+      console.log('✅ Payment detected from PayPal URL parameter');
+      if (window.safeUpdatePaymentStatus) {
+        safeUpdatePaymentStatus(true, 'paypal');
+      }
+      result = { paid: true, method: 'paypal' };
+    }
+    // Check PayPal Order ID
+    //else if (urlParams.get('paypal_order_id')) {
+     // console.log('✅ PayPal Order ID detected');
+    else if (urlParams.get('paypal_paid') === '1' || urlParams.get('paypal_success') === 'true') {
+      console.log('✅ Payment detected from PayPal URL parameter');
+      if (window.safeUpdatePaymentStatus) {
+        safeUpdatePaymentStatus(true, 'paypal');
+      }
+      result = { paid: true, method: 'paypal' };
+    }
+    // Check PayPal Token 
+    else if (urlParams.get('token') && urlParams.get('PayerID')) {
+      console.log('✅ PayPal token and PayerID detected');
+      if (window.safeUpdatePaymentStatus) {
+        safeUpdatePaymentStatus(true, 'paypal');
+      }
+      result = { paid: true, method: 'paypal' };
+    }
+  } catch (error) {
+    console.error('❌ Payment check failed:', error);
+    if (window.safeUpdatePaymentStatus) {
+      safeUpdatePaymentStatus(false);
+    }
+    result = { paid: false, method: 'error' };
+  }
+  
+  console.log('💳 Payment check result:', result);
+  return result;
+};
+</script>
+
+  
    <script>
       // Agar mouse wheel di atas canvas tetap scroll halaman, walau canvas diganti/direfresh Phaser
      //Fix Canvas function addScrollToCanvas() {
@@ -487,63 +567,145 @@ window.updateGamePaymentStatus = function(isPaid, method = null) {
      }
     } 
 
-// SEANBEACON menyimpan level01Score dan waktu ke backend saat sebelum halaman ditutup
- window.addEventListener('beforeunload', () => {
+// ✅ SEANDBEACON KIRIM DATA KE BACKEND
+window.addEventListener('beforeunload', () => {
   const email = localStorage.getItem('email');
-  //const level01Score = window.Level01Scene?.instance?.level01Score || 0; // pastikan ambil level01Score terbaru
-  const level01Score = localStorage.getItem(`score_${email}`) || 0;
-  const time = window.Level01Scene?.instance?.timeElapsed || 0;
   if (!email) return;
 
-  console.log('📤 Sending level01Score via sendBeacon:', level01Score, time);
+  // ✅ AMBIL SCORE TERTINGGI DARI SEMUA SUMBER - JANGAN KIRIM 0
+  let finalScore = 0;
+  let timeElapsed = 0;
 
+  // 1. Ambil dari scene yang aktif (prioritas tertinggi)
+  if (window.game && window.game.scene) {
+    const level01 = window.game.scene.getScene('Level01Scene');
+    if (level01) {
+      finalScore = level01.level01Score || 0;
+      timeElapsed = level01.timeElapsed || 0;
+    }
+  }
 
-  navigator.sendBeacon(
-  `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
-  new Blob([JSON.stringify({
-    email,
-    level01Completed: false,
-    level01Score: level01Score,    // ✅ gunakan level01Score dari instance
-    completionTime: time,        // ✅ gunakan time dari instance
-    isPerfectGame: false
-  })], { type: 'text/plain' })
- );
- });
+  // 2. Ambil dari localStorage score
+  const localScore = parseInt(localStorage.getItem(`score_${email}`) || 0);
+  finalScore = Math.max(finalScore, localScore);
+
+  // 3. Ambil dari gameData untuk memastikan
+  const userData = JSON.parse(localStorage.getItem(`gameData-${email}`) || '{}');
+  const gameProgress = userData.gameProgress || {};
+  finalScore = Math.max(finalScore, gameProgress.level01Score || 0, gameProgress.level01HighScore || 0);
+
+  // 4. Ambil dari history
+  const history = JSON.parse(localStorage.getItem(`gameHistory_${email}`) || '{}');
+  finalScore = Math.max(finalScore, history.highestScore || 0);
+
+  console.log('📤 Sending BEST score via sendBeacon:', finalScore, 'Time:', timeElapsed);
+
+  // ✅ HANYA KIRIM JIKA ADA SCORE YANG VALID - JANGAN KIRIM 0 YANG BISA OVERWRITE SCORE TINGGI
+  if (finalScore > 0) {
+    navigator.sendBeacon(
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
+      new Blob([JSON.stringify({
+        email,
+        level01Completed: true, // ✅ Jika ada score > 0, berarti completed
+        level01Score: finalScore, // ✅ Kirim score tertinggi
+        level01HighScore: finalScore, // ✅ Pastikan high score juga di-update
+        completionTime: timeElapsed,
+        isPerfectGame: false,
+        preserveHighScore: true, // ✅ Flag untuk backend: jangan turunkan score
+        source: 'beforeunload'
+      })], { type: 'application/json' }) // ✅ Ganti ke application/json
+    );
+    
+    console.log('💾 Score preserved via sendBeacon:', finalScore);
+  } else {
+    console.log('🚫 No valid score found, skipping sendBeacon to prevent score loss');
+  }
+});
  
 //=================================== BATAS SENDBEACON ====================================
-
+// KIRIM DATA KE BACKEND
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
     const email = localStorage.getItem('email');
-    const level01Score = localStorage.getItem(`score_${email}`) || 0;
-    // Jika ada timeElapsed yang valid, ambil dari scene, jika tidak, pakai 0
+    if (!email) return;
+
+    // Ambil score terbaru dari scene atau localStorage
+    let level01Score = 0;
     let time = 0;
     if (window.game && window.game.scene && window.game.scene.getScene) {
       const level01 = window.game.scene.getScene('Level01Scene');
-      if (level01 && typeof level01.timeElapsed !== 'undefined') {
-        time = level01.timeElapsed;
+      if (level01) {
+        level01Score = level01.level01Score || 0;
+        time = level01.timeElapsed || 0;
       }
     }
+    // Fallback ke localStorage jika scene tidak aktif
+    if (!level01Score) {
+      level01Score = parseInt(localStorage.getItem(`score_${email}`) || 0);
+    }
+
+    // Ambil high score dari localStorage
+    const userData = JSON.parse(localStorage.getItem(`gameData-${email}`) || '{}');
+    const gameProgress = userData.gameProgress || {};
+    const level01HighScore = Math.max(level01Score, gameProgress.level01HighScore || 0);
 
     console.log('📤 Visibility hidden - backup level01Score:', level01Score, time);
 
-    if (email) {
-      const data = JSON.stringify({
+    // Kirim ke backend
+    navigator.sendBeacon(
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
+      new Blob([JSON.stringify({
         email,
-        level01Completed: false,
+        level01Completed: level01Score > 0,
         level01Score: level01Score,
+        level01HighScore: level01HighScore,
         completionTime: time,
-        isPerfectGame: false
-      });
-
-      //navigator.sendBeacon(
-        //'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/' + encodeURIComponent(email) + '/update-progress',
-        //new Blob([data], { type: 'text/plain' })
-      //);
-    }
+        isPerfectGame: false,
+        preserveHighScore: true,
+        source: 'visibilitychange'
+      })], { type: 'application/json' })
+    );
   }
 });
 //================================= BATAS VISIBILITY CHANGE =================================
+// Definisikan di luar create()
+window.initUserData = async function(email, userData) {
+  // Jika belum ada data progress, ambil dari backend
+  if (!userData || !userData.gameProgress) {
+    window.getUserProgress(email).then(progressRes => {
+      if (progressRes && progressRes.progress) {
+        // Tambahkan inisialisasi level01HighScore
+        const progress = progressRes.progress;
+        const level01HighScore = progress.level01HighScore ?? 0;
+        userData = { gameProgress: progressRes.progress, level01HighScore: level01HighScore };
+        localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+      } else {
+        // Jika backend juga kosong, inisialisasi default
+        userData = {
+          gameProgress: {
+            level01Completed: false,
+            level01Score: 0,
+            level01HighScore: 0,
+            totalPlays: 0,
+            bestTime: 0,
+            averageTime: 0,
+            completionRate: 0,
+            perfectGames: 0,
+            totalAttempts: 0,
+            completionTime: 0,
+            isPerfectGame: 0
+          }
+        };
+        localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+      }
+      // Update score di scene
+      window.level01Score = userData.gameProgress.level01Score || 0;
+    });
+  } else {
+    // Jika sudah ada, langsung pakai
+    window.level01Score = userData.gameProgress.level01Score || 0;
+  }
+}
 
 // ========== ENHANCED SECURE LOGIN & PAYMENT SYSTEM ==========
 // ✅ GLOBAL VARIABLES:
@@ -589,7 +751,7 @@ async function registerUser(email) {
   const response = await axios.post(
     'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/register',
     { email: email.toLowerCase().trim() },
-    { timeout: 8000 }
+    { timeout: 30000 }
   );
   const data = response.data;
   console.log('✅ Backend email verification successful:', data.message);
@@ -621,6 +783,20 @@ try {
       alert('Failed to register email. Please try again.');
       return;
     }
+
+    // ✅ SYNC DENGAN BACKEND SETELAH LOGIN
+      const syncResult = await syncProgressFromBackend(inputEmail);
+      
+      if (syncResult.success) {
+        console.log('✅ Post-login sync successful');
+        
+        // Start auto-sync
+        window.startAutoSync(inputEmail);
+
+        // Check payment status
+        const paymentData = await checkPaymentStatusFromBackend(inputEmail);
+        window.updateGamePaymentStatus(paymentData.isPaid, paymentData.method);
+      }
 
     //localStorage.setItem("email", inputEmail);
     console.log('📧 Attempting login with email:', inputEmail);
@@ -654,33 +830,9 @@ try {
     }, 800);
   }
   }
-  
-  async function syncProgressFromBackend(email) {
-  try {
-    const res = await axios.post(
-      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`
-    );
-    const progress = res.data?.progress || {};
-    // Sync level01Score
-    localStorage.setItem(`score_${email}`, progress.level01Score || 0);
-    window.level01Score = progress.level01Score || 0;
-    window.playerScore = progress.level01Score || 0;
-    // Sync history (if you store it in backend)
-    localStorage.setItem(`gameHistory_${email}`, JSON.stringify({
-      hasPlayedBefore: true,
-      totalGamesPlayed: progress.totalPlays || 1,
-      highestScore: progress.level01HighScore || progress.level01Score || 0,
-      gameOvers: progress.gameOvers || 0,
-      lastPlayedDate: new Date().toISOString(),
-      favoriteGiven: progress.favoriteGiven || false
-    }));
-    console.log('✅ Synced progress from backend:', progress);
-  } catch (err) {
-    console.error('❌ Failed to sync progress from backend:', err);
-  }
-}
+// END OF LOGIN HANDLER 
 //--------------Batas login handler-------------------
-
+  
 // ✅ ENHANCED VERIFICATION HANDLER:
  // Handler tombol Verify
 document.getElementById("verifyBtn").onclick = async function() {
@@ -691,7 +843,7 @@ document.getElementById("verifyBtn").onclick = async function() {
     const response = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/verify-email',
       { email, verificationCode: code },
-      { timeout: 8000 }
+      { timeout: 30000 }
     );
     const data = response.data;
     console.log('✅ Email verification response:', data);
@@ -699,11 +851,36 @@ document.getElementById("verifyBtn").onclick = async function() {
     //if (data.emailVerified === true) {
     if (data.user && data.user.emailVerified === true) {
       //alert('Email verified successfully! Welcome to Black Horse Puzzle!');
-      document.getElementById("verificationCodeInput").value = "";
+      // PENTING: Simpan email SEBELUM operasi lain
       localStorage.setItem("email", email);
+      console.log('📧 Email saved to localStorage:', email);
+
+      document.getElementById("verificationCodeInput").value = "";
       document.getElementById("verificationBox").style.display = "none";
       document.getElementById("logoutBtn").style.display = "inline-block";
       document.getElementById("verificationCodeInput").value = "";
+      
+      // Koreksi dari sonnet mulai tambahan di bawah ini
+      // Lakukan sync backend dan payment check SETELAH email tersimpan
+      try {
+        const syncResult = await syncProgressFromBackend(email);
+        console.log('✅ Post-verification sync:', syncResult);
+        
+        const paymentData = await checkPaymentStatusFromBackend(email);
+        console.log('💳 Post-verification payment check:', paymentData);
+        
+        // Sekarang baru update payment status (email sudah tersedia)
+        window.updateGamePaymentStatus(paymentData.isPaid, paymentData.provider);
+        
+        // Start auto-sync
+        window.startAutoSync(email);
+        
+      } catch (syncError) {
+        console.error('❌ Post-verification sync error:', syncError);
+      }
+      // Batas koreksi dari sonnet
+
+      // Start Phaser game
       if (window.Phaser && window.game && window.game.scene) {
         window.game.scene.start('SplashScene');
       }
@@ -734,7 +911,7 @@ async function checkEmailVerifiedFromBackend(email) {
     const response = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/check-email',
       { email: email},
-      { timeout: 8000 }
+      { timeout: 30000 }
     );
     return response.data && response.data.emailVerified === true;
   } catch (error) {
@@ -765,7 +942,7 @@ window.resendVerificationEmail = async function(email) {
     const response = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/resend-verification',
       { email },
-      { timeout: 8000 }
+      { timeout: 30000 }
     );
     const data = response.data;
     if (data.success) {
@@ -790,6 +967,34 @@ window.showMessage = function(message, color = '#ff6b6b') {
     console.log('📢 Message:', message);
 };   
 
+// This function updates the game payment status and UI based on the payment state
+// ✅ ENHANCED GAME PAYMENT STATUS UPDATE:
+
+window.updateGamePaymentStatus = function(isPaid, method = null) {
+  const email = localStorage.getItem("email");
+  if (!email) {
+    //console.error('❌ email not defined in updateGamePaymentStatus');
+    //return; // ✅ KELUAR JIKA TIDAK ADA EMAIL
+    console.warn('⚠️ No email found - skipping payment status update');
+    return; // Jangan error, cukup skip saja
+  }
+
+  console.log('💳 Updating payment status for:', email, 'isPaid:', isPaid);
+
+  let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+  userData.isPaid = isPaid;
+  localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+  window.isPaid = isPaid;
+  // Unlock tombol jika sudah bayar
+  if (isPaid) {
+    if (window.unblur10PuzzleButton) window.unblur10PuzzleButton();
+    if (window.unlockGameAfterPurchase) window.unlockGameAfterPurchase();
+    console.log('✅ Payment status updated, game unlocked');
+  } else {
+    if (window.lockAllGameplayButtons) window.lockAllGameplayButtons();
+    console.log('🔒 Payment not confirmed, game locked');
+  }
+}
 
 // Redefine verifyEmailWithBackend with actual backend connection
 //async function verifyEmailWithBackend(email) {
@@ -832,6 +1037,33 @@ window.verifyEmailWithBackend = async function(email) {
     return false;
   }
 };
+
+// ✅ PERBAIKAN: Sync berkala setiap 1 menit
+let autoSyncInterval = null;
+
+window.startAutoSync = function(email) {
+  if (autoSyncInterval) clearInterval(autoSyncInterval);
+  
+  autoSyncInterval = setInterval(async () => {
+    console.log('🔄 Auto-syncing with backend...');
+    await syncProgressFromBackend(email);
+  }, 60000); // 1 menit
+
+  console.log('✅ Auto-sync started for:', email);
+};
+
+window.stopAutoSync = function() {
+  if (autoSyncInterval) {
+    clearInterval(autoSyncInterval);
+    autoSyncInterval = null;
+    console.log('🛑 Auto-sync stopped');
+  }
+};
+
+// ✅ Start auto-sync jika user sudah login
+if (email) {
+  window.startAutoSync(email);
+}
 
 // Tambahkan fungsi unlock global
 window.unlockPlayAndHideGameOver = function() {
@@ -893,7 +1125,7 @@ window.unlockPlayAndHideGameOver = function() {
 console.log('✅ REAL BACKEND VERIFICATION READY - CONNECT TO RENDER.COM');
 
  // ✅ GET USER CLASSIFICATION:
-    const email = localStorage.getItem("email");
+    //const email = localStorage.getItem("email"); pasang di atas dekat pemanggil initUserData
     const history = getPlayerGameHistory(email);
     const currentScore = parseInt(localStorage.getItem(`score_${email}`) || 0);
     const totalPlays = history.totalGamesPlayed || 0;
@@ -904,7 +1136,7 @@ console.log('✅ REAL BACKEND VERIFICATION READY - CONNECT TO RENDER.COM');
     
     // ✅ PROPER USER CLASSIFICATION:
     const newUser = totalPlays === 0;  // Only 0 plays = new user
-    const winUser = totalPlays > 0 && currentScore > 0;  // 1 dst plays = active user
+    const winUser = totalPlays >= 1 && currentScore > 0;  // 1 dst plays = active user
     const lossUser = totalPlays >= 3 && currentScore === 0 && !isPaid;  // 3+ plays, no score, no payment
     
     console.log('👤 User classification:', { 
@@ -941,28 +1173,184 @@ function getPlayerGameHistory(email) {
 
 
 // ✅ ENHANCED UPDATE PLAYER GAME level01Score HISTORY
+// ✅ PERBAIKAN 1: Function updatePlayerGameHistory()
 function updatePlayerGameHistory(email, updates) {
   const history = getPlayerGameHistory(email);
   const updatedHistory = { ...history, ...updates };
   localStorage.setItem(`gameHistory_${email}`, JSON.stringify(updatedHistory));
   console.log('📊 Game history updated for:', email, updatedHistory);
   return updatedHistory;
+
+
+// ✅ LOGIC FIX: Jika ada highestScore > 0, otomatis hasPlayedBefore = true
+  if (updatedHistory.highestScore > 0) {
+    updatedHistory.hasPlayedBefore = true;
+  }
+  
+  // ✅ LOGIC FIX: Jika totalPlays > 0, otomatis hasPlayedBefore = true
+  if (updatedHistory.totalGamesPlayed > 0) {
+    updatedHistory.hasPlayedBefore = true;
+  }
+  
+  // ✅ LOGIC FIX: Pastikan totalGamesPlayed tidak 0 jika ada score
+  if (updatedHistory.highestScore > 0 && updatedHistory.totalGamesPlayed === 0) {
+    updatedHistory.totalGamesPlayed = 1; // Minimal 1 game
+  }
+  
+  localStorage.setItem(`gameHistory_${email}`, JSON.stringify(updatedHistory));
+  console.log('📊 Game history updated for:', email, updatedHistory);
+  return updatedHistory;
+}
+
+// ✅ PERBAIKAN 2: Function getPlayerGameHistory()
+function getPlayerGameHistory(email) {
+  const history = localStorage.getItem(`gameHistory_${email}`);
+  const parsed = history ? JSON.parse(history) : {
+    hasPlayedBefore: false,
+    totalGamesPlayed: 0,
+    highestScore: 0,
+    gameOvers: 0,
+    lastPlayedDate: null,
+    favoriteGiven: false
+  };
+  
+  // ✅ CONSISTENCY CHECK: Fix inconsistent data
+  if (parsed.highestScore > 0 && !parsed.hasPlayedBefore) {
+    console.log('🔧 Fixing inconsistent history data...');
+    parsed.hasPlayedBefore = true;
+    parsed.totalGamesPlayed = Math.max(parsed.totalGamesPlayed, 1);
+    localStorage.setItem(`gameHistory_${email}`, JSON.stringify(parsed));
+  }
+  
+  return parsed;
+}
+
+// ✅ PERBAIKAN 3: Function updateGameScore()
+async function updateGameScore(email, newScore) {
+  if (!email) {
+    console.error('❌ Email is null or undefined in updateGameScore');
+    return {
+      success: false,
+      error: 'Email is null or undefined',
+      newUser: false,
+      winUser: false,
+      lossUser: false,
+      gameProgress: {}
+    };
+  } 
+  
+  localStorage.setItem(`score_${email}`, newScore.toString());
+  window.level01Score = newScore;
+  window.playerScore = newScore;
+
+  // ✅ GET CURRENT HISTORY
+  const history = getPlayerGameHistory(email);
+  
+  // ✅ UPDATE HISTORY WITH CONSISTENT LOGIC
+  const updatedHistory = {
+    hasPlayedBefore: true, // ✅ SELALU TRUE jika function ini dipanggil
+    totalGamesPlayed: Math.max(history.totalGamesPlayed + 1, 1), // ✅ INCREMENT atau minimal 1
+    highestScore: Math.max(history.highestScore, newScore),
+    gameOvers: history.gameOvers,
+    lastPlayedDate: new Date().toISOString(),
+    favoriteGiven: history.favoriteGiven
+  };
+
+  // ✅ SAVE UPDATED HISTORY
+  localStorage.setItem(`gameHistory_${email}`, JSON.stringify(updatedHistory));
+
+  const userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+  const progress = userData.gameProgress || {};
+  const level01Completed = progress.level01Completed ?? false;
+  const level01HighScore = Math.max(progress.level01HighScore ?? 0, newScore); // ✅ UPDATE HIGH SCORE
+  const totalPlays = Math.max(progress.totalPlays ?? 0, updatedHistory.totalGamesPlayed); // ✅ SYNC totalPlays
+  const bestTime = progress.bestTime ?? 0;  
+  const averageTime = progress.averageTime ?? 0;
+  const completionRate = progress.completionRate ?? 0;  
+  const perfectGames = progress.perfectGames ?? 0;
+  const totalAttempts = progress.totalAttempts ?? 0;
+  const completionTime = progress.completionTime ?? 0;
+  const isPerfectGame = newScore >= level01HighScore && newScore > 0;
+
+  // ✅ UPDATE userData dengan data yang konsisten
+  userData.gameProgress = {
+    level01Completed,
+    level01Score: newScore,
+    level01HighScore,
+    totalPlays,
+    bestTime,
+    averageTime,
+    completionRate,
+    perfectGames,
+    totalAttempts,
+    completionTime,
+    isPerfectGame
+  };
+  
+  localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+
+  // Simpan ke backend setiap kali level01Score berubah
+  try { 
+    const res = await axios.post(
+    `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
+    {
+      email,
+      level01Completed,
+      level01Score: newScore,
+      level01HighScore,
+      totalPlays,
+      bestTime,
+      averageTime,
+      completionRate,
+      perfectGames,
+      totalAttempts,
+      completionTime,
+      isPerfectGame
+    },
+    { timeout: 200000 }
+  );
+
+    console.log('✅ Backend updated - Score:', newScore, 'TotalPlays:', totalPlays);
+
+    // Return struktur lengkap seperti SplashScene
+    return {
+      success: res.data.success,
+      user: res.data.user,
+      newUser: res.data.newUser,
+      winUser: res.data.winUser,
+      lossUser: res.data.lossUser,
+      message: res.data.message,
+      gameProgress: res.data.user?.gameProgress || {}
+    };
+  } catch (err) {
+    console.error('❌ Update user progress error:', err);
+    return {
+      success: false,
+      error: err.message,
+      newUser: false,
+      winUser: false,
+      lossUser: false,
+      gameProgress: {}
+    };
+  }  
 }
 
 // ✅ ENHANCED CHECK PLAYER level01Score STATUS 
+// ✅ PERBAIKAN 4: Function checkPlayerScoreStatus()
 function checkPlayerScoreStatus(email) {
   const currentScore = parseInt(localStorage.getItem(`score_${email}`) || 0);
-  const history = getPlayerGameHistory(email);
-  //localStorage.setItem(`score_${email}`, '0');
-  //const currentScore = 0; // Selalu 0, tidak ada angka 3
-  
+  const history = getPlayerGameHistory(email); // ✅ Ini sudah otomatis fix inconsistency
+    
   console.log('🔍 Checking level01Score status for:', email);
   console.log('Current level01Score:', currentScore);
   console.log('Game history:', history);
+
+  // ✅ LOGIC FIX: hasPlayedBefore berdasarkan data yang konsisten
+  const hasPlayedBefore = history.hasPlayedBefore || history.totalGamesPlayed > 0 || history.highestScore > 0;
   
   return {
     currentScore: currentScore,
-    hasPlayedBefore: history.hasPlayedBefore,
+    hasPlayedBefore: history.hasPlayedBefore, // ✅ Use consistent logic
     canPlay: !history.hasPlayedBefore || currentScore > 0, // User baru atau user lama dengan level01Score > 0
     needsFavorite: currentScore === 0 && history.hasPlayedBefore && !history.favoriteGiven,
     isGameOver: currentScore === 0 && history.hasPlayedBefore,
@@ -970,6 +1358,52 @@ function checkPlayerScoreStatus(email) {
     history: history
   };
 }
+
+// ✅ PERBAIKAN 5: Tambahkan function untuk fix data yang sudah rusak
+window.fixUserDataConsistency = function(email) {
+  console.log('🔧 Fixing user data consistency for:', email);
+  
+  const currentScore = parseInt(localStorage.getItem(`score_${email}`) || 0);
+  const userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+  const history = getPlayerGameHistory(email);
+  
+  // Fix userData
+  if (!userData.gameProgress) userData.gameProgress = {};
+  
+  const progress = userData.gameProgress;
+  const hasAnyScore = currentScore > 0 || (progress.level01Score || 0) > 0 || history.highestScore > 0;
+  
+  if (hasAnyScore) {
+    // User punya score, pasti sudah main
+    progress.totalPlays = Math.max(progress.totalPlays || 0, 1);
+    progress.level01HighScore = Math.max(
+      progress.level01HighScore || 0, 
+      currentScore, 
+      progress.level01Score || 0,
+      history.highestScore || 0
+    );
+
+    // Fix history
+    const fixedHistory = {
+      hasPlayedBefore: true,
+      totalGamesPlayed: Math.max(history.totalGamesPlayed, progress.totalPlays, 1),
+      highestScore: progress.level01HighScore,
+      gameOvers: history.gameOvers || 0,
+      lastPlayedDate: history.lastPlayedDate || new Date().toISOString(),
+      favoriteGiven: history.favoriteGiven || false
+    };
+    
+    localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+    localStorage.setItem(`gameHistory_${email}`, JSON.stringify(fixedHistory));
+    
+    console.log('✅ Data consistency fixed:', {
+      score: currentScore,
+      highScore: progress.level01HighScore,
+      totalPlays: progress.totalPlays,
+      hasPlayedBefore: true
+    });
+  }
+};
 
 // ✅ pesan ini untuk pemain lama yang sudah game over
 function showGameOverWarning(email) {
@@ -1053,24 +1487,59 @@ function showLoginForm() {
 //-------------------------------------------------------------------------------------------
 // ✅ ENHANCED DOMCONTENTLOADED WITH level01Score MANAGEMENT:
 window.addEventListener('DOMContentLoaded', async function() {
-  let email = localStorage.getItem("email"); 
+  const email = localStorage.getItem("email"); 
+   let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+ 
   console.log('📄 Enhanced Black Horse Puzzle - Initializing secure system');
   
   if (email) {
+    // ✅ AUTO-FIX INCONSISTENT DATA
+    window.fixUserDataConsistency(email);
+    // ✅ TAMBAH: Auto-sync dengan backend saat page load
+    try {
+      console.log('🔄 Starting initial backend sync...');
+      const syncResult = await syncProgressFromBackend(email);
+      
+      if (syncResult.success) {
+        console.log('✅ Initial backend sync successful');
+        
+        // ✅ TAMBAH: Update userData dengan data dari backend
+        userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+        
+        // ✅ TAMBAH: Check payment status juga
+        const paymentData = await checkPaymentStatusFromBackend(email);
+        console.log('💳 Initial payment check:', paymentData);
+        window.updateGamePaymentStatus(paymentData.isPaid, paymentData.method);
+        
+        // ✅ TAMBAH: Start auto-sync setelah initial sync berhasil
+        window.startAutoSync(email);
+        
+      } else {
+        console.log('⚠️ Backend sync failed, using local data');
+      }
+    } catch (syncError) {
+      console.error('❌ Initial sync error:', syncError);
+    }
+
     const isValidEmail = verifyEmailFormat(email);
     if (isValidEmail) {
+      // ✅ UBAH: Gunakan data yang sudah di-sync dari backend
       const scoreStatus = checkPlayerScoreStatus(email);
       
       // ✅ CHECK PAYMENT STATUS FIRST BEFORE SHOWING WARNING:
       try {
         const paymentData = await checkPaymentStatusFromBackend(email);
-        console.log('💳 Initial payment check:', paymentData);
+        console.log('💳 Payment status check:', paymentData);
         
         if (paymentData && paymentData.isPaid === true) {
           console.log('✅ Payment detected - user can play normally');
           // Clear game over state
           localStorage.removeItem(`gameOver_${email}`);
           
+          // ✅ TAMBAH: Update payment status in userData
+          userData.isPaid = true;
+          localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
+
           // Don't show warning - user already paid
         } else if (scoreStatus.needsFavorite) {
           console.log('⚠️ User needs to give favorite to continue');
@@ -1088,7 +1557,7 @@ window.addEventListener('DOMContentLoaded', async function() {
       console.log('✅ User logged in successfully with enhanced features');
     } else {
       console.log('❌ Invalid email format, clearing login');
-      localStorage.removeItem("email");
+      //localStorage.removeItem("email");
       showLoginForm();
     }
   } else {
@@ -1097,6 +1566,14 @@ window.addEventListener('DOMContentLoaded', async function() {
     document.getElementById("verificationBox").style.display = "none";
     document.getElementById("logoutBtn").style.display = "none";
   }
+  // ✅ TAMBAH: Hide loader setelah semua initialization selesai
+  const loader = document.getElementById('loader');
+  if (loader) {
+    setTimeout(() => {
+      loader.style.display = 'none';
+    }, 1000);
+  }
+
 });
 
 
@@ -1151,10 +1628,18 @@ async function handleScoreStatus(inputEmail, scoreStatus) {
     
     const email = localStorage.getItem("email");
     
-    stopPaymentMonitoring();
+    // ✅ FINAL SYNC SEBELUM LOGOUT
+    if (email) {
+    console.log('🔄 Final sync before logout...');
+    await syncProgressFromBackend(email);
+    }
+  
+  // Stop auto-sync
+  window.stopAutoSync();
+  stopPaymentMonitoring();
+
     
-    
-    localStorage.removeItem("email");
+    //localStorage.removeItem("email");
     document.getElementById("emailInput").value = "";
     document.getElementById("loginBox").style.display = "block";
     document.getElementById("emailInput").style.display = "inline-block";
@@ -1201,6 +1686,10 @@ async function handleScoreStatus(inputEmail, scoreStatus) {
   // ✅ SETUP LOGOUT BUTTON:
   const logoutBtn = document.getElementById('logoutBtn');
   if (logoutBtn) {
+    logoutBtn.onclick = () => {
+    localStorage.removeItem('email');
+    this.scene.start('SplashScene');
+  };
     logoutBtn.style.zIndex = '9990';
     logoutBtn.style.position = 'fixed';
     logoutBtn.style.pointerEvents = 'auto';
@@ -1235,7 +1724,7 @@ async function createPayPalOrder(email, amount, message = 'Black Horse Puzzle Su
         amount,
         message
       },
-      { timeout: 8000 }
+      { timeout: 30000 }
     );
     const data = response.data;
     if (data.success && data.paypalOrderId && data.approvalUrl) {
@@ -1261,7 +1750,7 @@ async function capturePayPalOrder(paypalOrderId, email) {
     const response = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/capture-order/${paypalOrderId}`,
       { email },
-      { timeout: 8000 }
+      { timeout: 30000 }
     );
     const data = response.data;
     if (data.success && data.paypalOrderId === paypalOrderId) {
@@ -1300,7 +1789,7 @@ async function verifyPayPalToken(token, payerID, email) {
     const response = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/verify-paypal-token',
       { token, payerID, email },
-      { timeout: 5000 } // timeout dalam ms
+      { timeout: 200000 } // timeout dalam ms
     );
 
     const data = response.data;
@@ -1330,7 +1819,7 @@ async function verifyPayPalOrder(orderId, email) {
     const response = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/verify-paypal',
       {paypalOrderId: orderId, email },
-      { timeout: 5000 }
+      { timeout: 200000 }
     );
 
     const data = response.data;
@@ -1539,7 +2028,6 @@ window.lockPlayAndShowGameOver = function() {
     if (window.lockPlayButton) window.lockPlayButton(); 
   });
 }
-  
 
 
     // ✅ COMPREHENSIVE SAFETY CHECK:
@@ -1713,35 +2201,85 @@ function waitForGameReady(callback, maxAttempts = 10) {
 }
 
 // ✅ SAFE GAME UPDATE SCOREFUNCTIONS:
-function updateGameScore(email, newScore) {
-   if (!email) {
+async function updateGameScore(email, newScore) {
+  if (!email) {
     console.error('❌ Email is null or undefined in updateGameScore');
-    return;
-  }
+    return {
+      success: false,
+      error: 'Email is null or undefined',
+      newUser: false,
+      winUser: false,
+      lossUser: false,
+      gameProgress: {}
+    };
+  } 
   localStorage.setItem(`score_${email}`, newScore.toString());
   window.level01Score = newScore;
   window.playerScore = newScore;
 
+  const userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+  const progress = userData.gameProgress || {};
+  const level01Completed = progress.level01Completed ?? false;
+  const level01HighScore = progress.level01HighScore ?? 0;
+  const totalPlays = progress.totalPlays ?? 0;
+  const bestTime = progress.bestTime ?? 0;  
+  const averageTime = progress.averageTime ?? 0;
+  const completionRate = progress.completionRate ?? 0;  
+  const perfectGames = progress.perfectGames ?? 0;
+  const totalAttempts = progress.totalAttempts ?? 0;
+  const completionTime = progress.completionTime ?? 0;
+  const isPerfectGame = newScore >= level01HighScore && newScore > 0
+
   // Simpan ke backend setiap kali level01Score berubah
-  axios.post(
+  try { 
+    const res = await axios.post(
     `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
     {
-      level01Score: newScore
+      email,
+      level01Completed,
+      level01Score: newScore,
+      level01HighScore,
+      totalPlays,
+      bestTime,
+      averageTime,
+      completionRate,
+      perfectGames,
+      totalAttempts,
+      completionTime,
+      isPerfectGame
       // Tambahkan data lain jika perlu nanti untuk level01ScoreSeri2 dan seri selanjutnya
-    }
-  ).then(() => {
-    console.log('✅ level01Score saved to backend');
-  }).catch((err) => {
-    console.error('❌ Failed to save level01Score to backend:', err);
-  });
-
+    },
+    { timeout: 200000 }
+  );
+// Update history di localStorage
   const history = getPlayerGameHistory(email);
   updatePlayerGameHistory(email, {
     highestScore: Math.max(history.highestScore, newScore),
     lastPlayedDate: new Date().toISOString()
   });
+// Return struktur lengkap seperti SplashScene
+    return {
+      success: res.data.success,
+      user: res.data.user,
+      newUser: res.data.newUser,
+      winUser: res.data.winUser,
+      lossUser: res.data.lossUser,
+      message: res.data.message,
+      gameProgress: res.data.user?.gameProgress || {}
+    };
+  } catch (err) {
+    console.error('❌ Update user progress error:', err);
+    return {
+      success: false,
+      error: err.message,
+      newUser: false,
+      winUser: false,
+      lossUser: false,
+      gameProgress: {}
+    };
+  }  
 }
-  
+
 // ✅ SAFE PAYMENT STATUS UPDATE FUNCTION:
 function safeUpdatePaymentStatus(email) {
   waitForGameReady(async () => {

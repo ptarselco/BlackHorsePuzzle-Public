@@ -10,6 +10,9 @@ generateCacheAssets.js
 # server files
 server.js
 
+# build
+build/
+
 # Logs
 logs
 *.log
