@@ -61,9 +61,14 @@ class Level01Scene extends Phaser.Scene {
     this.load.image('next', './Puzzle-Assets/UI/GM. Next.webp');
     this.load.image('playSheriff', './Puzzle-Assets/UI/GM. Play.webp');
     this.load.image('playSheriffL', './Puzzle-Assets/UI/GM. Play Light.webp');
+    this.load.image('starBlackHorse', './Puzzle-Assets/UI/GM. Star Bronze Black Horse.png');
+  // Future: this.load.image('starSilverHorse', './Puzzle-Assets/UI/GM. Star Silver Black Horse.png');
+  // Future: this.load.image('starGoldHorse', './Puzzle-Assets/UI/GM. Star Gold Black Horse.png');
+  // Future: this.load.image('starPlatinumHorse', './Puzzle-Assets/UI/GM. Star Platinum Black Horse.png');
+  // Future: this.load.image('starDiamondHorse', './Puzzle-Assets/UI/GM. Star Diamond Black Horse.png');
     this.load.image('lv01Puzzle10', './Puzzle-Assets/UI/GM. L01-10 Puzzle.webp');
     this.load.image('lv01Puzzle20', './Puzzle-Assets/UI/GM. L01-20 Puzzle.webp');
-    this.load.image('paypalQR', './Puzzle-Assets/UI/Black Horse Fa-qrcode.png');
+    this.load.image('paypalQR', './Puzzle-Assets/UI/Black Horse Pu-qrcode.png');
     //this.load.audio('gameoverSound', './Puzzle-Assets/Sfx/scenes/game-over-elements-impact.mp3'); // utk 20 Puzzle
     this.load.image('textGlow02', './Puzzle-Assets/UI/Sp. Text Level 02 Glow.webp');
     this.load.image('hexSlot01', './Puzzle-Assets/UI/GM. Slot Hexa01.webp');
@@ -111,13 +116,90 @@ class Level01Scene extends Phaser.Scene {
   document.getElementById("loginBox").style.display = "block";
    document.getElementById("logoutBtn").style.display = "none";
 } else {
-  document.getElementById("loginBox").style.display = "none";    document.getElementById("logoutBtn").style.display = "inline-block";
+    document.getElementById("loginBox").style.display = "none";    document.getElementById("logoutBtn").style.display = "inline-block";
+
+    // Tambahkan handler logout agar langsung ke SplashScene
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+      logoutBtn.onclick = () => {
+        localStorage.removeItem("email");
+        this.scene.start('SplashScene');
+      };
+    }
  }
 });  
 }
 
  // create() {
  create(data = {}) {
+    // ===== CEK PUZZLE DAN SCORE UNTUK R2 & R3 =====
+    this.checkPuzzleRonde = (round, timeElapsed) => {
+      if (round === 2 && timeElapsed === 10) {
+        this.level01Score = 200;
+        this.scoreText.setText(this.level01Score.toString().padStart(5, '0'));
+        this.showCongratulationText('congratulation! Puzzle completed 🏆');
+      } else if (round === 3 && timeElapsed === 8) {
+        this.level01Score = 300;
+        this.scoreText.setText(this.level01Score.toString().padStart(5, '0'));
+        this.starBronzeCount = this.starBronzeCount + 1;
+        localStorage.setItem('starBlackHorseWins', this.starBronzeCount);
+        this.showCongratulationText('Congratulation! you get bonus Score total 300');
+        this.showBronzeStars();
+      }
+    };
+
+    // ===== TAMPILKAN PESAN CONGRATULATION =====
+    this.showCongratulationText = (msg) => {
+      if (this.congratsText) this.congratsText.destroy();
+      this.congratsText = this.add.text(960, 300, msg, {
+        font: 'bold 54px Segoe UI',
+        fill: '#ffd700',
+        align: 'center',
+        stroke: '#000',
+        strokeThickness: 4
+      }).setOrigin(0.5).setDepth(9999);
+      this.tweens.add({
+        targets: this.congratsText,
+        scale: { from: 0.1, to: 1 },
+        alpha: { from: 0, to: 1 },
+        duration: 700,
+        ease: 'Back.easeOut',
+        onComplete: () => {
+          this.time.delayedCall(2500, () => {
+            if (this.congratsText) this.congratsText.destroy();
+          });
+        }
+      });
+    };
+    // === BINTANG BRONZE BLACK HORSE (Seri 1) ===
+    this.starBronzeCount = parseInt(localStorage.getItem('starBlackHorseWins') || '0', 10);
+    this.starBronzeSprites = [];
+    this.showBronzeStars = () => {
+      // Hapus bintang lama
+      this.starBronzeSprites.forEach(s => s && s.destroy());
+      this.starBronzeSprites = [];
+      // Posisi: bawah score, kanan ke kiri
+      const startX = 1800; // kanan atas, sesuaikan dengan posisi scoreText
+      const y = 120; // di bawah score
+      const spacing = 60;
+      for (let i = 0; i < Math.min(this.starBronzeCount, 10); i++) {
+        const alpha = Math.min(0.1 + 0.1 * (i + 1), 1);
+        const star = this.add.image(startX - i * spacing, y, 'starBlackHorse')
+          .setScale(0.7)
+          .setAlpha(alpha)
+          .setDepth(9999);
+        this.tweens.add({
+          targets: star,
+          scale: { from: 0.2, to: 0.7 },
+          alpha: { from: 0, to: alpha },
+          duration: 900,
+          ease: 'Back.easeOut',
+        });
+        this.starBronzeSprites.push(star);
+      }
+    };
+    // Panggil saat create
+    this.showBronzeStars();
     console.log("Level01 create, login:", localStorage.getItem("email"));
     const email = localStorage.getItem("email");
     if (!localStorage.getItem("email")) {
@@ -192,6 +274,10 @@ if (!userData.gameProgress) {
   this.autoSaveInterval = setInterval(() => {
     const email = localStorage.getItem('email');
     if (!email) return;
+    if (!email) {
+      console.warn('❌ Email tidak ditemukan - tidak bisa updateUserProgress');
+      return;
+    }
     this.updateUserProgress(email, {
       level01Completed: true,
       level01Score: this.level01Score,
@@ -372,13 +458,13 @@ if (!userData.gameProgress) {
       // Tambahkan pengecekan login sebelum mengaktifkan tombol Play saat logout
       if (localStorage.getItem("email")) {
       // Panggil fungsi mulai game, misal:
-      if (this.isPaid || newUser ) {
-      //if (this.playBtn) {
-        //this.playBtn.setTexture('playSheriffL');
-        //this.playBtn.setInteractive({ useHandCursor: true });
-        //this.playBtn.setAlpha(1);
-        //this.playBtn.setVisible(true);
-      //}
+      if (this.isPaid || newUser || winUser ) {
+      if (this.playBtn) {
+        this.playBtn.setTexture('playSheriffL');
+        this.playBtn.setInteractive({ useHandCursor: true });
+        this.playBtn.setAlpha(1);
+        this.playBtn.setVisible(true);
+      }
     } else {
   // Belum bayar dan bukan user baru/masih gratis: Play tetap burem
   if (this.playBtn) {
@@ -2431,6 +2517,10 @@ initUserData(email, userData) {
 
     // Update ke backend juga
     const progress = await this.getUserProgress(email);    
+    if (!email) {
+      console.warn('❌ Email tidak ditemukan - tidak bisa updateUserProgress');
+      return;
+    }
     this.updateUserProgress(email, {
       level01Completed: true,
       level01Score: this.level01Score,
@@ -2763,25 +2853,26 @@ if (window.game && window.game.scene) {
 // 1. GET FUNCTION FOR USER PROGRESS
 async getUserProgress(email) {
   try {
-    const res = await axios.post(
-    `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
-    //'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/progress', {
-      {}, // body kosong, karena email sudah di URL param
-    { timeout: 90000 }
+    //const res = await axios.post(
+    const response = await axios.post(
+      `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
+      { email, level01Score },
+      { timeout: 200000 }
     );
-    const progress = res.data.progress  || {};
+    //const progress = res.data.progress  || {};
+    const progress = response.data.progress || {};
     // ✅ CALCULATE USER TYPES AND RETURN THEM:
     const newUser = !progress || progress.totalPlays === 0;
+    const winUser = progress && progress.totalPlays > 0 && (progress.level01Score || 0) > 0;
     const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
-    const winUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) > 0;
     
     console.log(`👤 User classification: newUser=${newUser}, lossUser=${lossUser}, winUser=${winUser}`);
     console.log(`📊 Progress data: totalPlays=${progress.totalPlays}, level01Score=${progress.level01Score}`);
     // Response: { success, progress, user }  
     return {
-    success: res.data.success,
+    success: response.data.success,
       progress: progress,
-      user: res.data.user,
+      user: response.data.user,
       // ✅ ADD USER TYPES:
       newUser: newUser,
       lossUser: lossUser,
@@ -2789,17 +2880,18 @@ async getUserProgress(email) {
       totalPlays: progress.totalPlays || 0,
       level01Score: progress.level01Score || 0
     };
+     
   } catch (err) {
     console.error('❌ Get user progress error:', err);
-    return {
-      newUser: true,
-      lossUser: false,
-      winUser: false,
+    return { 
+      newUser: true, 
+      lossUser: false, 
+      winUser: false, 
       progress: null,
       success: false,
       totalPlays: 0,
       level01Score: 0
-    };
+     };
   }
 }
 
@@ -2809,8 +2901,12 @@ async updateUserProgress(email, progress) {
     const res = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/update-progress`,
       { ...progress },
-      { timeout: 90000 }
+      { timeout: 200000 }
     );
+    // Kalkulasi user type setelah update
+    const { totalPlays = 0, level01Score = 0 } = progress;
+    const { newUser, winUser, lossUser } = getUserType(totalPlays, level01Score);
+    // (Jika ingin, bisa return atau log status user di sini)
     return res.data.success === true;
   } catch (err) {
     console.error('❌ Update user progress error:', err);
@@ -2819,34 +2915,37 @@ async updateUserProgress(email, progress) {
 }
 
 // 3. GET USER STATUS DARI BACKEND (POST)
-async getUserStatus(email, level = 'Level01, Level01Scene') {
+async getUserStatus(email, level = 'Level01Scene') {
   try {
     const response = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/status',
       { email: email.toLowerCase().trim(), level },
-      { timeout: 90000 }
+      { timeout: 200000 }
     );
+    // Kalkulasi user type jika progress tersedia
+    if (response.data && response.data.progress) {
+      const { totalPlays = 0, level01Score = 0 } = response.data.progress;
+      const userType = getUserType(totalPlays, level01Score);
+      response.data = { ...response.data, ...userType };
+    }
     return response.data;
   } catch (err) {
     console.error('❌ Error checkUserStatusAndGameOver:', err);
     return null;
   }
 }
-
 // GABUNGKAN CHECK USER STATUS DAN GAME OVER
 async checkUserStatusAndGameOver(email) {
   // Ambil status user dari backend (POST)
-  const status = await this.getUserStatus(email, 'Level01, Level01Scene');
+  const status = await this.getUserStatus(email, 'Level01Scene');
   if (!status) {
     console.error('Gagal ambil status user');
-    return null;
-  }
+      return null;
+    }
 
-  const progress = status.progress  || {};
-    // ✅ CALCULATE USER TYPES AND RETURN THEM:
-    const newUser = !progress || progress.totalPlays === 0;
-    const lossUser = progress && progress.totalPlays >= 3 && (progress.level01Score || 0) === 0;
-    const winUser = progress && progress.totalPlays > 0 && (progress.level01Score || 0) > 0;
+ const progress = status.progress  || {};
+   // ✅ CALCULATE USER TYPES AND RETURN THEM (pakai helper global):
+   const { newUser, winUser, lossUser } = getUserType(progress.totalPlays || 0, progress.level01Score || 0);
 
   
 // Jika newUser, aktifkan tombol Play & Puzzle
@@ -2859,8 +2958,8 @@ async checkUserStatusAndGameOver(email) {
 
   // Cek status game over untuk lossUser or winUser
   if (status.isGameOver) {
-    if (status.level01Score > 0) { // winUser
-      // WIN USER: Sudah main >= 3x, score > 0
+    if (winUser) {
+      // WIN USER: Sudah main >= 1x, score > 0
       status.isGameOver = false;
       localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
       this.isGameOver = false;
@@ -2875,34 +2974,30 @@ async checkUserStatusAndGameOver(email) {
 
       console.log('✅ Game over status di-reset - tombol Play & Puzzle diaktifkan');
       // Lanjutkan main
-    //  return status;
-    //} else {
+      return status;
+    } else if (lossUser) {
       // LOSS USER: Sudah main >= 3x, score = 0
-    //  this.isGameOver = true;
-    //  this.showGameOverReturnMessage();
-    //  this.lockAllGameplayButtons();
-    //  return status;
+      this.isGameOver = true;
+      this.showGameOverReturnMessage();
+      this.lockAllGameplayButtons();
+      return status;
     }
   }
 
   // Tambah totalPlays setiap kali fungsi ini dipanggil (untuk user lama)
   status.totalPlays = (status.totalPlays || 0) + 1;
-  
+
   // Jika totalPlays >= 3 dan level01Score masih 0, set game over
-  const isLossUser = (
-    (status.isGameOver && (status.level01Score || 0) === 0) || 
-    (status.totalPlays >= 3 && (status.level01Score || 0) === 0)
-  );
-  if (isLossUser) {
-    status.isGameOver = true;
-    await this.setGameOver(email, true); // gunakan fungsi async
-    status.isGameOver = true; // pastikan status di-set ke true
-    localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
-    this.isGameOver = true;
-    this.showGameOverReturnMessage();
-    this.lockAllGameplayButtons();
-    return status;
-  }
+ // if (status.totalPlays >= 3 && (status.level01Score || 0) === 0) {
+          //await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/set-gameover', { email, isGameOver: true });
+ // await this.setGameOver(email, true); // gunakan fungsi async
+ // status.isGameOver = true;
+ // localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
+ // this.isGameOver = true;
+ // this.showGameOverReturnMessage();
+ // this.lockAllGameplayButtons();
+ // return status;
+ // }
 
   // Simpan totalPlays terbaru ke localStorage
   localStorage.setItem(`gameData-${email}`, JSON.stringify(status));
@@ -2916,10 +3011,15 @@ async checkUserStatusAndGameOver(email) {
 // 4. Fungsi SET GAME OVER (async)
 async setGameOver(email, isGameOver = true) {
   try {
+    // Ambil progress terbaru dari localStorage
+    const userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
+    const progress = userData.progress || {};
+    const { totalPlays = 0, level01Score = 0 } = progress;
+    const { newUser, winUser, lossUser } = getUserType(totalPlays, level01Score);
     await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/set-gameover',
-      { email, isGameOver },
-      { timeout: 90000 }
+      { email, isGameOver, newUser, winUser, lossUser },
+      { timeout: 200000 }
     );
     return true;
   } catch (err) {
@@ -2936,9 +3036,16 @@ async checkGameOverStatusFromServer() {
   try {
     const response = await axios.post('https://backend-paypalblackhorsepuzzle.onrender.com/api/users/gameover', 
       { email },
-      { timeout: 90000 }  
+      { timeout: 200000 }  
     );
     const data = response.data;
+    if (data.progress) {
+      const { totalPlays = 0, level01Score = 0 } = data.progress;
+      const { newUser, winUser, lossUser } = getUserType(totalPlays, level01Score);
+      data.newUser = newUser;
+      data.winUser = winUser;
+      data.lossUser = lossUser;
+    }
     if (data.isGameOver) {
       this.isGameOver = true;
       //this.showGameOverReturnMessage();
@@ -2950,7 +3057,7 @@ async checkGameOverStatusFromServer() {
     // Fallback ke localStorage jika backend gagal
     const isLocked = localStorage.getItem(`gameOver_${email}`) === 'true';
     if (isLocked) {
-      //this.showGameOverReturnMessage();
+      this.showGameOverReturnMessage();
       //this.lockAllGameplayButtons();
       //await this.lockLevel(email, 'Level01');
       return;
@@ -2959,13 +3066,14 @@ async checkGameOverStatusFromServer() {
     }
 }
 
+
 // 6. LOCK LEVEL (mengunci akses level untuk user)
 async lockLevel(email, level) {
   try {
     const res = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/lock',
       { email, level },
-      { timeout: 90000 }
+      { timeout: 200000 }
     );
     if (res.data.success) {
       this.isGameOver = true;
@@ -3012,7 +3120,7 @@ async  unlockedLevels(email, level) {
     const unlockRes = await axios.post(
       'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/unlock',
       { email, level },
-      { timeout: 90000 }
+      { timeout: 200000 }
     );
 
     console.log('🔓 Unlock level response:', unlockRes.data);
@@ -3022,7 +3130,8 @@ async  unlockedLevels(email, level) {
      this.unlockGameAfterPurchase(); // Aktifkan tombol Play & Puzzle
     } 
 
-    //return unlockRes.data.success || unlockRes.data.unlocked === true;
+    // ✅ LOGIKA UNLOCK LEVEL:
+    // Jika backend mengembalikan { success: true } atau { unlocked: true }
     const isUnlocked = unlockRes.data.success || unlockRes.data.unlocked === true;
     console.log('🎯 Final unlock result:', isUnlocked);
     return isUnlocked;
@@ -3679,7 +3788,7 @@ return;
 // account ini untuk donasi
 // window.open('https://www.paypal.com/ncp/payment/7MARDZW8BDWVG', '_blank'); //ini tanpa harga dan tanpa variant 
 // PAY handler with dynamic PayPal amount
-const paypalWindow = window.open('https://www.paypal.com/ncp/payment/67JBKE7YCLQDU');
+const paypalWindow = window.open('https://www.paypal.com/ncp/payment/FP2R5EW7TVJ3Q');
 //window.open('https://your-xsolla-link', '_blank');  // belum selesai paystationnya
 this.showWaitingForPaymentMessage();
 
@@ -3914,7 +4023,7 @@ return;
   // account ini untuk donasi
   // window.open('https://www.paypal.com/ncp/payment/7MARDZW8BDWVG', '_blank'); //ini tanpa harga dan tanpa variant 
   // PAY handler with dynamic PayPal amount
-  const paypalWindow = window.open('https://www.paypal.com/ncp/payment/67JBKE7YCLQDU');
+  const paypalWindow = window.open('https://www.paypal.com/ncp/payment/FP2R5EW7TVJ3Q');
   //window.open('https://your-xsolla-link', '_blank');  // belum selesai paystationnya
   this.showWaitingForPaymentMessage();
 
@@ -4322,8 +4431,7 @@ showDonationPopup() {
     donationBtn.on('pointerdown', () => {
       // PayPal payment link dengan amount parameter yang tepat
       const paypalDonationURL = `https://www.paypal.com/ncp/payment/LAPGGSZ6ET6NS?amount=${option.amount}&currency_code=USD`;
-      window.open(paypalDonationURL, '_blank');
-      
+      window.open(paypalDonationURL, '_blank');      
       // Show thank you message
       this.showDonationThankYou(option.amount);
       

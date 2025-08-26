@@ -12,14 +12,16 @@ class Level02Scene extends Phaser.Scene {
 
      
     // Load puzzle pieces dan background board
-   //for (let i = 1; i <= 16; i++) {
-     // this.load.image(`hex${i}`, "../Puzzle-Assets/Level02/Lv.02 Hex-" + i.toString().padStart(2, '0') + ".webp");
+
+    //for (let i = 1; i <= 16; i++) {
+    //  this.load.image(`hex${i}`, "../Puzzle-Assets/Level02/Lv.02 Hex-" + i.toString().padStart(2, '0') + ".webp");
     //}
     this.load.image("board", "../Puzzle-Assets/Level02/Bord Game Puzzle Level-02.webp");
-   // this.load.image("cowboyHat", "../Puzzle-Assets/Level02/cowboy-black-hat-win.webp");
-     this.load.image('donationPanel', './Puzzle-Assets/UI/BLACK-HORSE-DONATION-PANEL.png'); // Your donation image
-      this.load.on('filecomplete-image-donationPanel', () => {
-    console.log('✅ donationPanel loaded!');
+    // this.load.image("cowboyHat", "../Puzzle-Assets/Level02/cowboy-black-hat-win.webp");
+    this.load.image('donationPanel', './Puzzle-Assets/UI/BLACK-HORSE-DONATION-PANEL.png'); // Your donation image
+    this.load.image('starBlackHorse', './Puzzle-Assets/UI/GM. Star Black Horse.png'); // Black Horse Star
+    this.load.on('filecomplete-image-donationPanel', () => {
+      console.log('✅ donationPanel loaded!');
     });
 
     
@@ -47,14 +49,97 @@ class Level02Scene extends Phaser.Scene {
 
   create() {
     console.log("Level02 create, login:", localStorage.getItem("email"));
+
     if (!localStorage.getItem("email")) {
-    console.log("Belum login, kembali ke SplashScene"); 
-   this.scene.start('SplashScene');
-    return;
-  }
+      console.log("Belum login, kembali ke SplashScene");
+      this.scene.start('SplashScene');
+      return;
+    }
+
+    // Tambahkan event handler logout agar langsung ke SplashScene
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+      logoutBtn.onclick = () => {
+        localStorage.removeItem("email");
+        this.scene.start('SplashScene');
+      };
+    }
 
   const email = localStorage.getItem("email");
+
   let playerScore = 0;
+  this.round = 1;
+  this.starWinCount = parseInt(localStorage.getItem('starBlackHorseWins') || '0', 10);
+  this.starSprite = null;
+
+  // Example: call checkPuzzle() when puzzle is completed (replace with your actual logic)
+  // this.checkPuzzle(2, 10); // For testing round 2, 10s
+  // this.checkPuzzle(3, 8);  // For testing round 3, 8s
+  // ===== CEK PUZZLE DAN SCORE =====
+  this.checkPuzzle = (round, timeElapsed) => {
+    if (round === 2 && timeElapsed === 10) {
+      playerScore = 200;
+      this.showCongratulationText('congratulation! Puzzle completed 🏆');
+    } else if (round === 3 && timeElapsed === 8) {
+      playerScore = 300;
+      this.starWinCount = this.starWinCount + 1;
+      localStorage.setItem('starBlackHorseWins', this.starWinCount);
+      this.showCongratulationText('Congratulation! you get bonus Score total 300');
+      this.showStarBlackHorse(this.starWinCount);
+    }
+  };
+
+  // ===== TAMPILKAN PESAN CONGRATULATION =====
+  this.showCongratulationText = (msg) => {
+    if (this.congratsText) this.congratsText.destroy();
+    this.congratsText = this.add.text(960, 300, msg, {
+      font: 'bold 54px Segoe UI',
+      fill: '#ffd700',
+      align: 'center',
+      stroke: '#000',
+      strokeThickness: 4
+    }).setOrigin(0.5).setDepth(9999);
+    this.tweens.add({
+      targets: this.congratsText,
+      scale: { from: 0.1, to: 1 },
+      alpha: { from: 0, to: 1 },
+      duration: 700,
+      ease: 'Back.easeOut',
+      onComplete: () => {
+        this.time.delayedCall(2500, () => {
+          if (this.congratsText) this.congratsText.destroy();
+        });
+      }
+    });
+  };
+
+  // ===== TAMPILKAN BINTANG BLACK HORSE DENGAN ANIMASI =====
+  this.showStarBlackHorse = (winCount) => {
+    // Hapus semua bintang sebelumnya
+    if (this.starSprites && Array.isArray(this.starSprites)) {
+      this.starSprites.forEach(s => s && s.destroy());
+    }
+    this.starSprites = [];
+    // Mulai dari kanan ke kiri, di bawah score (misal score di pojok kanan atas)
+    const startX = 1800; // kanan atas (ubah sesuai posisi scoreText/loginBtn)
+    const y = 120; // di bawah score
+    const spacing = 60; // jarak antar bintang
+    for (let i = 0; i < Math.min(winCount, 10); i++) {
+      const alpha = Math.min(0.1 + 0.1 * (i + 1), 1);
+      const star = this.add.image(startX - i * spacing, y, 'starBlackHorse')
+        .setScale(0.7)
+        .setAlpha(alpha)
+        .setDepth(9999);
+      this.tweens.add({
+        targets: star,
+        scale: { from: 0.2, to: 0.7 },
+        alpha: { from: 0, to: alpha },
+        duration: 900,
+        ease: 'Back.easeOut',
+      });
+      this.starSprites.push(star);
+    }
+  };
 
   this.add.image(960, 640, "board");
 

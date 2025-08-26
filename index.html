@@ -548,6 +548,55 @@ window.updateGamePaymentStatus = function(isPaid, method = null) {
 
 
   <body>
+    <!-- Overlay Landing Warning (muncul sekali per sesi) -->
+    <div id="landingOverlay" style="position:fixed;z-index:99999;top:0;left:0;width:100vw;height:100vh;background:#034054;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;">
+      <!-- Logo Black Horse di luar banner, kanan atas, besar -->
+      <div style="position:fixed;top:38px;right:7vw;z-index:100000;text-align:right;">
+        <img src="LogoBlackHorse.png" alt="Black Horse Logo" style="width:250px;height:250px;border-radius:18px;box-shadow:0 0 32px #00eaffcc,0 0 64px #00eaff44;background:#fff;border:3px solid #00eaff;object-fit:contain;">
+      </div>
+      <div style="background:#035154;border-radius:22px;padding:28px 32px 28px 32px;box-shadow:0 8px 32px #0008;text-align:center;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:340px;max-width:540px;width:92vw;margin-top:38px;">
+        <!-- Gambar Black Horse & Herd lebih kecil, efek cahaya -->
+        <img src="BlackHorseHerd.png" alt="Black Horse & Herd" style="width:78%;max-width:220px;border-radius:18px;box-shadow:0 0 32px #00eaff99,0 4px 24px #0005;background:#fff;object-fit:contain;margin:0 auto 10px auto;z-index:1;">
+        <h1 style="font-size:2.1em;margin-bottom:0.25em;margin-top:0.2em;color:#00eaff;letter-spacing:1px;text-align:center;font-weight:700;">Official Black Horse Puzzle</h1>
+        <div style="color:#ffd700;font-weight:bold;margin:10px 0 6px 0;font-size:1.08em;text-align:center;">Beware of fake or copycat websites!</div>
+        <div style="color:#fff;font-size:1.05em;margin-bottom:12px;text-align:center;">
+          The <span style="color:#00eaff;font-weight:bold;text-decoration:underline;">arselco.com</span> domain is the ONLY official website for the Black Horse Puzzle Futuristic Game.<br>
+          Any other site with a similar name is NOT the original and does NOT represent the true vision of the Black Horse Puzzle creator.
+        </div>
+        <div style="color:#ffd700;font-weight:bold;margin:6px 0 14px 0;font-size:1.05em;text-align:center;">
+          Protect your experience.<br>
+          Play only at <span style="color:#00eaff;font-weight:bold;text-decoration:underline;">arselco.com</span>
+        </div>
+        <!-- Gambar Black Horse berdiri di atas tombol entrance, pakai Black Horse-Please Wait.webp -->
+        <img src="Black Horse-Please Wait.webp" alt="Black Horse Standing" style="width:90px;max-width:28vw;margin:10px auto 0 auto;display:block;filter:drop-shadow(0 0 18px #00eaff80);">
+        <!-- Tombol Entrance Game -->
+        <button id="entranceGameBtn" style="margin:16px auto 0 auto;display:block;background:linear-gradient(90deg,#00eaff 0%,#0078ff 100%);color:#fff;border:none;border-radius:9px;padding:14px 44px;font-size:1.18em;font-weight:700;cursor:pointer;box-shadow:0 0 18px #00eaffcc,0 0 32px #0078ff44 inset;letter-spacing:1.2px;transition:background 0.2s,box-shadow 0.2s;animation:entrance-glow 1.6s infinite alternate;">Entrance → Black Horse</button>
+        <style>
+          @keyframes entrance-glow {
+            0% { box-shadow:0 0 18px #00eaffcc,0 0 32px #0078ff44 inset; }
+            100% { box-shadow:0 0 32px #00eaff,0 0 48px #0078ff99 inset; }
+          }
+          #entranceGameBtn:hover {
+            background:linear-gradient(90deg,#0078ff 0%,#00eaff 100%);
+            box-shadow:0 0 32px #00eaff,0 0 48px #0078ff99 inset;
+          }
+        </style>
+        <div style="margin-top:22px;font-size:1em;color:#b0e0ff;text-align:center;">© 2025 Black Horse Puzzle - Futuristic Game by Arselco. All rights reserved.</div>
+      </div>
+    </div>
+    <script>
+      // Overlay hanya muncul sekali per sesi browser
+      if (window.sessionStorage.getItem('bhpWarningShown')) {
+        document.getElementById('landingOverlay').style.display = 'none';
+      }
+      document.getElementById('entranceGameBtn').onclick = function() {
+        document.getElementById('landingOverlay').style.display = 'none';
+        window.sessionStorage.setItem('bhpWarningShown', '1');
+        // Jika game sudah siap, bisa trigger splashscene di sini jika perlu
+      };
+    </script>
+    <!-- Logo Section (add here if not present) -->
+  <!-- Logo section image removed as requested -->
     <!-- Game Container -->
   <div id="game-container"></div>
 
@@ -568,11 +617,11 @@ window.updateGamePaymentStatus = function(isPaid, method = null) {
 ">
   
  <div class="loader-text" >
-    <img src="Black Horse-Please Wait.webp" alt="Black Horse" style="height: 300px; margin: 0 auto 16px auto; display: block;">
-    <div class="loader-wait"></div>
-    Please wait... Preparing the BLACK HORSE GAME PUZZLE FUTURISTIC.<br>
-    Silahkan tunggu...mempersiapkan Black Horse Game Puzzle Futuristik.<br><br>
-   </div>
+   <img src="Black Horse-Please Wait.webp" alt="Black Horse" style="height: 250px; margin: 0 auto 16px auto; display: block; filter: drop-shadow(0 0 18px #00eaff80);">
+   <div class="loader-wait"></div>
+   Please wait... Preparing the BLACK HORSE GAME PUZZLE FUTURISTIC.<br>
+   Silahkan tunggu...mempersiapkan Black Horse Game Puzzle Futuristik.<br><br>
+  </div>
     <div class="loader-gap"></div>
     <div class="loader-message">
     <span style="color:#fff;">
@@ -1136,67 +1185,6 @@ function checkPlayerScoreStatus(email) {
   };
 }
 
-// ✅ pesan ini untuk pemain lama yang sudah game over
-function showGameOverWarning(email) {
-  console.log('⚠️ Showing game over warning for:', email);
-
-  // ✅ CHECK IF PAYMENT ALREADY MADE FIRST:
-  const urlParams = new URLSearchParams(window.location.search);
-  const hasPaid = urlParams.get('paid') === '1' || 
-                     urlParams.get('paypal_paid') === '1' || 
-                     urlParams.get('paypal_success') === 'true';
-if (hasPaid) {
- console.log('💳 Payment detected - blocking Game Over warning');
-    return; // Don't show warning if payment exists
-  }
-
-  // ✅ CHECK IF REALLY GAME OVER:
-  const isGameOver = localStorage.getItem(`gameOver_${email}`) === 'true';
-  if (!isGameOver) {
-    console.log('🎮 Game not over - blocking warning');
-    return;
-  }
-
-  // Remove existing warning
-  const existing = document.getElementById('game-over-warning');
-  if (existing) existing.remove();
-
-  // Create warning element
-  const warning = document.createElement('div');
-  warning.id = 'game-over-warning';
-  warning.style.cssText = `
-    position: fixed; top: 100px; right: 30px;
-    background: rgba(255, 0, 0, 0.9);
-    color: white; padding: 15px 20px;
-    border-radius: 8px; z-index: 9999;
-    font-size: 14px; font-weight: bold;
-    box-shadow: 0 4px 12px rgba(255, 0, 0, 0.3);
-    border: 2px solid #ff6666;
-    max-width: 300px;
-  `;
-
-  warning.innerHTML = `
-    <div style="margin-bottom: 10px;">🔒 GAME OVER</div>
-    <div style="font-size: 12px; line-height: 1.4;">
-      Your session ended in Game Over.<br>
-      Purchase favorite menu to continue playing.
-    </div>
-    <button onclick="this.parentElement.remove()" 
-            style="background: #fff; color: #000; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-top: 10px; font-size: 12px;">
-      OK
-    </button>
-  `;
-  
-  document.body.appendChild(warning);
-  
-  // Auto remove after 8 seconds
-  setTimeout(() => {
-    if (document.getElementById('game-over-warning')) {
-      document.getElementById('game-over-warning').remove();
-    }
-  }, 8000);
-}
-
   // Cari posisi logoutBox
   const logoutBox = document.getElementById('logoutBtn');
   const rect = logoutBox ? logoutBox.getBoundingClientRect() : { top: 20, left: window.innerWidth - 180 };
@@ -1272,14 +1260,14 @@ window.addEventListener('DOMContentLoaded', async function() {
           // Don't show warning - user already paid
         } else if (scoreStatus.needsFavorite) {
           console.log('⚠️ User needs to give favorite to continue');
-          showGameOverWarning(email); // Only show if no payment
+          // showGameOverWarning(email); // Only show if no payment
         }
       } catch (error) {
         console.error('❌ Payment check error:', error);
         
         // Fallback: show warning only if really needed
         if (scoreStatus.needsFavorite) {
-          showGameOverWarning(email);
+          // showGameOverWarning(email);
         }
       }
       
@@ -1307,26 +1295,29 @@ window.addEventListener('DOMContentLoaded', async function() {
 
 
 async function handleScoreStatus(inputEmail, scoreStatus) {
-    if (scoreStatus.needsFavorite) {
-        //console.log('⚠️ Returning user with no level01Score - showing game over warning');
-        //showGameOverWarning(inputEmail);
-      } else if (scoreStatus.hasPlayedBefore &&scoreStatus.currentScore > 0) {
-        console.log('✅ Returning user with level01Score:',scoreStatus.currentScore);
-        updateGameScore(inputEmail,scoreStatus.currentScore);
-      }else if (!scoreStatus.hasPlayedBefore) {
-        console.log('🆕 New user - setting initial level01Score');
-        localStorage.setItem(`score_${inputEmail}`, '0');
-        updatePlayerGameHistory(inputEmail, {
-          hasPlayedBefore: true,
-          totalGamesPlayed: 1,
-          lastPlayedDate: new Date().toISOString()
-        });
-        updateGameScore(inputEmail, 0);
-      
-        //async function checkPaymentStatus(email) {
-        const paymentResult = await checkPaymentStatus(inputEmail);
-        startPaymentMonitoring(inputEmail);
-        }
+  if (!inputEmail) {
+    console.warn('❌ Email tidak ditemukan - tidak bisa updateGameScore');
+    return;
+  }
+  if (scoreStatus.needsFavorite) {
+    //console.log('⚠️ Returning user with no level01Score - showing game over warning');
+  //showGameOverWarning(inputEmail);
+  } else if (scoreStatus.hasPlayedBefore && scoreStatus.currentScore > 0) {
+    console.log('✅ Returning user dengan level01Score:', scoreStatus.currentScore);
+    updateGameScore(inputEmail, scoreStatus.currentScore);
+  } else if (!scoreStatus.hasPlayedBefore) {
+    console.log('🆕 New user - setting initial level01Score');
+    localStorage.setItem(`score_${inputEmail}`, '0');
+    updatePlayerGameHistory(inputEmail, {
+      hasPlayedBefore: true,
+      totalGamesPlayed: 1,
+      lastPlayedDate: new Date().toISOString()
+    });
+    updateGameScore(inputEmail, 0);
+    //async function checkPaymentStatus(email) {
+    const paymentResult = await checkPaymentStatus(inputEmail);
+    startPaymentMonitoring(inputEmail);
+  }
         //if (window.showSuccessNotification) {
           //showSuccessNotification(`✅ Welcome new player! You have 3 points to start.`);
         //}
@@ -1931,9 +1922,12 @@ async function updateGameScore(email, newScore) {
       gameProgress: {}
     };
   } 
-  localStorage.setItem(`score_${email}`, newScore.toString());
-  window.level01Score = newScore;
-  window.playerScore = newScore;
+  //localStorage.setItem(`score_${email}`, newScore.toString());
+  //window.level01Score = newScore;
+  //window.playerScore = newScore;
+  localStorage.setItem(`score_${email}`, (newScore ?? 0).toString());
+  window.level01Score = newScore ?? 0;
+  window.playerScore = newScore ?? 0;
 
   const userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
   const progress = userData.gameProgress || {};
@@ -2140,24 +2134,40 @@ window.showDonation = function() {
       <span style="color: #ccc;">Bantu kami membuat puzzle yang lebih menakjubkan!</span>
     </div>
     <div style="margin-bottom: 20px;">
-      <button onclick="window.open('https://paypal.me/yourpaypal', '_blank')" 
+      <button onclick="window.open('https://paypal.me/arselco')" 
               style="background: #0070ba; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold; margin: 5px;">
         💳 PayPal
       </button>
-      <button onclick="window.open('https://ko-fi.com/yourkofi', '_blank')" 
+      <button id="kofi-donate-btn" 
               style="background: #ff5722; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold; margin: 5px;">
         ☕ Ko-fi
       </button>
     </div>
-    <button onclick="document.getElementById('donation-overlay').remove()" 
+    <button id="close-donation-btn" 
             style="background: #666; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">
       Close
     </button>
   `;
-  
+
   overlay.appendChild(donationBox);
   document.body.appendChild(overlay);
-  
+
+  // Tombol close hanya menutup panel
+  document.getElementById('close-donation-btn').onclick = function() {
+    overlay.remove();
+  };
+
+  // Tombol PayPal redirect ke PayPal.me
+  document.getElementById('paypal-donate-btn').onclick = function() {
+    window.open('https://paypal.me/arselco', '_blank');
+  };
+
+  // Tombol Ko-fi tampilkan pesan proses
+  document.getElementById('kofi-donate-btn').onclick = function() {
+    overlay.remove();
+    showSuccessNotification('Payment with Ko-fi is in process. Please wait for the next update!');
+  };
+
   // Close on outside click
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) {
@@ -2298,6 +2308,25 @@ window.showPleaseWaitMessage = showPleaseWaitMessage;
 window.hidePleaseWaitMessage = hidePleaseWaitMessage;
 window.showSuccessNotification = showSuccessNotification;
 window.showErrorNotification = showErrorNotification;
+
+
+// ✅ AUTO-SYNC FUNCTION: Sinkronisasi progress ke backend setiap 1 menit
+window._autoSyncIntervalId = null;
+window.startAutoSync = function(email) {
+  if (window._autoSyncIntervalId) {
+    clearInterval(window._autoSyncIntervalId);
+  }
+  if (!email) return;
+  window._autoSyncIntervalId = setInterval(async function() {
+    try {
+      console.log('🔄 [AutoSync] Syncing progress to backend...');
+      await syncProgressFromBackend(email);
+    } catch (err) {
+      console.error('❌ [AutoSync] Failed to sync:', err);
+    }
+  }, 60000); // 1 menit
+  console.log('✅ [AutoSync] Started auto-sync every 1 minute for', email);
+};
 
 console.log('✅ Enhanced notification system initialized');
 console.log('🔔 All user feedback messages ready!');
