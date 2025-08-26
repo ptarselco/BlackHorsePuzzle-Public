@@ -223,49 +223,9 @@
   background: linear-gradient(90deg, #0078ff 0%, #00eaff 100%);
   box-shadow: 0 0 18px #00eaffcc;
 } 
+    </style>
+  </head>
 
-.banner-row {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  align-items: stretch;
-}
-
-.announcement-board {
-  width: 50%; /* atau sama dengan banner */
-  min-width: 350px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 32px 28px;
-  background: linear-gradient(135deg, #fffbe9 60%, #f7e7ce 100%);
-  box-shadow: 0 8px 32px rgba(180,160,120,0.18), 0 1.5px 0 #fff inset;
-  border-radius: 32px 0 0 32px;
-  border: 1.5px solid #f5e9d7;
-  color: #3a2c1a;
-  font-size: 1.15rem;
-  font-family: 'Segoe UI', 'Arial', sans-serif;
-  position: relative;
-  overflow: hidden;
-}
-.announcement-board::after {
-  content: "";
-  position: absolute;
-  top: 0; left: 0; right: 0; height: 30%;
-  background: linear-gradient(90deg,rgba(255,255,255,0.45) 0%,rgba(255,255,255,0.1) 100%);
-  pointer-events: none;
-  border-radius: 32px 0 0 32px;
-}
-.main-banner {
-  width: 50%;
-  object-fit: cover;
-  border-radius: 0 32px 32px 0;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
-}
-</style>
-</head>
 
 <script>
 // 🔧 Service Worker Registration - Seri 1
@@ -634,25 +594,7 @@ window.updateGamePaymentStatus = function(isPaid, method = null) {
         window.sessionStorage.setItem('bhpWarningShown', '1');
         // Jika game sudah siap, bisa trigger splashscene di sini jika perlu
       };
- </script>
-  <div class="banner-row">
-  <div class="announcement-board">
-  <h2>Announcement!</h2>
-  <p>
-    Series 1 is coming soon with exciting features and animations.<br>
-    This game is designed to train your concentration and the balance between your mind and hand speed.<br>
-    The Black Horse Puzzle brings challenges where speed and accuracy are the key, just like a horse known for its agility and power.<br>
-    In Level 01 of Series 1, this is the beginning of Black Horse entering the Puzzle arena.<br>
-    Stay tuned and experience how Black Horse reacts to players trying to conquer it.<br>
-    <b>Are you ready to be the next conqueror?</b>
-  </div>
-  <!--<img src="banner-blackhorse.png" alt="Black Horse Banner" class="main-banner" />-->
-</div>
-  
-  
-</div>
-
-
+    </script>
     <!-- Logo Section (add here if not present) -->
   <!-- Logo section image removed as requested -->
     <!-- Game Container -->
