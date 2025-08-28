@@ -1,50 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-
-   <!-- ADD ini di <head> section index.html: -->
-<link rel="manifest" href="/site.webmanifest">
-<meta name="theme-color" content="#046064">
-<meta name="background-color" content="#0891b2">
-
-<!-- PWA meta tags -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Black Horse Puzzle">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="application-name" content="BlackHorse">
-
-<!-- Existing favicon links tetap ada -->
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-<link rel="manifest" href="/site.webmanifest"> 
-   
-<!-- ✅ FAVICONS: yang lama -->
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes">
-    <title>Black Horse Puzzle</title>
-    <link rel="icon" type="image/webp" sizes="32x32" href="favicon-32x32.png">
-    <link rel="icon" type="image/webp" sizes="16x16" href="favicon-16x16.png">
-    <link rel="icon" type="image/webp" sizes="192x192" href="android-chrome-192x192.png">
-    <link rel="icon" type="image/webp" sizes="512x512" href="android-chrome-512x512.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-    <link rel="manifest" href="site.webmanifest">
-    <link rel="shortcut icon" href="favicon.ico">
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script>
-    if ('serviceWorker' in navigator) {
+<!DOCTYPE html><html lang="en"><head><link rel="manifest" href="/site.webmanifest"><meta name="theme-color" content="#046064"><meta name="background-color" content="#0891b2"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Black Horse Puzzle"><meta name="mobile-web-app-capable" content="yes"><meta name="application-name" content="BlackHorse"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="manifest" href="/site.webmanifest"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5,user-scalable=yes"><title>Black Horse Puzzle</title><link rel="icon" type="image/webp" sizes="32x32" href="favicon-32x32.png"><link rel="icon" type="image/webp" sizes="16x16" href="favicon-16x16.png"><link rel="icon" type="image/webp" sizes="192x192" href="android-chrome-192x192.png"><link rel="icon" type="image/webp" sizes="512x512" href="android-chrome-512x512.png"><link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png"><link rel="manifest" href="site.webmanifest"><link rel="shortcut icon" href="favicon.ico"><script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script><script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script><script>if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('service-worker.js')
         .then(reg => console.log('Service Worker registered ✅', reg))
         .catch(err => console.log('Service Worker failed ⛔', err));
       });
-    }
-   </script>
-  
-    <style>
-     html,body {
+    }</script><style>html,body {
         margin: 0;
         padding: 0;
         background: #181c24;
@@ -83,7 +43,7 @@
 }
   
 #loginBox input[type="text"] {
-  width: 200px; /* Lebar input */
+  width: 200px;
   padding: 8px 10px;
   border: 1.2px solid #00eaff;
   border-radius: 7px;
@@ -126,10 +86,10 @@
   color: #181c24;
 }
 
-/* Verification Box mirip Login Box */
+
 #verificationBox {
   position: absolute;
-  top: 120px; /* di bawah loginBox */
+  top: 120px;
   left: 50%;
   transform: translate(-50%, 0);
   background: rgba(30, 34, 44, 0.92);
@@ -144,7 +104,7 @@
   display: none;
 }
 
-/* Input kode verifikasi mirip login */
+
 #verificationBox input[type="text"] {
   width: 200px;
   padding: 8px 10px;
@@ -161,7 +121,7 @@
   border: 1.2px solid #fff;
 }
 
-/* Tombol Verify mirip Login */
+
 #verifyBtn {
   background: linear-gradient(90deg, #00eaff 0%, #0078ff 100%);
   color: #fff;
@@ -181,7 +141,7 @@
   box-shadow: 0 0 18px #00eaffcc;
 }
 
-/* Tombol Resend sejajar kanan, di bawah Verify */
+
 #resendVerificationBtn {
   background: linear-gradient(90deg, #00eaff 0%, #0078ff 100%);
   color: #fff;
@@ -222,13 +182,7 @@
 #loginBox button:hover {
   background: linear-gradient(90deg, #0078ff 0%, #00eaff 100%);
   box-shadow: 0 0 18px #00eaffcc;
-} 
-    </style>
-  </head>
-
-
-<script>
-// 🔧 Service Worker Registration - Seri 1
+}</style></head><script>// 🔧 Service Worker Registration - Seri 1
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js')
@@ -458,7 +412,7 @@ window.checkPaymentStatusFromBackend = async function(email) {
   }
 };
 
-//<!-- FIND function checkPaymentStatus around line 350 dan REPLACE dengan: -->
+
 window.checkPaymentStatus = async function(email) {
   let result = { paid: false, method: null };
 
@@ -467,10 +421,7 @@ window.checkPaymentStatus = async function(email) {
     
     const urlParams = new URLSearchParams(window.location.search);
 
-    //const paymentResult = await checkPaymentStatus(email); // (inputEmail) ganti ke Email
-      //  startPaymentMonitoring(email); // (inputEmail) ganti ke Email
-      
-    // Check Xsolla payment
+    
     if (urlParams.get('paid') === '1') {
       console.log('✅ Payment detected from Xsolla URL parameter');
       if (window.safeUpdatePaymentStatus) {
@@ -478,7 +429,7 @@ window.checkPaymentStatus = async function(email) {
       }
       result = { paid: true, method: 'xsolla' };
     } 
-    // Check PayPal payment
+    
     else if (urlParams.get('paypal_paid') === '1' || urlParams.get('paypal_success') === 'true') {
       console.log('✅ Payment detected from PayPal URL parameter');
       if (window.safeUpdatePaymentStatus) {
@@ -486,9 +437,7 @@ window.checkPaymentStatus = async function(email) {
       }
       result = { paid: true, method: 'paypal' };
     }
-    // Check PayPal Order ID
-    //else if (urlParams.get('paypal_order_id')) {
-     // console.log('✅ PayPal Order ID detected');
+    
     else if (urlParams.get('paypal_paid') === '1' || urlParams.get('paypal_success') === 'true') {
       console.log('✅ Payment detected from PayPal URL parameter');
       if (window.safeUpdatePaymentStatus) {
@@ -496,7 +445,7 @@ window.checkPaymentStatus = async function(email) {
       }
       result = { paid: true, method: 'paypal' };
     }
-    // Check PayPal Token 
+   
     else if (urlParams.get('token') && urlParams.get('PayerID')) {
       console.log('✅ PayPal token and PayerID detected');
       if (window.safeUpdatePaymentStatus) {
@@ -543,49 +492,14 @@ window.updateGamePaymentStatus = function(isPaid, method = null) {
 //if (payment === "cancelled") {
   //console.warn("❌ Payment cancelled by user.");
   // (optional) localStorage.setItem('paymentCancelled', 'true');
-//}
-</script>
-
-
-  <body>
-    <!-- Overlay Landing Warning (muncul sekali per sesi) -->
-    <div id="landingOverlay" style="position:fixed;z-index:99999;top:0;left:0;width:100vw;height:100vh;background:#034054;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;">
-      <!-- Logo Black Horse di luar banner, kanan atas, besar -->
-      <div style="position:fixed;top:38px;right:7vw;z-index:100000;text-align:right;">
-        <img src="LogoBlackHorse.png" alt="Black Horse Logo" style="width:250px;height:250px;border-radius:18px;box-shadow:0 0 32px #00eaffcc,0 0 64px #00eaff44;background:#fff;border:3px solid #00eaff;object-fit:contain;">
-      </div>
-      <div style="background:#035154;border-radius:22px;padding:28px 32px 28px 32px;box-shadow:0 8px 32px #0008;text-align:center;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:340px;max-width:540px;width:92vw;margin-top:38px;">
-        <!-- Gambar Black Horse & Herd lebih kecil, efek cahaya -->
-        <img src="BlackHorseHerd.png" alt="Black Horse & Herd" style="width:78%;max-width:220px;border-radius:18px;box-shadow:0 0 32px #00eaff99,0 4px 24px #0005;background:#fff;object-fit:contain;margin:0 auto 10px auto;z-index:1;">
-        <h1 style="font-size:2.1em;margin-bottom:0.25em;margin-top:0.2em;color:#00eaff;letter-spacing:1px;text-align:center;font-weight:700;">Official Black Horse Puzzle</h1>
-        <div style="color:#ffd700;font-weight:bold;margin:10px 0 6px 0;font-size:1.08em;text-align:center;">Beware of fake or copycat websites!</div>
-        <div style="color:#fff;font-size:1.05em;margin-bottom:12px;text-align:center;">
-          The <span style="color:#00eaff;font-weight:bold;text-decoration:underline;">arselco.com</span> domain is the ONLY official website for the Black Horse Puzzle Futuristic Game.<br>
-          Any other site with a similar name is NOT the original and does NOT represent the true vision of the Black Horse Puzzle creator.
-        </div>
-        <div style="color:#ffd700;font-weight:bold;margin:6px 0 14px 0;font-size:1.05em;text-align:center;">
-          Protect your experience.<br>
-          Play only at <span style="color:#00eaff;font-weight:bold;text-decoration:underline;">arselco.com</span>
-        </div>
-        <!-- Gambar Black Horse berdiri di atas tombol entrance, pakai Black Horse-Please Wait.webp -->
-        <img src="Black Horse-Please Wait.webp" alt="Black Horse Standing" style="width:90px;max-width:28vw;margin:10px auto 0 auto;display:block;filter:drop-shadow(0 0 18px #00eaff80);">
-        <!-- Tombol Entrance Game -->
-        <button id="entranceGameBtn" style="margin:16px auto 0 auto;display:block;background:linear-gradient(90deg,#00eaff 0%,#0078ff 100%);color:#fff;border:none;border-radius:9px;padding:14px 44px;font-size:1.18em;font-weight:700;cursor:pointer;box-shadow:0 0 18px #00eaffcc,0 0 32px #0078ff44 inset;letter-spacing:1.2px;transition:background 0.2s,box-shadow 0.2s;animation:entrance-glow 1.6s infinite alternate;">Entrance → Black Horse</button>
-        <style>
-          @keyframes entrance-glow {
+//}</script><body><div id="landingOverlay" style="position:fixed;z-index:99999;top:0;left:0;width:100vw;height:100vh;background:#034054;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;"><div style="position:fixed;top:38px;right:7vw;z-index:100000;text-align:right;"><img src="LogoBlackHorse.png" alt="Black Horse Logo" style="width:250px;height:250px;border-radius:18px;box-shadow:0 0 32px #00eaffcc,0 0 64px #00eaff44;background:#fff;border:3px solid #00eaff;object-fit:contain;"></div><div style="background:#035154;border-radius:22px;padding:28px 32px 28px 32px;box-shadow:0 8px 32px #0008;text-align:center;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:340px;max-width:540px;width:92vw;margin-top:38px;"><img src="BlackHorseHerd.png" alt="Black Horse & Herd" style="width:78%;max-width:220px;border-radius:18px;box-shadow:0 0 32px #00eaff99,0 4px 24px #0005;background:#fff;object-fit:contain;margin:0 auto 10px auto;z-index:1;"><h1 style="font-size:2.1em;margin-bottom:0.25em;margin-top:0.2em;color:#00eaff;letter-spacing:1px;text-align:center;font-weight:700;">Official Black Horse Puzzle</h1><div style="color:#ffd700;font-weight:bold;margin:10px 0 6px 0;font-size:1.08em;text-align:center;">Beware of fake or copycat websites!</div><div style="color:#fff;font-size:1.05em;margin-bottom:12px;text-align:center;">The <span style="color:#00eaff;font-weight:bold;text-decoration:underline;">arselco.com</span> domain is the ONLY official website for the Black Horse Puzzle Futuristic Game.<br>Any other site with a similar name is NOT the original and does NOT represent the true vision of the Black Horse Puzzle creator.</div><div style="color:#ffd700;font-weight:bold;margin:6px 0 14px 0;font-size:1.05em;text-align:center;">Protect your experience.<br>Play only at <span style="color:#00eaff;font-weight:bold;text-decoration:underline;">arselco.com</span></div><img src="Black Horse-Please Wait.webp" alt="Black Horse Standing" style="width:90px;max-width:28vw;margin:10px auto 0 auto;display:block;filter:drop-shadow(0 0 18px #00eaff80);"> <button id="entranceGameBtn" style="margin:16px auto 0 auto;display:block;background:linear-gradient(90deg,#00eaff 0%,#0078ff 100%);color:#fff;border:none;border-radius:9px;padding:14px 44px;font-size:1.18em;font-weight:700;cursor:pointer;box-shadow:0 0 18px #00eaffcc,0 0 32px #0078ff44 inset;letter-spacing:1.2px;transition:background 0.2s,box-shadow 0.2s;animation:entrance-glow 1.6s infinite alternate;">Entrance → Black Horse</button><style>@keyframes entrance-glow {
             0% { box-shadow:0 0 18px #00eaffcc,0 0 32px #0078ff44 inset; }
             100% { box-shadow:0 0 32px #00eaff,0 0 48px #0078ff99 inset; }
           }
           #entranceGameBtn:hover {
             background:linear-gradient(90deg,#0078ff 0%,#00eaff 100%);
             box-shadow:0 0 32px #00eaff,0 0 48px #0078ff99 inset;
-          }
-        </style>
-        <div style="margin-top:22px;font-size:1em;color:#b0e0ff;text-align:center;">© 2025 Black Horse Puzzle - Futuristic Game by Arselco. All rights reserved.</div>
-      </div>
-    </div>
-    <script>
-      // Overlay hanya muncul sekali per sesi browser
+          }</style><div style="margin-top:22px;font-size:1em;color:#b0e0ff;text-align:center;">© 2025 Black Horse Puzzle - Futuristic Game by Arselco. All rights reserved.</div></div></div><script>// Overlay hanya muncul sekali per sesi browser
       if (window.sessionStorage.getItem('bhpWarningShown')) {
         document.getElementById('landingOverlay').style.display = 'none';
       }
@@ -593,16 +507,7 @@ window.updateGamePaymentStatus = function(isPaid, method = null) {
         document.getElementById('landingOverlay').style.display = 'none';
         window.sessionStorage.setItem('bhpWarningShown', '1');
         // Jika game sudah siap, bisa trigger splashscene di sini jika perlu
-      };
-    </script>
-    <!-- Logo Section (add here if not present) -->
-  <!-- Logo section image removed as requested -->
-    <!-- Game Container -->
-  <div id="game-container"></div>
-
-   <!-- 🐎 Loading Screen -->
-<div id="loader" style="
-  position: fixed;
+      };</script><div id="game-container"></div><div id="loader" style="position: fixed;
   top: 0; left: 0;
   width: 100vw; height: 100vh;
   background: #034054;
@@ -613,68 +518,7 @@ window.updateGamePaymentStatus = function(isPaid, method = null) {
   z-index: 9999;
   font-family: 'Segoe UI', sans-serif;
   color: #00eaff;
-  font-size: 1.2em;
-">
-  
- <div class="loader-text" >
-   <img src="Black Horse-Please Wait.webp" alt="Black Horse" style="height: 250px; margin: 0 auto 16px auto; display: block; filter: drop-shadow(0 0 18px #00eaff80);">
-   <div class="loader-wait"></div>
-   Please wait... Preparing the BLACK HORSE GAME PUZZLE FUTURISTIC.<br>
-   Silahkan tunggu...mempersiapkan Black Horse Game Puzzle Futuristik.<br><br>
-  </div>
-    <div class="loader-gap"></div>
-    <div class="loader-message">
-    <span style="color:#fff;">
-    Best on desktop or laptop for full experience.<br>
-    On Mobile, use the <b>Google</b> browser or "Add to Home Screen" for fullscreen.<br>
-    <br>
-    Pengalaman terbaik memainkan Game ini di desktop atau laptop.<br> 
-    Di ponsel, gunakan browser <b>Google</b> atau "Tambahkan ke Layar Utama" untuk layar penuh.</b>
-  </span>
-  </div>
-  </div>
- 
-  <!-- ✅ SINGLE LOGOUT BUTTON - PROPER PLACEMENT -->
-      <button id="logoutBtn" style="display:none; position: fixed; top: 18px; right: 32px; z-index: 99999;background: #222; color: #fff; border: 1px solid #00eaff; border-radius: 7px; padding: 7px 16px; font-size: 0.95em; cursor: pointer; box-shadow: 0 0 8px #00eaff60; pointer-events: auto;">
-      Logout
-    </button>
-  
-    <!-- 🐎 Login Box -->
-     <!-- Login Box: hanya email dan tombol login -->
-<div id="loginBox" style="display:block;">
-  <div class="login-row">
-    <input type="text" id="emailInput" placeholder="Email" autocomplete="off" />
-    <button id="loginBtn">Login</button>
-  </div>
-</div>
-
-<!-- Verification Box: kode verifikasi, tombol verify, dan resend -->
-<div id="verificationBox" style="display:none;">
-  <div class="login-row">
-    <input type="text" id="verificationCodeInput" placeholder="Verification Code" autocomplete="off" />
-    <button id="verifyBtn">Verify</button>
-  </div>
-  <div class="login-row">
-    <button id="resendVerificationBtn">Resend Code</button>
-  </div>
-</div>
-
-
-
-<!--
-<button id="logoutBtn" style="display:none;">Logout</button>-->
-    <!-- === End form login === style="margin-left:10px;" dikeluarkan dari Resend Code === -->
-
-     <!-- Load main.js -->
-    <script src="./main.js"></script>
-    <script src="./Scenes/SplashScene.js"></script>
-    <script src="./Scenes/Level01Scene.js"></script>
-    <script src="./Scenes/Level02Scene.js"></script>
-    
-    
-
-   <script>
-      // Agar mouse wheel di atas canvas tetap scroll halaman, walau canvas diganti/direfresh Phaser
+  font-size: 1.2em;"><div class="loader-text"><img src="Black Horse-Please Wait.webp" alt="Black Horse" style="height: 250px; margin: 0 auto 16px auto; display: block; filter: drop-shadow(0 0 18px #00eaff80);"><div class="loader-wait"></div>Please wait... Preparing the BLACK HORSE GAME PUZZLE FUTURISTIC.<br>Silahkan tunggu...mempersiapkan Black Horse Game Puzzle Futuristik.<br><br></div><div class="loader-gap"></div><div class="loader-message"><span style="color:#fff;">Best on desktop or laptop for full experience.<br>On Mobile, use the <b>Google</b> browser or "Add to Home Screen" for fullscreen.<br><br>Pengalaman terbaik memainkan Game ini di desktop atau laptop.<br>Di ponsel, gunakan browser <b>Google</b> atau "Tambahkan ke Layar Utama" untuk layar penuh.</span></div></div><button id="logoutBtn" style="display:none; position: fixed; top: 18px; right: 32px; z-index: 99999;background: #222; color: #fff; border: 1px solid #00eaff; border-radius: 7px; padding: 7px 16px; font-size: 0.95em; cursor: pointer; box-shadow: 0 0 8px #00eaff60; pointer-events: auto;">Logout</button><div id="loginBox" style="display:block;"><div class="login-row"><input type="text" id="emailInput" placeholder="Email" autocomplete="off"> <button id="loginBtn">Login</button></div></div><div id="verificationBox" style="display:none;"><div class="login-row"><input type="text" id="verificationCodeInput" placeholder="Verification Code" autocomplete="off"> <button id="verifyBtn">Verify</button></div><div class="login-row"><button id="resendVerificationBtn">Resend Code</button></div></div><script src="./main.js"></script><script src="./Scenes/SplashScene.js"></script><script src="./Scenes/Level01Scene.js"></script><script src="./Scenes/Level02Scene.js"></script><script>// Agar mouse wheel di atas canvas tetap scroll halaman, walau canvas diganti/direfresh Phaser
      //Fix Canvas function addScrollToCanvas() {
      window.addScrollToCanvas = function() {
        const canvas = document.querySelector('canvas');
@@ -687,10 +531,9 @@ window.updateGamePaymentStatus = function(isPaid, method = null) {
      }
     } 
 
-// SEANBEACON menyimpan level01Score dan waktu ke backend saat sebelum halaman ditutup
+
  window.addEventListener('beforeunload', () => {
   const email = localStorage.getItem('email');
-  //const level01Score = window.Level01Scene?.instance?.level01Score || 0; // pastikan ambil level01Score terbaru
   const level01Score = localStorage.getItem(`score_${email}`) || 0;
   const time = window.Level01Scene?.instance?.timeElapsed || 0;
   if (!email) return;
@@ -703,20 +546,20 @@ window.updateGamePaymentStatus = function(isPaid, method = null) {
   new Blob([JSON.stringify({
     email,
     level01Completed: false,
-    level01Score: level01Score,    // ✅ gunakan level01Score dari instance
-    completionTime: time,        // ✅ gunakan time dari instance
+    level01Score: level01Score,   
+    completionTime: time,        
     isPerfectGame: false
   })], { type: 'text/plain' })
  );
  });
  
-//=================================== BATAS SENDBEACON ====================================
+
 
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
     const email = localStorage.getItem('email');
     const level01Score = localStorage.getItem(`score_${email}`) || 0;
-    // Jika ada timeElapsed yang valid, ambil dari scene, jika tidak, pakai 0
+   
     let time = 0;
     if (window.game && window.game.scene && window.game.scene.getScene) {
       const level01 = window.game.scene.getScene('Level01Scene');
@@ -735,28 +578,22 @@ document.addEventListener('visibilitychange', () => {
         completionTime: time,
         isPerfectGame: false
       });
-
-      //navigator.sendBeacon(
-        //'https://backend-paypalblackhorsepuzzle.onrender.com/api/users/' + encodeURIComponent(email) + '/update-progress',
-        //new Blob([data], { type: 'text/plain' })
-      //);
     }
   }
 });
-//================================= BATAS VISIBILITY CHANGE =================================
-// Definisikan di luar create()
+
 window.initUserData = async function(email, userData) {
-  // Jika belum ada data progress, ambil dari backend
+  
   if (!userData || !userData.gameProgress) {
     window.getUserProgress(email).then(progressRes => {
       if (progressRes && progressRes.progress) {
-        // Tambahkan inisialisasi level01HighScore
+      
         const progress = progressRes.progress;
         const level01HighScore = progress.level01HighScore ?? 0;
         userData = { gameProgress: progressRes.progress, level01HighScore: level01HighScore };
         localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
       } else {
-        // Jika backend juga kosong, inisialisasi default
+       
         userData = {
           gameProgress: {
             level01Completed: false,
@@ -774,25 +611,23 @@ window.initUserData = async function(email, userData) {
         };
         localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
       }
-      // Update score di scene
+   
       window.level01Score = userData.gameProgress.level01Score || 0;
     });
   } else {
-    // Jika sudah ada, langsung pakai
+
     window.level01Score = userData.gameProgress.level01Score || 0;
   }
 }
 
-// ========== ENHANCED SECURE LOGIN & PAYMENT SYSTEM ==========
-// ✅ GLOBAL VARIABLES:
+
 let loginInProgress = false;
 let paymentCheckInterval = null;
 
-// Add scroll functionality to canvas
+
   window.addScrollToCanvas();
 
-  // ✅ ENHANCED LOGIN BUTTON WITH level01Score MANAGEMENT: WITH LAZY LOAD 
-// ✅ ENHANCED LOGIN HANDLER: ------ Mulai login handler ------------------- 
+
   document.getElementById("loginBtn").onclick = async function(event) {
   event.preventDefault();
   event.stopPropagation();
@@ -837,7 +672,7 @@ async function registerUser(email) {
   const errorData = error.response.data;
   console.log('⚠️ Backend responded with error:', errorData.message);
 
-  // If email already exists, that's OK for login
+ 
   if (error.response.status === 409 && errorData.message.includes('already exists')) {
     console.log('✅ Email already registered - allowing login');
     return true;
@@ -845,13 +680,13 @@ async function registerUser(email) {
 
   throw new Error(`Backend error: ${errorData.message}`);
 }
-// Tambahan error handling
+
     console.error('❌ Backend verification failed:', error.message);
     return false;
 }
 }  
 try {
-    // Proses register ke backend
+
     console.log('Step 1: Registering user...');
     const registered = await registerUser(inputEmail);
     console.log('Step 2: Registered?', registered);
@@ -860,17 +695,17 @@ try {
       return;
     }
 
-    //localStorage.setItem("email", inputEmail);
+    
     console.log('📧 Attempting login with email:', inputEmail);
     
     console.log('Step 3: Sending verification email...');
-    // Selalu cek ke backend, kirim kode verifikasi ke email
+    
     await window.resendVerificationEmail(inputEmail);
     console.log('Step 4: Showing verification box...');
-    // Tampilkan verificationBox, sembunyikan login dan logoutBtn
+   
     document.getElementById("loginBox").style.display = "none";
     document.getElementById("logoutBtn").style.display = "none";
-    // Tampilkan verificationBox
+    
     document.getElementById("verificationBox").style.zIndex = "1000";
     document.getElementById("verificationBox").style.display = "block";
     document.getElementById("verificationCodeInput").style.display = "inline-block";
@@ -880,9 +715,7 @@ try {
     if (error.response && error.response.data) {
       const errorData = error.response.data;
     }
-   // if (window.hidePleaseWaitMessage) hidePleaseWaitMessage();
-   // console.error('❌ Login error:', error.message);
-   // alert('Login Error: ' + error.message);
+
   } finally {
     setTimeout(() => {
       loginBtn.disabled = false;
@@ -892,11 +725,8 @@ try {
     }, 800);
   }
   }
-// END OF LOGIN HANDLER 
-//--------------Batas login handler-------------------
-  
-// ✅ ENHANCED VERIFICATION HANDLER:
- // Handler tombol Verify
+
+
 document.getElementById("verifyBtn").onclick = async function() {
   const email = document.getElementById('emailInput').value.trim();
   const code = document.getElementById('verificationCodeInput').value.trim();
@@ -912,7 +742,6 @@ document.getElementById("verifyBtn").onclick = async function() {
 
     //if (data.emailVerified === true) {
     if (data.user && data.user.emailVerified === true) {
-      //alert('Email verified successfully! Welcome to Black Horse Puzzle!');
       document.getElementById("verificationCodeInput").value = "";
       localStorage.setItem("email", email);
       document.getElementById("verificationBox").style.display = "none";
@@ -933,12 +762,12 @@ document.getElementById("verifyBtn").onclick = async function() {
 }
 
 
-//  EMAIL VERIFICATION FUNCTIONS:
+
 function verifyEmailFormat(email) {
   const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   return emailPattern.test(email);
 }
-// EMERGENCY FIX - PASTE SEKARANG:
+
 console.log('🚨 FIXING DUPLICATE FUNCTION - ADDING REAL BACKEND VERIFICATION');
 console.log('Username yang dikirim:', this.username);
 
@@ -956,7 +785,6 @@ async function checkEmailVerifiedFromBackend(email) {
   }
 }
 
-//RESEND VERIFICATION BUTTON HANDLER
 document.getElementById("resendVerificationBtn").onclick = async function() {
   const email = document.getElementById('emailInput').value.trim();
   if (!email) {
@@ -966,14 +794,14 @@ document.getElementById("resendVerificationBtn").onclick = async function() {
   await window.resendVerificationEmail(email);
 };
 
-//  Create missing window.gameUtils
+
 window.gameUtils = {
     validateEmail: function(email) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
     }
 };
-    // ✅ ENHANCED EMAIL RESEND VERIFICATION CODE
+  
 window.resendVerificationEmail = async function(email) {
   try {
     const response = await axios.post(
@@ -1005,14 +833,12 @@ window.showMessage = function(message, color = '#ff6b6b') {
 };   
 
 
-// Redefine verifyEmailWithBackend with actual backend connection
-//async function verifyEmailWithBackend(email) {
+
 window.verifyEmailWithBackend = async function(email) {
   try {
     console.log('📧 Verifying email with backend:', email);
 
-    // Step 1: Local format validation first
-    //const isValid = verifyEmailFormat(email);
+
     const isValidFormat = verifyEmailFormat(email);
     if (!isValidFormat) {
       console.log('❌ Invalid email format');
@@ -1047,7 +873,7 @@ window.verifyEmailWithBackend = async function(email) {
   }
 };
 
-// Tambahkan fungsi unlock global
+
 window.unlockPlayAndHideGameOver = function() {
   // Dapatkan scene Level01Scene
   const level01 = window.game && window.game.scene && window.game.scene.getScene('Level01Scene');
@@ -1197,9 +1023,6 @@ function showLoginForm() {
   document.getElementById("loginBox").style.display = "block";
   document.getElementById("emailInput").style.display = "inline-block";
   document.getElementById("loginBtn").style.display = "inline-block";
-  //document.getElementById("verificationBox").style.display = "block";
-  //document.getElementById("verificationCodeInput").style.display = "inline-block";
-  //document.getElementById("resendVerificationBtn").style.display = "inline-block";
   document.getElementById("logoutBtn").style.display = "none";
 }
 
@@ -1465,8 +1288,7 @@ async function capturePayPalOrder(paypalOrderId, email) {
       // Tandai payment verified di localStorage
       localStorage.setItem(`paymentVerified_${email}`, 'true');
       localStorage.removeItem(`gameOver_${email}`);
-      //localStorage.setItem(`score_${email}`, "0");
-      // Unlock fitur game jika scene aktif
+
       if (window.Level01Scene && typeof window.Level01Scene.prototype.unlockGameAfterPurchase === 'function') {
         const scene = window.game && window.game.scene && window.game.scene.getScene('Level01Scene');
         if (scene && typeof scene.unlockGameAfterPurchase === 'function') {
@@ -2286,13 +2108,12 @@ function showPaymentRequiredMessage() {
   }
     console.log('💀 Game over + No payment - showing purchase message');
 
-  // ✅ CREATE MESSAGE: isinya di hapus ada di notepad
+
   const message = document.createElement('div');
  
   
   document.body.appendChild(message);
-  
-  // Auto remove after 5 seconds
+
   setTimeout(() => {
     if (document.getElementById('payment-required-msg')) {
       document.getElementById('payment-required-msg').remove();
@@ -2300,7 +2121,7 @@ function showPaymentRequiredMessage() {
   }, 2000);
 };
 
-// ✅ GLOBAL ACCESS TO FUNCTIONS:
+
 window.checkGameAccess = checkGameAccess;
 window.showLoginRequiredMessage = showLoginRequiredMessage;
 window.showPaymentRequiredMessage = showPaymentRequiredMessage;
@@ -2310,7 +2131,7 @@ window.showSuccessNotification = showSuccessNotification;
 window.showErrorNotification = showErrorNotification;
 
 
-// ✅ AUTO-SYNC FUNCTION: Sinkronisasi progress ke backend setiap 1 menit
+
 window._autoSyncIntervalId = null;
 window.startAutoSync = function(email) {
   if (window._autoSyncIntervalId) {
@@ -2329,8 +2150,4 @@ window.startAutoSync = function(email) {
 };
 
 console.log('✅ Enhanced notification system initialized');
-console.log('🔔 All user feedback messages ready!');
-
-</script>
-</body>
-</html>
+console.log('🔔 All user feedback messages ready!');</script></body></html>
