@@ -220,31 +220,29 @@ async function syncProgressFromBackend(email) {
   try {
       console.log('🔄 Syncing progress from backend for:', email);
 
-      // ✅ STEP 1: Ambil data dari localStorage sebagai fallback
+     
       const localData = JSON.parse(localStorage.getItem(`gameData-${email}`))?.gameProgress || {};
       const localProgress = localData.gameProgress || {};
 
       console.log('📱 Local data:', localProgress);
 
-      // ✅ STEP 2: Kirim request ke backend dengan data lokal sebagai konteks
     const response = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/users/${encodeURIComponent(email)}/progress`,
       { 
         email, 
         level: 'Level01Scene',
-        // Kirim data lokal untuk perbandingan
         localProgress: localProgress
       },
       { timeout: 200000 }
     );
 
-     // ✅ STEP 3: Ambil data dari backend (PRIORITAS UTAMA)
+    
     const backendData = response.data;
     const progress = backendData.progress || {};
     
     console.log('🌐 Backend data:', progress);
 
-     // ✅ STEP 4: SELALU GUNAKAN DATA BACKEND sebagai sumber truth
+
     const finalData = {
       level01Score: progress.level01Score || 0,
       level01HighScore: progress.level01HighScore || 0,
@@ -260,14 +258,14 @@ async function syncProgressFromBackend(email) {
       lastPlayedDate: progress.lastPlayedDate || new Date().toISOString()
     }; 
 
-    // ✅ STEP 5: Hitung user classification berdasarkan data backend
+   
     const newUser = !progress || (progress.totalPlays || 0) === 0;
     const winUser = progress && (progress.totalPlays || 0) >= 1 && (progress.level01Score || 0) > 0;
     const lossUser = progress && (progress.totalPlays || 0) >= 3 && (progress.level01Score || 0) === 0;
     
     console.log(`👤 Backend user classification: newUser=${newUser}, winUser=${winUser}, lossUser=${lossUser}`);
     
-    // ✅ STEP 6: UPDATE localStorage dengan data backend (FORCE UPDATE)
+   
     const updatedUserData = {
       gameProgress: finalData,
       newUser,
@@ -277,13 +275,11 @@ async function syncProgressFromBackend(email) {
       syncedFromBackend: true
     };
 
-    // Update gameData - Simpan data pengguna yang diperbarui ke localStorage
+   
     localStorage.setItem(`gameData-${email}`, JSON.stringify(updatedUserData));
 
-    // Update score
     localStorage.setItem(`score_${email}`, (finalData.level01Score || 0).toString());
    
-    // Update game history
     localStorage.setItem(`gameHistory_${email}`, JSON.stringify({
       hasPlayedBefore: (finalData.totalPlays || 0) > 0,
       totalGamesPlayed: finalData.totalPlays || 0,
@@ -296,19 +292,19 @@ async function syncProgressFromBackend(email) {
       lossUser
     }));
     
-     // ✅ STEP 7: UPDATE global variables
+   
     window.level01Score = finalData.level01Score || 0;
     window.playerScore = finalData.level01Score || 0;
     
-    // ✅ STEP 8: UPDATE UI jika scene sudah aktif
+  
     if (window.Phaser && window.game && window.game.scene) {
       const level01 = window.game.scene.getScene('Level01Scene');
       if (level01 && level01.scene && level01.scene.isActive()) {
-        // Update score di scene
+      
         if (level01.level01Score !== undefined) {
           level01.level01Score = finalData.level01Score || 0;
         }
-        // Update scoreText
+   
         if (level01.scoreText && typeof level01.scoreText.setText === 'function') {
           level01.scoreText.setText((finalData.level01Score || 0).toString().padStart(5, '0'));
         }
@@ -330,7 +326,7 @@ async function syncProgressFromBackend(email) {
   } catch (err) {
     console.error('❌ Failed to sync progress from backend:', err);
     
-    // ✅ FALLBACK: Jika backend gagal, gunakan data lokal
+  
     const localData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
     const localProgress = localData.gameProgress || {};
     
@@ -370,17 +366,17 @@ if (!userData.gameProgress) {
 window.checkPaymentStatusFromBackend = async function(email) {
   try {
     console.log('🔍 Checking payment status for:', email);
-    //const encodedEmail = encodeURIComponent(email);
+
     const res = await axios.post(
       `https://backend-paypalblackhorsepuzzle.onrender.com/api/${encodeURIComponent(email)}/payment-status`,
-      { }, // Send email in POST body
+      { }, 
       {timeout: 200000}
     );
     const data = res.data;
     console.log('💳 Payment status response:', data);
 
     if (data && data.success) {
-      // Kembalikan seluruh data status pembayaran, bukan hanya boolean
+   
       return {
         isPaid: data.isPaid === true,
         supportAmount: data.supportAmount || 0,
@@ -390,7 +386,7 @@ window.checkPaymentStatusFromBackend = async function(email) {
       };
     } else {
       console.log('⚠️ Payment check: no success flag in response');
-      // Jika respons tidak sesuai harapan
+     
       return {
         isPaid: false,
         supportAmount: 0,
@@ -401,7 +397,7 @@ window.checkPaymentStatusFromBackend = async function(email) {
     }
   } catch (err) {
     console.error('Failed to check payment status:', err);
-    // Jika error, kembalikan default unpaid status
+   
     return {
       isPaid: false,
       supportAmount: 0,
@@ -477,7 +473,7 @@ window.updateGamePaymentStatus = function(isPaid, method = null) {
   userData.isPaid = isPaid;
   localStorage.setItem(`gameData-${email}`, JSON.stringify(userData));
   window.isPaid = isPaid;
-  // Unlock tombol jika sudah bayar
+ 
   if (isPaid) {
     if (window.unblur10PuzzleButton) window.unblur10PuzzleButton();
     if (window.unlockGameAfterPurchase) window.unlockGameAfterPurchase();
