@@ -917,28 +917,26 @@ window.unlockPlayAndHideGameOver = function() {
     level01.cancelBtn = null;
   }
 
-  // Reset flag Game Over
+ 
   level01.isGameOver = false;
   level01.isGameOverClosed = false;
 
-  // (Opsional) Log
+
   console.log('✅ Game unlocked: Play & Puzzle enabled, Game Over & payment panel hidden');
 };
 
 
 console.log('✅ REAL BACKEND VERIFICATION READY - CONNECT TO RENDER.COM');
 
- // ✅ GET USER CLASSIFICATION:
-    //const email = localStorage.getItem("email"); pasang di atas dekat pemanggil initUserData
+
     const history = getPlayerGameHistory(email);
     const currentScore = parseInt(localStorage.getItem(`score_${email}`) || 0);
     const totalPlays = history.totalGamesPlayed || 0;
 
-    // ✅ Tambahkan ini untuk ambil status pembayaran
     const paymentData = JSON.parse(localStorage.getItem(`gameData-${email}`) || '{}');
     const isPaid = paymentData.isPaid === true;
     
-    // ✅ PROPER USER CLASSIFICATION:
+ 
     const newUser = totalPlays === 0;  // Only 0 plays = new user
     const winUser = totalPlays >= 1 && currentScore > 0;  // 1 dst plays = active user
     const lossUser = totalPlays >= 3 && currentScore === 0 && !isPaid;  // 3+ plays, no score, no payment
@@ -952,17 +950,15 @@ console.log('✅ REAL BACKEND VERIFICATION READY - CONNECT TO RENDER.COM');
       isPaid 
     });
     
-   //✅ UPDATE GAME OVER STATE:
+
     if (isPaid) {
       window.unlockPlayAndHideGameOver();
-      //localStorage.setItem(`gameOver_${email}`, 'false');
       localStorage.setItem(`gameOver_${email}`, 'false');
     } else if (lossUser) {
       localStorage.setItem(`gameOver_${email}`, 'true');
     } 
 
-// ✅ ENHANCED level01Score MANAGEMENT FUNCTIONS (ADD FIRST):
-// ✅ ENHANCED GET PLAYER GAME level01Score AND HISTORY
+
 function getPlayerGameHistory(email) {
   const history = localStorage.getItem(`gameHistory_${email}`);
   return history ? JSON.parse(history) : {
@@ -976,7 +972,6 @@ function getPlayerGameHistory(email) {
 }
 
 
-// ✅ ENHANCED UPDATE PLAYER GAME level01Score HISTORY
 function updatePlayerGameHistory(email, updates) {
   const history = getPlayerGameHistory(email);
   const updatedHistory = { ...history, ...updates };
@@ -985,12 +980,11 @@ function updatePlayerGameHistory(email, updates) {
   return updatedHistory;
 }
 
-// ✅ ENHANCED CHECK PLAYER level01Score STATUS 
+
 function checkPlayerScoreStatus(email) {
   const currentScore = parseInt(localStorage.getItem(`score_${email}`) || 0);
   const history = getPlayerGameHistory(email);
-  //localStorage.setItem(`score_${email}`, '0');
-  //const currentScore = 0; // Selalu 0, tidak ada angka 3
+
   
   console.log('🔍 Checking level01Score status for:', email);
   console.log('Current level01Score:', currentScore);
