@@ -189,23 +189,23 @@ if ('serviceWorker' in navigator) {
       .then((registration) => {
         console.log('✅ Service Worker registered successfully:', registration.scope);
         
-        // Handle updates
+       
         registration.addEventListener('updatefound', () => {
           const newWorker = registration.installing;
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               console.log('🔄 New Service Worker available - ready to update');
-              // Optionally show update notification to user
+              
             }
           });
         });
       })
       .catch((error) => {
         console.warn('⚠️ Service Worker registration failed:', error);
-        // Game will work without Service Worker, just no offline support
+       
       });
       
-    // Handle Service Worker messages
+   
     navigator.serviceWorker.addEventListener('message', (event) => {
       if (event.data && event.data.type === 'CACHE_UPDATED') {
         console.log('✅ Game assets cached - ready for offline play!');
@@ -357,12 +357,11 @@ let userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
 if (!userData.gameProgress) {
   userData.gameProgress = {
     level01Score: 0,
-    // tambahkan field lain jika perlu
-  };
+   };
 }
 //======================================================================================
 
-// Fungsi cek status pembayaran dari backend (lengkap)
+
 window.checkPaymentStatusFromBackend = async function(email) {
   try {
     console.log('🔍 Checking payment status for:', email);
@@ -484,10 +483,6 @@ window.updateGamePaymentStatus = function(isPaid, method = null) {
   }
 }
 
- // Client-side handling of payment status
-//if (payment === "cancelled") {
-  //console.warn("❌ Payment cancelled by user.");
-  // (optional) localStorage.setItem('paymentCancelled', 'true');
 //}</script><body><div id="landingOverlay" style="position:fixed;z-index:99999;top:0;left:0;width:100vw;height:100vh;background:#034054;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;"><div style="position:fixed;top:38px;right:7vw;z-index:100000;text-align:right;"><img src="LogoBlackHorse.png" alt="Black Horse Logo" style="width:250px;height:250px;border-radius:18px;box-shadow:0 0 32px #00eaffcc,0 0 64px #00eaff44;background:#fff;border:3px solid #00eaff;object-fit:contain;"></div><div style="background:#035154;border-radius:22px;padding:28px 32px 28px 32px;box-shadow:0 8px 32px #0008;text-align:center;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:340px;max-width:540px;width:92vw;margin-top:38px;"><img src="BlackHorseHerd.png" alt="Black Horse & Herd" style="width:78%;max-width:220px;border-radius:18px;box-shadow:0 0 32px #00eaff99,0 4px 24px #0005;background:#fff;object-fit:contain;margin:0 auto 10px auto;z-index:1;"><h1 style="font-size:2.1em;margin-bottom:0.25em;margin-top:0.2em;color:#00eaff;letter-spacing:1px;text-align:center;font-weight:700;">Official Black Horse Puzzle</h1><div style="color:#ffd700;font-weight:bold;margin:10px 0 6px 0;font-size:1.08em;text-align:center;">Beware of fake or copycat websites!</div><div style="color:#fff;font-size:1.05em;margin-bottom:12px;text-align:center;">The <span style="color:#00eaff;font-weight:bold;text-decoration:underline;">arselco.com</span> domain is the ONLY official website for the Black Horse Puzzle Futuristic Game.<br>Any other site with a similar name is NOT the original and does NOT represent the true vision of the Black Horse Puzzle creator.</div><div style="color:#ffd700;font-weight:bold;margin:6px 0 14px 0;font-size:1.05em;text-align:center;">Protect your experience.<br>Play only at <span style="color:#00eaff;font-weight:bold;text-decoration:underline;">arselco.com</span></div><img src="Black Horse-Please Wait.webp" alt="Black Horse Standing" style="width:90px;max-width:28vw;margin:10px auto 0 auto;display:block;filter:drop-shadow(0 0 18px #00eaff80);"> <button id="entranceGameBtn" style="margin:16px auto 0 auto;display:block;background:linear-gradient(90deg,#00eaff 0%,#0078ff 100%);color:#fff;border:none;border-radius:9px;padding:14px 44px;font-size:1.18em;font-weight:700;cursor:pointer;box-shadow:0 0 18px #00eaffcc,0 0 32px #0078ff44 inset;letter-spacing:1.2px;transition:background 0.2s,box-shadow 0.2s;animation:entrance-glow 1.6s infinite alternate;">Entrance → Black Horse</button><style>@keyframes entrance-glow {
             0% { box-shadow:0 0 18px #00eaffcc,0 0 32px #0078ff44 inset; }
             100% { box-shadow:0 0 32px #00eaff,0 0 48px #0078ff99 inset; }
@@ -502,7 +497,7 @@ window.updateGamePaymentStatus = function(isPaid, method = null) {
       document.getElementById('entranceGameBtn').onclick = function() {
         document.getElementById('landingOverlay').style.display = 'none';
         window.sessionStorage.setItem('bhpWarningShown', '1');
-        // Jika game sudah siap, bisa trigger splashscene di sini jika perlu
+     
       };</script><div id="game-container"></div><div id="loader" style="position: fixed;
   top: 0; left: 0;
   width: 100vw; height: 100vh;
@@ -822,7 +817,7 @@ window.resendVerificationEmail = async function(email) {
   }
 };
 
-//  Create proper showMessage function
+
 window.showMessage = function(message, color = '#ff6b6b') {
     alert(message);
     console.log('📢 Message:', message);
@@ -841,17 +836,17 @@ window.verifyEmailWithBackend = async function(email) {
       return false;
     }   
  
-    // Step 2: Backend verification
+  
     console.log('🔗 Attempting backend connection...');
     const result = await registerUser(email);
     if (result) {
       return true;
     }
 
-     // Fallback jika backend gagal
+
     return false;
     } catch (error) {
-    // Enhanced error handling with fallback
+    
     if (error.name === 'AbortError') {
       console.log('⏰ Backend timeout - using fallback validation');
     } else if (error.message.includes('Failed to Axios request')) {
@@ -859,7 +854,7 @@ window.verifyEmailWithBackend = async function(email) {
     } else if (error.message.includes('CORS')) {
       console.log('🔒 CORS error - using fallback validation');
     }
-    // FALLBACK: If backend fails but email format is valid, allow login
+   
     const isValidFormat = verifyEmailFormat(email);
     if (isValidFormat) {
       console.log('✅ Using fallback validation - email format valid');
@@ -871,11 +866,11 @@ window.verifyEmailWithBackend = async function(email) {
 
 
 window.unlockPlayAndHideGameOver = function() {
-  // Dapatkan scene Level01Scene
+
   const level01 = window.game && window.game.scene && window.game.scene.getScene('Level01Scene');
   if (!level01) return;
 
-  // Aktifkan tombol Play & 10 Puzzle
+
   if (level01.playBtn) {
     level01.playBtn.setInteractive();
     level01.playBtn.setAlpha(1);
@@ -885,7 +880,7 @@ window.unlockPlayAndHideGameOver = function() {
     level01.lv01Puzzle10Btn.setAlpha(1);
   }
 
-  // Hilangkan panel Game Over jika ada
+
   if (level01.gameOverReturnElements) {
     level01.gameOverReturnElements.forEach(el => el && el.destroy());
     level01.gameOverReturnElements = null;
@@ -895,7 +890,7 @@ window.unlockPlayAndHideGameOver = function() {
     level01.gameOverImg = null;
   }
 
-  // Hapus panel konfirmasi pembayaran jika ada (line 3342, 3346)
+  
   if (level01.payPanel) {
     level01.payPanel.destroy();
     level01.payPanel = null;
@@ -937,9 +932,9 @@ console.log('✅ REAL BACKEND VERIFICATION READY - CONNECT TO RENDER.COM');
     const isPaid = paymentData.isPaid === true;
     
  
-    const newUser = totalPlays === 0;  // Only 0 plays = new user
-    const winUser = totalPlays >= 1 && currentScore > 0;  // 1 dst plays = active user
-    const lossUser = totalPlays >= 3 && currentScore === 0 && !isPaid;  // 3+ plays, no score, no payment
+    const newUser = totalPlays === 0;  
+    const winUser = totalPlays >= 1 && currentScore > 0;  
+    const lossUser = totalPlays >= 3 && currentScore === 0 && !isPaid;  
     
     console.log('👤 User classification:', { 
       newUser, 
