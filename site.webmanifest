@@ -46,14 +46,14 @@
   ],
   "screenshots": [
     {
-      "src": "/Puzzle-Assets/Screenshots/game-wide%201280x720.webp",
+      "src": "/Puzzle-Assets/Screenshots/game_wide%201280x720.webp",
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide",
       "label": "Black Horse Puzzle gameplay"
     },
     {
-      "src": "/Puzzle-Assets/Screenshots/game-mobile%20390x844.webp",
+      "src": "/Puzzle-Assets/Screenshots/game_mobile%20390x844.webp",
       "sizes": "390x844",
       "type": "image/png",
       "form_factor": "narrow",
