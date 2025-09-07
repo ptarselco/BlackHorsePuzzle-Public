@@ -36,9 +36,9 @@ const SERI1_ASSETS = [
   './assets/images/puzzle-pieces/piece-09.png',
   './assets/images/puzzle-pieces/piece-10.png',
   // UI elements
-  './assets/images/ui/play-button.png',
-  './assets/images/ui/timer-bg.png',
-  './assets/images/ui/level01Score-bg.png',
+  'Puzzle-Assets/UI/play-button.png',
+  'Puzzle-Assets/UI/timer-bg.png',
+  'Puzzle-Assets/UI/level01Score-bg.png',
   // Audio (optional - hanya jika file ada)
   './assets/audio/background-music.mp3',
   './assets/audio/piece-drop.mp3',
