@@ -1311,7 +1311,7 @@ window.addEventListener('DOMContentLoaded', async function() {
         userData = JSON.parse(localStorage.getItem(`gameData-${email}`)) || {};
         
         // ✅ TAMBAH: Check payment status juga
-        const paymentData = await checkPaymentStatusFromBackend(email);
+        const paymentData = await window.checkPaymentStatusFromBackend(email);
         console.log('💳 Initial payment check:', paymentData);
         window.updateGamePaymentStatus(paymentData.isPaid, paymentData.method);
         
@@ -1332,7 +1332,7 @@ window.addEventListener('DOMContentLoaded', async function() {
       
       // ✅ CHECK PAYMENT STATUS FIRST BEFORE SHOWING WARNING:
       try {
-        const paymentData = await checkPaymentStatusFromBackend(email);
+        const paymentData = await window.checkPaymentStatusFromBackend(email);
         console.log('💳 Payment status check:', paymentData);
         
         if (paymentData && paymentData.isPaid === true) {
@@ -1645,7 +1645,7 @@ async function startPaymentMonitoring(email) {
     try {
       //checkPaymentStatus(email);
       const result = await checkPaymentStatus(email);
-      const paymentData = await checkPaymentStatusFromBackend(email);
+      const paymentData = await window.checkPaymentStatusFromBackend(email);
       window.updateGamePaymentStatus(paymentData.isPaid, paymentData.method);
      } catch (monitoringError) {
       console.error('❌ Payment monitoring error:', monitoringError);
@@ -1947,7 +1947,7 @@ document.addEventListener('visibilitychange', async () => {
   if (document.visibilityState === 'visible') {
     const email = localStorage.getItem('email');
     if (email) {
-      const paymentData = await checkPaymentStatusFromBackend(email);
+      const paymentData = await window.checkPaymentStatusFromBackend(email);
       window.updateGamePaymentStatus(paymentData.isPaid, paymentData.method);
     }
   }
@@ -2082,7 +2082,7 @@ async function updateGameScore(email, newScore) {
 // ✅ SAFE PAYMENT STATUS UPDATE FUNCTION:
 function safeUpdatePaymentStatus(email) {
   waitForGameReady(async () => {
-    const paymentData = await checkPaymentStatusFromBackend(email);
+    const paymentData = await window.checkPaymentStatusFromBackend(email);
     window.updateGamePaymentStatus(paymentData.isPaid, paymentData.method);
   });
 }
